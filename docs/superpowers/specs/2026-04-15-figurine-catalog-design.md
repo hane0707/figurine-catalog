@@ -18,6 +18,19 @@
 - **公開URL形式:** `/p/{uuid}`（Cloudflare Accessの保護対象外パス）
 - **認証:** Cloudflare Access + Googleログイン。`/p/*` は全員アクセス可、それ以外は認証必須
 
+### 公開範囲の制御ロジック
+
+| `is_public` | `purchase_info_public` | `handmade_info_public` | 公開ページでの表示 |
+|---|---|---|---|
+| 0 | - | - | アイテム自体が非公開（アクセス不可） |
+| 1 | 0 | - | 写真・名前・タグのみ表示。購入情報は非表示 |
+| 1 | 1 | - | 購入情報も表示 |
+| 1 | - | 0 | 写真・名前・タグのみ表示。制作情報は非表示 |
+| 1 | - | 1 | 制作情報（制作期間・素材・メモ）も表示 |
+
+購入情報の非表示対象: `store_name`, `event_name`, `purchase_date`, `purchase_price`, `maker`, `artist_name`（全フィールドをまとめて制御）  
+制作情報の非表示対象: `production_start`, `production_end`, `notes`, `item_materials`（全フィールドをまとめて制御）
+
 ---
 
 ## 技術スタック
@@ -50,6 +63,8 @@
 | `is_handmade` | INTEGER | 0=購入品 / 1=自作品 / NULL=未設定 |
 | `is_public` | INTEGER | 0=非公開 / 1=公開（デフォルト0） |
 | `status` | TEXT | `owned`=所持中 / `parted`=手放した（デフォルト `owned`） |
+| `purchase_info_public` | INTEGER | 1=購入情報を公開（`is_public=1` のときのみ有効。デフォルト0） |
+| `handmade_info_public` | INTEGER | 1=制作情報を公開（`is_public=1` のときのみ有効。デフォルト0） |
 | `created_at` | TEXT | ISO8601形式 |
 | `updated_at` | TEXT | ISO8601形式 |
 
@@ -193,6 +208,15 @@ STEP 5（共通）: タグを設定して完了
 - 専用ページ（`/items/{id}`）
 - 表示と編集は同じページ内でインライン編集（編集モードボタンで切り替え）
 - 削除時: 確認ダイアログ → DBレコード + R2ファイルを即時削除
+
+**公開設定UI（編集画面内）:**
+```
+[ ] このアイテムを公開する
+    ↳ is_public = 1 のときのみ以下が有効
+    [ ] 購入情報も公開する（店舗・イベント・金額・作家名など）
+    [ ] 制作情報も公開する（制作期間・素材・メモなど）
+```
+`is_public = 0` のとき、下位2つのトグルはグレーアウト表示。
 
 ---
 
