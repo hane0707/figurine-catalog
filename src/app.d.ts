@@ -6,7 +6,18 @@ declare global {
 		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
-		// interface Platform {}
+		interface Platform {
+			env: {
+				DB: D1Database;
+				R2: R2Bucket;
+				CLOUDFLARE_ACCOUNT_ID: string;
+				R2_ACCESS_KEY_ID: string;
+				R2_SECRET_ACCESS_KEY: string;
+				R2_BUCKET_NAME: string;
+			};
+			context: ExecutionContext;
+			caches: CacheStorage & { default: Cache };
+		}
 	}
 }
 
