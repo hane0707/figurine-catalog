@@ -29,12 +29,19 @@
     if (query) params.set('q', query);
     if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
 
-    const res = await fetch(`/api/items?${params}`);
-    const json = await res.json();
-    items = reset ? json.items : [...items, ...json.items];
-    offset += json.items.length;
-    hasMore = json.items.length === limit;
-    loading = false;
+    try {
+      const res = await fetch(`/api/items?${params}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json() as { items: any[] };
+      items = reset ? json.items : [...items, ...json.items];
+      offset += json.items.length;
+      hasMore = json.items.length === limit;
+    } catch (e) {
+      console.error('Failed to fetch items:', e);
+      hasMore = false;
+    } finally {
+      loading = false;
+    }
   }
 
   onMount(() => {

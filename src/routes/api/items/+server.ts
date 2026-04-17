@@ -37,7 +37,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   const tagsParam = url.searchParams.get('tags') ?? '';
   const tagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
 
-  const { eq, like, and, or, inArray, exists, sql } = await import('drizzle-orm');
+  const { eq, like, and, or, inArray, exists, sql, desc } = await import('drizzle-orm');
 
   // タグフィルタのサブクエリ（tagIds が指定されていれば）
   const tagFilter = tagIds.length > 0
@@ -67,7 +67,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         tagFilter,
       )
     )
-    .orderBy(items.createdAt)
+    .orderBy(desc(items.createdAt))
     .limit(limit)
     .offset(offset);
 
