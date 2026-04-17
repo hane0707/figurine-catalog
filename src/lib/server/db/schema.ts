@@ -1,17 +1,20 @@
+// Drizzle ORM スキーマ定義（Cloudflare D1 / SQLite）
+// 注意: SQLite は ON UPDATE をサポートしないため、updatedAt は UPDATE 時にアプリ層で
+//       new Date().toISOString() を手動セットすること。
 import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const items = sqliteTable('items', {
   id: text('id').primaryKey(),
-  name: text('name'),
+  name: text('name'), // null 可: クイック登録フローで写真のみ保存を許容
   series: text('series'),
   isHandmade: integer('is_handmade'), // 0=購入品, 1=自作品, NULL=未設定
-  isPublic: integer('is_public').notNull().default(0),
+  isPublic: integer('is_public').notNull().default(0), // 0=非公開, 1=公開
   purchaseInfoPublic: integer('purchase_info_public').notNull().default(0),
   handmadeInfoPublic: integer('handmade_info_public').notNull().default(0),
   status: text('status').notNull().default('owned'), // 'owned' | 'parted'
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`), // UPDATE 時は手動更新
 });
 
 export const photos = sqliteTable('photos', {
