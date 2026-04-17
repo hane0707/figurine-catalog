@@ -1,7 +1,7 @@
 // src/routes/api/items/[id]/+server.ts
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDb, items, photos, purchaseInfo, handmadeInfo } from '$lib/server/db';
+import { getDb, items, photos, purchaseInfo, handmadeInfo, itemTags, itemMaterials } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { deleteR2Object } from '$lib/server/r2';
 
@@ -27,6 +27,14 @@ export const PATCH: RequestHandler = async ({ params, request, platform }) => {
   const body = await request.json() as Record<string, unknown>;
   const now = new Date().toISOString();
 
+  // isPublic / status の入力バリデーション
+  if ('isPublic' in body && ![0, 1].includes(body.isPublic as number)) {
+    throw error(400, 'isPublic は 0 または 1 のみ有効です');
+  }
+  if ('status' in body && !['owned', 'parted'].includes(body.status as string)) {
+    throw error(400, 'status は owned または parted のみ有効です');
+  }
+
   const itemFields = ['name', 'series', 'isHandmade', 'isPublic', 'purchaseInfoPublic', 'handmadeInfoPublic', 'status'];
   const itemUpdate: Record<string, unknown> = { updatedAt: now };
   for (const field of itemFields) {
@@ -34,17 +42,52 @@ export const PATCH: RequestHandler = async ({ params, request, platform }) => {
   }
   await db.update(items).set(itemUpdate).where(eq(items.id, params.id));
 
+  // purchaseInfo: フィールドを明示的にホワイトリスト化（mass assignment 防止）
   if (body.purchaseInfo !== undefined) {
     await db.delete(purchaseInfo).where(eq(purchaseInfo.itemId, params.id));
     if (body.purchaseInfo) {
-      await db.insert(purchaseInfo).values({ itemId: params.id, ...body.purchaseInfo });
+      const pi = body.purchaseInfo as Record<string, unknown>;
+      await db.insert(purchaseInfo).values({
+        itemId: params.id,
+        storeName: (pi.storeName as string | null) ?? null,
+        eventName: (pi.eventName as string | null) ?? null,
+        purchaseDate: (pi.purchaseDate as string | null) ?? null,
+        purchasePrice: (pi.purchasePrice as number | null) ?? null,
+        maker: (pi.maker as string | null) ?? null,
+        artistName: (pi.artistName as string | null) ?? null,
+      });
     }
   }
 
+  // handmadeInfo: フィールドを明示的にホワイトリスト化（mass assignment 防止）
   if (body.handmadeInfo !== undefined) {
     await db.delete(handmadeInfo).where(eq(handmadeInfo.itemId, params.id));
     if (body.handmadeInfo) {
-      await db.insert(handmadeInfo).values({ itemId: params.id, ...body.handmadeInfo });
+      const hi = body.handmadeInfo as Record<string, unknown>;
+      await db.insert(handmadeInfo).values({
+        itemId: params.id,
+        productionStart: (hi.productionStart as string | null) ?? null,
+        productionEnd: (hi.productionEnd as string | null) ?? null,
+        notes: (hi.notes as string | null) ?? null,
+      });
+    }
+  }
+
+  // tagIds: アイテムタグの更新
+  if (body.tagIds !== undefined) {
+    await db.delete(itemTags).where(eq(itemTags.itemId, params.id));
+    const ids = body.tagIds as string[];
+    if (ids.length > 0) {
+      await db.insert(itemTags).values(ids.map((tagId) => ({ itemId: params.id, tagId })));
+    }
+  }
+
+  // materialIds: アイテム素材の更新
+  if (body.materialIds !== undefined) {
+    await db.delete(itemMaterials).where(eq(itemMaterials.itemId, params.id));
+    const ids = body.materialIds as string[];
+    if (ids.length > 0) {
+      await db.insert(itemMaterials).values(ids.map((materialId) => ({ itemId: params.id, materialId })));
     }
   }
 

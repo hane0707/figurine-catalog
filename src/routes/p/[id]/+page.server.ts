@@ -21,19 +21,25 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 
   const photosWithUrls = await Promise.all(
     item.photos.map(async (p) => ({
-      ...p,
       thumbUrl: await getPresignedGetUrl(platform!.env, p.r2KeyThumb),
       origUrl: await getPresignedGetUrl(platform!.env, p.r2KeyOrig),
+      isCover: p.isCover,
+      sortOrder: p.sortOrder,
     }))
   );
 
-  // 非公開フラグに基づいて情報を除去
+  // 公開ページ: 内部フィールド（r2キー等）を除去して必要な情報のみ返す
   return {
     item: {
-      ...item,
+      id: item.id,
+      name: item.name,
+      series: item.series,
+      status: item.status,
+      isHandmade: item.isHandmade,
       photos: photosWithUrls,
       purchaseInfo: item.purchaseInfoPublic ? item.purchaseInfo : null,
       handmadeInfo: item.handmadeInfoPublic ? item.handmadeInfo : null,
+      itemTags: item.itemTags,
       itemMaterials: item.handmadeInfoPublic ? item.itemMaterials : [],
     },
   };
