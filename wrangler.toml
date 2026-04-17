@@ -1,0 +1,21 @@
+# wrangler.toml
+name = "figurine-catalog"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".svelte-kit/cloudflare"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "figurine-catalog-db"
+database_id = "REPLACE_AFTER_CREATION"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "figurine-catalog-photos"
+
+[vars]
+R2_BUCKET_NAME = "figurine-catalog-photos"
+# 以下は wrangler secret put で設定（.toml に書かない）
+# CLOUDFLARE_ACCOUNT_ID
+# R2_ACCESS_KEY_ID
+# R2_SECRET_ACCESS_KEY
