@@ -1,8 +1,9 @@
 // src/routes/api/items/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDb, items } from '$lib/server/db';
+import { getDb, items, photos, itemTags } from '$lib/server/db';
 import { generateId } from '$lib/utils/uuid';
+import { getPresignedGetUrl } from '$lib/server/r2';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
   const db = getDb(platform!.env.DB);
@@ -29,31 +30,61 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 export const GET: RequestHandler = async ({ url, platform }) => {
   const db = getDb(platform!.env.DB);
-  const limit = Number(url.searchParams.get('limit') ?? 30);
+  const limit = Math.min(Number(url.searchParams.get('limit') ?? 30), 100);
   const offset = Number(url.searchParams.get('offset') ?? 0);
   const status = url.searchParams.get('status') ?? 'owned';
-  const q = url.searchParams.get('q');
+  const q = url.searchParams.get('q') ?? '';
+  const tagsParam = url.searchParams.get('tags') ?? '';
+  const tagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
 
-  const { eq, like, and } = await import('drizzle-orm');
+  const { eq, like, and, or, inArray, exists, sql } = await import('drizzle-orm');
+
+  // タグフィルタのサブクエリ（tagIds が指定されていれば）
+  const tagFilter = tagIds.length > 0
+    ? exists(
+        db.select({ one: sql`1` })
+          .from(itemTags)
+          .where(and(eq(itemTags.itemId, items.id), inArray(itemTags.tagId, tagIds)))
+      )
+    : undefined;
 
   const rows = await db
     .select({
       id: items.id,
       name: items.name,
+      series: items.series,
       status: items.status,
       isPublic: items.isPublic,
       createdAt: items.createdAt,
+      r2KeyThumb: photos.r2KeyThumb,
     })
     .from(items)
+    .leftJoin(photos, and(eq(photos.itemId, items.id), eq(photos.isCover, 1)))
     .where(
       and(
         eq(items.status, status),
-        q ? like(items.name, `%${q}%`) : undefined,
+        q ? or(like(items.name, `%${q}%`), like(items.series, `%${q}%`)) : undefined,
+        tagFilter,
       )
     )
     .orderBy(items.createdAt)
     .limit(limit)
     .offset(offset);
 
-  return json({ items: rows, offset, limit });
+  // presigned URLを生成
+  const itemsWithUrls = await Promise.all(
+    rows.map(async (row) => ({
+      id: row.id,
+      name: row.name,
+      series: row.series,
+      status: row.status,
+      isPublic: row.isPublic,
+      createdAt: row.createdAt,
+      thumbUrl: row.r2KeyThumb
+        ? await getPresignedGetUrl(platform!.env, row.r2KeyThumb)
+        : null,
+    }))
+  );
+
+  return json({ items: itemsWithUrls, offset, limit });
 };
