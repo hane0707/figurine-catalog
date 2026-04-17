@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { toast } from 'svelte-sonner';
-  import { invalidateAll } from '$app/navigation';
+  import { invalidateAll, goto } from '$app/navigation';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
