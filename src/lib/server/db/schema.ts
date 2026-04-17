@@ -2,7 +2,7 @@
 // 注意: SQLite は ON UPDATE をサポートしないため、updatedAt は UPDATE 時にアプリ層で
 //       new Date().toISOString() を手動セットすること。
 import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 
 export const items = sqliteTable('items', {
   id: text('id').primaryKey(),
@@ -63,3 +63,42 @@ export const itemMaterials = sqliteTable('item_materials', {
   itemId: text('item_id').notNull().references(() => items.id, { onDelete: 'cascade' }),
   materialId: text('material_id').notNull().references(() => materials.id, { onDelete: 'cascade' }),
 }, (t) => ({ pk: primaryKey({ columns: [t.itemId, t.materialId] }) }));
+
+// リレーション定義
+export const itemsRelations = relations(items, ({ many, one }) => ({
+  photos: many(photos),
+  purchaseInfo: one(purchaseInfo, { fields: [items.id], references: [purchaseInfo.itemId] }),
+  handmadeInfo: one(handmadeInfo, { fields: [items.id], references: [handmadeInfo.itemId] }),
+  itemTags: many(itemTags),
+  itemMaterials: many(itemMaterials),
+}));
+
+export const photosRelations = relations(photos, ({ one }) => ({
+  item: one(items, { fields: [photos.itemId], references: [items.id] }),
+}));
+
+export const purchaseInfoRelations = relations(purchaseInfo, ({ one }) => ({
+  item: one(items, { fields: [purchaseInfo.itemId], references: [items.id] }),
+}));
+
+export const handmadeInfoRelations = relations(handmadeInfo, ({ one }) => ({
+  item: one(items, { fields: [handmadeInfo.itemId], references: [items.id] }),
+}));
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  itemTags: many(itemTags),
+}));
+
+export const itemTagsRelations = relations(itemTags, ({ one }) => ({
+  item: one(items, { fields: [itemTags.itemId], references: [items.id] }),
+  tag: one(tags, { fields: [itemTags.tagId], references: [tags.id] }),
+}));
+
+export const materialsRelations = relations(materials, ({ many }) => ({
+  itemMaterials: many(itemMaterials),
+}));
+
+export const itemMaterialsRelations = relations(itemMaterials, ({ one }) => ({
+  item: one(items, { fields: [itemMaterials.itemId], references: [items.id] }),
+  material: one(materials, { fields: [itemMaterials.materialId], references: [materials.id] }),
+}));
