@@ -11,6 +11,7 @@
   let step = $state('photo');
   let itemId = $state<string | null>(null);
   let uploadedPhotos = $state<{ id: string; r2KeyOrig: string; r2KeyThumb: string }[]>([]);
+  let showPhotoUploader = $state(false);
 
   // フォームデータ
   let name = $state('');
@@ -125,22 +126,21 @@
 
   {#if step === 'photo'}
     <h2 class="text-lg font-semibold mb-4">写真を追加</h2>
-    {#if itemId}
+
+    {#if showPhotoUploader && itemId}
       <PhotoUploader {itemId} onUploaded={handlePhotoUploaded} />
     {:else}
       <button
-        type="button"
         class="w-full border-2 border-dashed rounded-lg p-8 text-center hover:bg-accent transition-colors"
         onclick={async () => {
           await ensureItem();
+          showPhotoUploader = true;
         }}
       >
-        <span>📷 写真を選ぶ（複数可）</span>
+        📷 写真を選ぶ（複数可）
       </button>
-      {#if itemId}
-        <PhotoUploader {itemId} onUploaded={handlePhotoUploaded} />
-      {/if}
     {/if}
+
     <div class="mt-4 flex gap-2">
       <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'basic')}>スキップ</button>
       {#if uploadedPhotos.length > 0}
@@ -292,6 +292,7 @@
     <TagPicker
       bind:selected={selectedTags}
       suggestions={data.allTags}
+      frequent={[]}
       placeholder="タグを追加..."
       onCreate={createTag}
     />
