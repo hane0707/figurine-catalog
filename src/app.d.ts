@@ -14,6 +14,7 @@ declare global {
 				R2_ACCESS_KEY_ID: string;
 				R2_SECRET_ACCESS_KEY: string;
 				R2_BUCKET_NAME: string;
+				R2_KEY_PREFIX?: string; // 例: "dev"（ローカル開発時）/ ""（本番）
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };

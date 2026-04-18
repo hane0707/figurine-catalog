@@ -13,8 +13,9 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
   if (!itemId || !photoId || !contentType) throw error(400, '必須パラメータ不足');
 
-  const origKey = `items/${itemId}/orig_${photoId}.jpg`;
-  const thumbKey = `items/${itemId}/thumb_${photoId}.webp`;
+  const prefix = platform!.env.R2_KEY_PREFIX ? `${platform!.env.R2_KEY_PREFIX}/` : '';
+  const origKey = `${prefix}items/${itemId}/orig_${photoId}.jpg`;
+  const thumbKey = `${prefix}items/${itemId}/thumb_${photoId}.webp`;
 
   const [origUrl, thumbUrl] = await Promise.all([
     getPresignedPutUrl(platform!.env, origKey, contentType),

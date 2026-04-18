@@ -15,6 +15,7 @@ bucket_name = "figurine-catalog-photos"
 
 [vars]
 R2_BUCKET_NAME = "figurine-catalog-photos"
+R2_KEY_PREFIX = "" # 本番は空文字。ローカル開発時は .dev.vars で "dev" に上書き
 # 以下は wrangler secret put で設定（.toml に書かない）
 # CLOUDFLARE_ACCOUNT_ID
 # R2_ACCESS_KEY_ID

@@ -1,0 +1,24 @@
+# ローカル開発用シークレット テンプレート
+# このファイルをコピーして .dev.vars を作成してください
+# .dev.vars は .gitignore に含まれているためコミットされません
+#
+# cp .dev.vars.example .dev.vars
+# （.dev.vars に実際の値を記入）
+
+# Cloudflare アカウント ID
+# ダッシュボード右サイドバー「Account ID」または
+# https://dash.cloudflare.com/ → 右下に表示
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+
+# R2 API トークン
+# Cloudflare ダッシュボード → R2 → Manage R2 API Tokens → Create API Token
+# 権限: Object Read & Write
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+
+# R2 バケット名（本番と同じバケットを使用、パスで区別）
+R2_BUCKET_NAME=figurine-catalog-photos
+
+# ローカル開発用パスプレフィックス（本番データと混在させないため）
+# R2上のパスが "dev/items/..." となり本番の "items/..." と分離される
+R2_KEY_PREFIX=dev
