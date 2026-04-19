@@ -46,7 +46,7 @@
     photo: { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string },
     isFirst: boolean,
   ) {
-    if (isFirst) {
+    if (isFirst && !itemCreated) {
       // 初回アップロード成功時にのみアイテムを作成
       const res = await fetch('/api/items', {
         method: 'POST',
@@ -60,11 +60,15 @@
       itemCreated = true;
     }
 
-    await fetch(`/api/photos/${photo.id}`, {
+    const photoRes = await fetch(`/api/photos/${photo.id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ itemId, r2KeyOrig: photo.r2KeyOrig, r2KeyThumb: photo.r2KeyThumb }),
     });
+    if (!photoRes.ok) {
+      toast.error('写真の登録に失敗しました');
+      return;
+    }
 
     uploadedPhotos = [...uploadedPhotos, photo];
   }
@@ -79,7 +83,12 @@
       return;
     }
     if (!confirm('アップロード済みのデータを削除して中断しますか？')) return;
-    await fetch(`/api/items/${itemId}`, { method: 'DELETE' });
+    try {
+      const res = await fetch(`/api/items/${itemId}`, { method: 'DELETE' });
+      if (!res.ok) console.error(`キャンセル中の削除失敗: ${res.status}`);
+    } catch (e) {
+      console.error('キャンセル中にネットワークエラー:', e);
+    }
     goto('/items');
   }
 
@@ -176,7 +185,7 @@
 
   <!-- プログレスバー -->
   <div class="flex gap-1 mb-3">
-    {#each steps as s, i}
+    {#each steps as _s, i}
       <div class="flex-1 h-1 rounded-full {i <= stepIndex ? 'bg-primary' : 'bg-muted'}"></div>
     {/each}
   </div>
