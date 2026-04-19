@@ -2,16 +2,21 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { goto } from '$app/navigation';
+  import { toast } from 'svelte-sonner';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
   import TagPicker from '$lib/components/TagPicker.svelte';
+  import { generateId } from '$lib/utils/uuid';
 
   let { data }: { data: PageData } = $props();
 
-  // Step: 'photo' | 'basic' | 'type' | 'details' | 'tags'
+  // ページ読み込み時に UUID を生成（DB操作なし）
+  const itemId = generateId();
+
+  let itemCreated = $state(false);
   let step = $state('photo');
-  let itemId = $state<string | null>(null);
-  let uploadedPhotos = $state<{ id: string; r2KeyOrig: string; r2KeyThumb: string }[]>([]);
-  let showPhotoUploader = $state(false);
+  let uploadedPhotos = $state<
+    { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string }[]
+  >([]);
 
   // フォームデータ
   let name = $state('');
@@ -35,66 +40,107 @@
 
   const steps = ['photo', 'basic', 'type', 'details', 'tags'];
   let stepIndex = $derived(steps.indexOf(step));
+  let isSaving = $state(false);
 
-  async function createItem() {
-    const res = await fetch('/api/items', {
+  async function handlePhotoUploaded(
+    photo: { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string },
+    isFirst: boolean,
+  ) {
+    if (isFirst) {
+      // 初回アップロード成功時にのみアイテムを作成
+      const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: itemId, name: null }),
+      });
+      if (!res.ok) {
+        toast.error('アイテムの作成に失敗しました');
+        return;
+      }
+      itemCreated = true;
+    }
+
+    await fetch(`/api/photos/${photo.id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: null }),
+      body: JSON.stringify({ itemId, r2KeyOrig: photo.r2KeyOrig, r2KeyThumb: photo.r2KeyThumb }),
     });
-    const json = (await res.json()) as { id: string };
-    itemId = json.id;
-  }
 
-  async function handlePhotoUploaded(photo: { id: string; r2KeyOrig: string; r2KeyThumb: string }) {
     uploadedPhotos = [...uploadedPhotos, photo];
   }
 
-  async function ensureItem() {
-    if (!itemId) await createItem();
+  function handleSystemError() {
+    toast.error('アップロードに失敗しました。設定やネットワークを確認してください');
+  }
+
+  async function cancelWizard() {
+    if (!itemCreated) {
+      goto('/items');
+      return;
+    }
+    if (!confirm('アップロード済みのデータを削除して中断しますか？')) return;
+    await fetch(`/api/items/${itemId}`, { method: 'DELETE' });
+    goto('/items');
   }
 
   async function saveAndFinish() {
-    if (!itemId) await createItem();
-    if (!itemId) return;
-
-    const updateBody: Record<string, unknown> = {
-      name: name || null,
-      series: series || null,
-      isHandmade,
-    };
-
-    if (isHandmade === 0) {
-      updateBody.purchaseInfo = {
-        storeName: storeName || null,
-        eventName: eventName || null,
-        purchaseDate: purchaseDate || null,
-        purchasePrice: purchasePrice ? Number(purchasePrice) : null,
-        maker: maker || null,
-        artistName: artistName || null,
-      };
-    } else if (isHandmade === 1) {
-      updateBody.handmadeInfo = {
-        productionStart: productionStart || null,
-        productionEnd: productionEnd || null,
-        notes: notes || null,
-      };
-      if (selectedMaterials.length > 0) {
-        updateBody.materialIds = selectedMaterials.map((m) => m.id);
+    if (isSaving) return;
+    isSaving = true;
+    try {
+      if (!itemCreated) {
+        // 写真なしで完了した場合、ここでアイテムを作成
+        const res = await fetch('/api/items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: itemId, name: null }),
+        });
+        if (!res.ok) throw new Error(`アイテム作成失敗: ${res.status}`);
+        itemCreated = true;
       }
+
+      const updateBody: Record<string, unknown> = {
+        name: name || null,
+        series: series || null,
+        isHandmade,
+      };
+
+      if (isHandmade === 0) {
+        updateBody.purchaseInfo = {
+          storeName: storeName || null,
+          eventName: eventName || null,
+          purchaseDate: purchaseDate || null,
+          purchasePrice: purchasePrice ? Number(purchasePrice) : null,
+          maker: maker || null,
+          artistName: artistName || null,
+        };
+      } else if (isHandmade === 1) {
+        updateBody.handmadeInfo = {
+          productionStart: productionStart || null,
+          productionEnd: productionEnd || null,
+          notes: notes || null,
+        };
+        if (selectedMaterials.length > 0) {
+          updateBody.materialIds = selectedMaterials.map((m) => m.id);
+        }
+      }
+
+      if (selectedTags.length > 0) {
+        updateBody.tagIds = selectedTags.map((t) => t.id);
+      }
+
+      const res = await fetch(`/api/items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateBody),
+      });
+      if (!res.ok) throw new Error(`保存に失敗しました: ${res.status}`);
+      goto(`/items/${itemId}`);
+    } catch (e) {
+      console.error('saveAndFinish failed:', e);
+      toast.error('保存に失敗しました');
+    } finally {
+      isSaving = false;
     }
-
-    if (selectedTags.length > 0) {
-      updateBody.tagIds = selectedTags.map((t) => t.id);
-    }
-
-    await fetch(`/api/items/${itemId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updateBody),
-    });
-
-    goto(`/items/${itemId}`);
   }
 
   async function createTag(tagName: string): Promise<{ id: string; name: string }> {
@@ -103,6 +149,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: tagName }),
     });
+    if (!res.ok) throw new Error(`タグ作成失敗: ${res.status}`);
     return (await res.json()) as { id: string; name: string };
   }
 
@@ -112,33 +159,65 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: materialName }),
     });
+    if (!res.ok) throw new Error(`素材作成失敗: ${res.status}`);
     return (await res.json()) as { id: string; name: string };
   }
 </script>
 
 <div class="max-w-md mx-auto p-4">
+  <!-- ヘッダー -->
+  <div class="flex items-center justify-between mb-3">
+    <span class="text-sm text-muted-foreground">新規登録</span>
+    <button
+      class="text-sm text-muted-foreground hover:text-destructive transition-colors"
+      onclick={cancelWizard}
+    >✕ キャンセル</button>
+  </div>
+
   <!-- プログレスバー -->
-  <div class="flex gap-1 mb-6">
+  <div class="flex gap-1 mb-3">
     {#each steps as s, i}
       <div class="flex-1 h-1 rounded-full {i <= stepIndex ? 'bg-primary' : 'bg-muted'}"></div>
     {/each}
   </div>
 
+  <!-- 前のステップの選択内容サマリ -->
+  {#if stepIndex > 0}
+    <div class="flex flex-wrap gap-2 mb-4 text-xs text-muted-foreground">
+      {#if uploadedPhotos.length > 0}
+        <span class="border rounded-full px-2 py-0.5">📷 {uploadedPhotos.length}枚</span>
+      {/if}
+      {#if stepIndex > 1 && (name || series)}
+        <span class="border rounded-full px-2 py-0.5"
+          >📝 {[name, series].filter(Boolean).join(' / ')}</span
+        >
+      {/if}
+      {#if stepIndex > 2 && isHandmade !== null}
+        <span class="border rounded-full px-2 py-0.5"
+          >{isHandmade === 0 ? '🛒 購入品' : '🎨 自作品'}</span
+        >
+      {/if}
+    </div>
+  {/if}
+
   {#if step === 'photo'}
     <h2 class="text-lg font-semibold mb-4">写真を追加</h2>
 
-    {#if showPhotoUploader && itemId}
-      <PhotoUploader {itemId} onUploaded={handlePhotoUploaded} />
-    {:else}
-      <button
-        class="w-full border-2 border-dashed rounded-lg p-8 text-center hover:bg-accent transition-colors"
-        onclick={async () => {
-          await ensureItem();
-          showPhotoUploader = true;
-        }}
-      >
-        📷 写真を選ぶ（複数可）
-      </button>
+    <PhotoUploader
+      {itemId}
+      {itemCreated}
+      onUploaded={handlePhotoUploaded}
+      onSystemError={handleSystemError}
+    />
+
+    {#if uploadedPhotos.length > 0}
+      <div class="mt-3 grid grid-cols-4 gap-2">
+        {#each uploadedPhotos as photo}
+          <div class="aspect-square rounded-lg overflow-hidden bg-muted">
+            <img src={photo.thumbViewUrl} alt="" class="w-full h-full object-cover" />
+          </div>
+        {/each}
+      </div>
     {/if}
 
     <div class="mt-4 flex gap-2">
@@ -180,7 +259,10 @@
         class="w-full border rounded-xl p-4 text-left hover:bg-accent {isHandmade === 0
           ? 'border-primary'
           : ''}"
-        onclick={() => (isHandmade = 0)}
+        onclick={() => {
+          isHandmade = 0;
+          step = 'details';
+        }}
       >
         🛒 <strong>購入品</strong><br /><span class="text-sm text-muted-foreground"
           >店舗・EC・イベントで入手</span
@@ -190,7 +272,10 @@
         class="w-full border rounded-xl p-4 text-left hover:bg-accent {isHandmade === 1
           ? 'border-primary'
           : ''}"
-        onclick={() => (isHandmade = 1)}
+        onclick={() => {
+          isHandmade = 1;
+          step = 'details';
+        }}
       >
         🎨 <strong>自作品</strong><br /><span class="text-sm text-muted-foreground"
           >造形・塗装・改造など</span
@@ -200,12 +285,6 @@
     <div class="mt-4 flex gap-2">
       <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'basic')}>← 戻る</button>
       <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'tags')}>スキップ</button>
-      {#if isHandmade !== null}
-        <button
-          class="flex-1 bg-primary text-primary-foreground rounded-lg py-2"
-          onclick={() => (step = 'details')}
-        >次へ →</button>
-      {/if}
     </div>
 
   {:else if step === 'details'}
@@ -303,8 +382,9 @@
       >← 戻る</button>
       <button
         class="flex-1 bg-primary text-primary-foreground rounded-lg py-2"
+        disabled={isSaving}
         onclick={saveAndFinish}
-      >完了 ✓</button>
+      >{isSaving ? '保存中...' : '完了 ✓'}</button>
     </div>
   {/if}
 </div>
