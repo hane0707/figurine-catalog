@@ -9,7 +9,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
   const db = getDb(platform!.env.DB);
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-  const id = generateId();
+  const id = (body.id as string | undefined) ?? generateId();
   const now = new Date().toISOString();
 
   await db.insert(items).values({
