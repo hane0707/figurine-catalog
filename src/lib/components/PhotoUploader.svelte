@@ -17,7 +17,7 @@
     onUploaded: (
       photo: { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string },
       isFirst: boolean,
-    ) => void;
+    ) => void | Promise<void>;
     onSystemError: () => void;
   } = $props();
 
@@ -92,7 +92,7 @@
 
           await Promise.all([uploadWithRetry(origUrl, file), uploadWithRetry(thumbUrl, thumb)]);
 
-          onUploaded(
+          await onUploaded(
             { id: photoId, r2KeyOrig: origKey, r2KeyThumb: thumbKey, thumbViewUrl },
             !itemCreated,
           );
