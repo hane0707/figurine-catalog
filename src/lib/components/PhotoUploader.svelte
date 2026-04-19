@@ -4,23 +4,45 @@
   import { generateId } from '$lib/utils/uuid';
   import { toast } from 'svelte-sonner';
 
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
   let {
     itemId,
+    itemCreated,
     onUploaded,
+    onSystemError,
   }: {
     itemId: string;
-    onUploaded: (photo: { id: string; r2KeyOrig: string; r2KeyThumb: string }) => void;
+    itemCreated: boolean;
+    onUploaded: (
+      photo: { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string },
+      isFirst: boolean,
+    ) => void;
+    onSystemError: () => void;
   } = $props();
 
   let uploading = $state(false);
   let fileInput: HTMLInputElement;
 
+  function classifyError(e: unknown, status?: number): 'system' | 'file' {
+    if (e instanceof TypeError) return 'system';
+    if (status === 413) return 'file';
+    if (status === 403 || (status !== undefined && status >= 500)) return 'system';
+    return 'system';
+  }
+
   async function uploadWithRetry(url: string, blob: Blob, maxRetries = 3): Promise<void> {
     for (let i = 0; i < maxRetries; i++) {
       try {
-        const res = await fetch(url, { method: 'PUT', body: blob, headers: { 'Content-Type': blob.type } });
+        const res = await fetch(url, {
+          method: 'PUT',
+          body: blob,
+          headers: { 'Content-Type': blob.type },
+        });
         if (res.ok) return;
-        throw new Error(`HTTP ${res.status}`);
+        const err = new Error(`HTTP ${res.status}`);
+        (err as any).status = res.status;
+        throw err;
       } catch (e) {
         if (i === maxRetries - 1) throw e;
         await new Promise((r) => setTimeout(r, 500 * (i + 1)));
@@ -33,6 +55,12 @@
     const limited = Array.from(files).slice(0, 20);
 
     for (const file of limited) {
+      // ファイルサイズチェック（ファイル固有エラー）
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`${file.name} はサイズが大きすぎます（上限20MB）`);
+        continue;
+      }
+
       const photoId = generateId();
       try {
         const presignRes = await fetch('/api/photos/presign', {
@@ -40,29 +68,38 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ itemId, photoId, contentType: file.type }),
         });
-        const { origUrl, thumbUrl, origKey, thumbKey } = await presignRes.json() as {
-          origUrl: string;
-          thumbUrl: string;
-          origKey: string;
-          thumbKey: string;
-        };
+        if (!presignRes.ok) {
+          const err = new Error(`HTTP ${presignRes.status}`);
+          (err as any).status = presignRes.status;
+          throw err;
+        }
+        const { origUrl, thumbUrl, origKey, thumbKey, thumbViewUrl } =
+          (await presignRes.json()) as {
+            origUrl: string;
+            thumbUrl: string;
+            origKey: string;
+            thumbKey: string;
+            thumbViewUrl: string;
+          };
 
         const thumb = await resizeImage(file, 400);
 
-        await Promise.all([
-          uploadWithRetry(origUrl, file),
-          uploadWithRetry(thumbUrl, thumb),
-        ]);
+        await Promise.all([uploadWithRetry(origUrl, file), uploadWithRetry(thumbUrl, thumb)]);
 
-        await fetch(`/api/photos/${photoId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId, r2KeyOrig: origKey, r2KeyThumb: thumbKey }),
-        });
-
-        onUploaded({ id: photoId, r2KeyOrig: origKey, r2KeyThumb: thumbKey });
-      } catch {
-        toast.error(`${file.name} のアップロードに失敗しました`);
+        onUploaded(
+          { id: photoId, r2KeyOrig: origKey, r2KeyThumb: thumbKey, thumbViewUrl },
+          !itemCreated,
+        );
+      } catch (e) {
+        const status = (e as any)?.status as number | undefined;
+        const kind = classifyError(e, status);
+        console.error(`[PhotoUploader] ${file.name} upload failed (${kind}):`, e);
+        if (kind === 'system') {
+          onSystemError();
+          break; // システムエラーは以降も失敗するため中断
+        } else {
+          toast.error(`${file.name} のアップロードに失敗しました`);
+        }
       }
     }
 
