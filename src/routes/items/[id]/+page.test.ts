@@ -18,6 +18,10 @@ vi.mock('svelte-sonner', () => ({
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+beforeEach(() => {
+  mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
+});
+
 // テスト用アイテムデータ（購入品）
 const mockItem = {
   id: 'item-1',
