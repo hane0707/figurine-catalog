@@ -82,6 +82,7 @@
           productionEnd: editProductionEnd || null,
           notes: editNotes || null,
         };
+        body.materialIds = editMaterials.map((m) => m.id);
       }
       const res = await fetch(`/api/items/${item.id}`, {
         method: 'PATCH',
@@ -193,6 +194,16 @@
           <div class="flex gap-2">
             <input bind:value={editProductionStart} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
             <input bind:value={editProductionEnd} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground mb-1">使用素材</p>
+            <TagPicker
+              bind:selected={editMaterials}
+              suggestions={data.materials.all}
+              frequent={data.materials.frequent}
+              placeholder="素材を追加..."
+              onCreate={createMaterial}
+            />
           </div>
           <textarea bind:value={editNotes} placeholder="制作メモ・塗装記録" rows={3} class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground resize-none"></textarea>
         </div>
