@@ -2,6 +2,7 @@
   import type { PageData } from './$types';
   import { toast } from 'svelte-sonner';
   import { invalidateAll, goto } from '$app/navigation';
+  import TagPicker from '$lib/components/TagPicker.svelte';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
@@ -28,6 +29,8 @@
   let editProductionStart = $state('');
   let editProductionEnd = $state('');
   let editNotes = $state('');
+  let editTags = $state<{ id: string; name: string }[]>([]);
+  let editMaterials = $state<{ id: string; name: string }[]>([]);
 
   function startEdit() {
     editName = item.name ?? '';
@@ -46,6 +49,8 @@
     editProductionStart = item.handmadeInfo?.productionStart ?? '';
     editProductionEnd = item.handmadeInfo?.productionEnd ?? '';
     editNotes = item.handmadeInfo?.notes ?? '';
+    editTags = item.itemTags?.map((t: any) => t.tag) ?? [];
+    editMaterials = item.itemMaterials?.map((m: any) => m.material) ?? [];
     editing = true;
   }
 
@@ -61,6 +66,7 @@
         status: editStatus,
         isHandmade: editIsHandmade,
       };
+      body.tagIds = editTags.map((t) => t.id);
       if (editIsHandmade === 0) {
         body.purchaseInfo = {
           storeName: editStoreName || null,
@@ -92,6 +98,26 @@
     } finally {
       saving = false;
     }
+  }
+
+  async function createTag(tagName: string): Promise<{ id: string; name: string }> {
+    const res = await fetch('/api/tags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: tagName }),
+    });
+    if (!res.ok) throw new Error(`タグ作成失敗: ${res.status}`);
+    return (await res.json()) as { id: string; name: string };
+  }
+
+  async function createMaterial(materialName: string): Promise<{ id: string; name: string }> {
+    const res = await fetch('/api/materials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: materialName }),
+    });
+    if (!res.ok) throw new Error(`素材作成失敗: ${res.status}`);
+    return (await res.json()) as { id: string; name: string };
   }
 
   async function deleteItem() {
@@ -206,6 +232,18 @@
         />
         手放したアイテムとしてマーク
       </label>
+
+      <!-- タグ編集 -->
+      <div class="border rounded-xl p-3 space-y-2">
+        <p class="text-sm font-medium text-muted-foreground">タグ</p>
+        <TagPicker
+          bind:selected={editTags}
+          suggestions={data.allTags}
+          frequent={[]}
+          placeholder="タグを追加..."
+          onCreate={createTag}
+        />
+      </div>
     </div>
   {:else}
     <h1 class="text-2xl font-bold mb-1">{item.name ?? '名称未設定'}</h1>
