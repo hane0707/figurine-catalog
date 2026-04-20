@@ -5,6 +5,7 @@
   import { toast } from 'svelte-sonner';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
   import TagPicker from '$lib/components/TagPicker.svelte';
+  import SummaryCard from '$lib/components/SummaryCard.svelte';
   import { generateId } from '$lib/utils/uuid';
 
   let { data }: { data: PageData } = $props();
@@ -376,6 +377,24 @@
     </div>
 
   {:else if step === 'tags'}
+    <h2 class="text-lg font-semibold mb-4">入力内容の確認</h2>
+    <SummaryCard
+      {uploadedPhotos}
+      {name}
+      {series}
+      {isHandmade}
+      {storeName}
+      {eventName}
+      {purchaseDate}
+      {purchasePrice}
+      {maker}
+      {artistName}
+      {productionStart}
+      {productionEnd}
+      {selectedMaterials}
+      {notes}
+      onEdit={(s) => (step = s)}
+    />
     <h2 class="text-lg font-semibold mb-4">タグを設定</h2>
     <TagPicker
       bind:selected={selectedTags}
