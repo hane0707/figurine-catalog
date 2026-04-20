@@ -14,7 +14,7 @@
     productionEnd: string;
     selectedMaterials: { id: string; name: string }[];
     notes: string;
-    onEdit: (step: string) => void;
+    onEdit: (step: 'photo' | 'basic' | 'type' | 'details' | 'tags') => void;
   }
 
   let {
