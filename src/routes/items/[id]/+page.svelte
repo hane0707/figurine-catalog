@@ -16,6 +16,18 @@
   let editPurchaseInfoPublic = $state(0);
   let editHandmadeInfoPublic = $state(0);
   let editStatus = $state('owned');
+  let editIsHandmade = $state<number | null>(null);
+  // 購入情報
+  let editStoreName = $state('');
+  let editEventName = $state('');
+  let editPurchaseDate = $state('');
+  let editPurchasePrice = $state('');
+  let editMaker = $state('');
+  let editArtistName = $state('');
+  // 制作情報
+  let editProductionStart = $state('');
+  let editProductionEnd = $state('');
+  let editNotes = $state('');
 
   function startEdit() {
     editName = item.name ?? '';
@@ -24,23 +36,51 @@
     editPurchaseInfoPublic = item.purchaseInfoPublic;
     editHandmadeInfoPublic = item.handmadeInfoPublic;
     editStatus = item.status;
+    editIsHandmade = item.isHandmade;
+    editStoreName = item.purchaseInfo?.storeName ?? '';
+    editEventName = item.purchaseInfo?.eventName ?? '';
+    editPurchaseDate = item.purchaseInfo?.purchaseDate ?? '';
+    editPurchasePrice = item.purchaseInfo?.purchasePrice?.toString() ?? '';
+    editMaker = item.purchaseInfo?.maker ?? '';
+    editArtistName = item.purchaseInfo?.artistName ?? '';
+    editProductionStart = item.handmadeInfo?.productionStart ?? '';
+    editProductionEnd = item.handmadeInfo?.productionEnd ?? '';
+    editNotes = item.handmadeInfo?.notes ?? '';
     editing = true;
   }
 
   async function saveEdit() {
     saving = true;
     try {
+      const body: Record<string, unknown> = {
+        name: editName || null,
+        series: editSeries || null,
+        isPublic: editIsPublic,
+        purchaseInfoPublic: editPurchaseInfoPublic,
+        handmadeInfoPublic: editHandmadeInfoPublic,
+        status: editStatus,
+        isHandmade: editIsHandmade,
+      };
+      if (editIsHandmade === 0) {
+        body.purchaseInfo = {
+          storeName: editStoreName || null,
+          eventName: editEventName || null,
+          purchaseDate: editPurchaseDate || null,
+          purchasePrice: editPurchasePrice ? Number(editPurchasePrice) : null,
+          maker: editMaker || null,
+          artistName: editArtistName || null,
+        };
+      } else if (editIsHandmade === 1) {
+        body.handmadeInfo = {
+          productionStart: editProductionStart || null,
+          productionEnd: editProductionEnd || null,
+          notes: editNotes || null,
+        };
+      }
       const res = await fetch(`/api/items/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editName || null,
-          series: editSeries || null,
-          isPublic: editIsPublic,
-          purchaseInfoPublic: editPurchaseInfoPublic,
-          handmadeInfoPublic: editHandmadeInfoPublic,
-          status: editStatus,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error(`保存失敗: ${res.status}`);
       await invalidateAll();
@@ -96,6 +136,42 @@
       <input bind:value={editName} placeholder="名前" class="w-full border rounded-lg px-3 py-2 text-xl font-bold bg-background text-foreground" />
       <input bind:value={editSeries} placeholder="シリーズ名" class="w-full border rounded-lg px-3 py-2 bg-background text-foreground" />
 
+      <!-- 種別 -->
+      <div class="flex gap-2">
+        <button
+          class="flex-1 border rounded-xl p-3 text-sm {editIsHandmade === 0 ? 'border-primary bg-accent' : ''}"
+          onclick={() => editIsHandmade = 0}
+        >🛒 購入品</button>
+        <button
+          class="flex-1 border rounded-xl p-3 text-sm {editIsHandmade === 1 ? 'border-primary bg-accent' : ''}"
+          onclick={() => editIsHandmade = 1}
+        >🎨 自作品</button>
+      </div>
+
+      <!-- 購入情報 -->
+      {#if editIsHandmade === 0}
+        <div class="border rounded-xl p-3 space-y-2">
+          <p class="text-sm font-medium text-muted-foreground">購入情報</p>
+          <input bind:value={editStoreName} placeholder="店舗名 / ECサイト名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+          <input bind:value={editEventName} placeholder="イベント名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+          <div class="flex gap-2">
+            <input bind:value={editPurchaseDate} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+            <input bind:value={editPurchasePrice} type="number" placeholder="金額 ¥" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+          </div>
+          <input bind:value={editMaker} placeholder="メーカー名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+          <input bind:value={editArtistName} placeholder="作家名・原型師名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+        </div>
+      {:else if editIsHandmade === 1}
+        <div class="border rounded-xl p-3 space-y-2">
+          <p class="text-sm font-medium text-muted-foreground">制作情報</p>
+          <div class="flex gap-2">
+            <input bind:value={editProductionStart} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+            <input bind:value={editProductionEnd} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+          </div>
+          <textarea bind:value={editNotes} placeholder="制作メモ・塗装記録" rows={3} class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground resize-none"></textarea>
+        </div>
+      {/if}
+
       <!-- 公開設定 -->
       <div class="border rounded-xl p-4 space-y-2">
         <label class="flex items-center gap-2">
@@ -142,44 +218,44 @@
     {#if item.status === 'parted'}
       <span class="inline-block text-xs border rounded-full px-3 py-1 mb-2 text-muted-foreground">手放し済み</span>
     {/if}
+
+    <!-- 購入情報 -->
+    {#if item.purchaseInfo && item.isHandmade === 0}
+      <div class="border rounded-xl p-4 mb-4">
+        <h3 class="font-semibold mb-2">購入情報</h3>
+        {#if item.purchaseInfo.storeName}<p class="text-sm">店舗: {item.purchaseInfo.storeName}</p>{/if}
+        {#if item.purchaseInfo.eventName}<p class="text-sm">イベント: {item.purchaseInfo.eventName}</p>{/if}
+        {#if item.purchaseInfo.purchaseDate}<p class="text-sm">購入日: {item.purchaseInfo.purchaseDate}</p>{/if}
+        {#if item.purchaseInfo.purchasePrice !== null}<p class="text-sm">金額: ¥{item.purchaseInfo.purchasePrice?.toLocaleString()}</p>{/if}
+        {#if item.purchaseInfo.maker}<p class="text-sm">メーカー: {item.purchaseInfo.maker}</p>{/if}
+        {#if item.purchaseInfo.artistName}<p class="text-sm">作家: {item.purchaseInfo.artistName}</p>{/if}
+      </div>
+    {/if}
+
+    <!-- 制作情報 -->
+    {#if item.handmadeInfo && item.isHandmade === 1}
+      <div class="border rounded-xl p-4 mb-4">
+        <h3 class="font-semibold mb-2">制作情報</h3>
+        {#if item.handmadeInfo.productionStart}<p class="text-sm">開始: {item.handmadeInfo.productionStart}</p>{/if}
+        {#if item.handmadeInfo.productionEnd}<p class="text-sm">完成: {item.handmadeInfo.productionEnd}</p>{/if}
+        {#if item.itemMaterials?.length}
+          <p class="text-sm mt-2">素材: {item.itemMaterials.map((m: any) => m.material.name).join(', ')}</p>
+        {/if}
+        {#if item.handmadeInfo.notes}<p class="text-sm mt-2 whitespace-pre-wrap">{item.handmadeInfo.notes}</p>{/if}
+      </div>
+    {/if}
+
+    <!-- タグ -->
+    {#if item.itemTags?.length}
+      <div class="flex flex-wrap gap-2 mt-2">
+        {#each item.itemTags as t}
+          <span class="text-xs border rounded-full px-3 py-1">{(t as any).tag.name}</span>
+        {/each}
+      </div>
+    {/if}
   {/if}
 
-  <!-- 購入情報 -->
-  {#if item.purchaseInfo && item.isHandmade === 0}
-    <div class="border rounded-xl p-4 mb-4">
-      <h3 class="font-semibold mb-2">購入情報</h3>
-      {#if item.purchaseInfo.storeName}<p class="text-sm">店舗: {item.purchaseInfo.storeName}</p>{/if}
-      {#if item.purchaseInfo.eventName}<p class="text-sm">イベント: {item.purchaseInfo.eventName}</p>{/if}
-      {#if item.purchaseInfo.purchaseDate}<p class="text-sm">購入日: {item.purchaseInfo.purchaseDate}</p>{/if}
-      {#if item.purchaseInfo.purchasePrice !== null}<p class="text-sm">金額: ¥{item.purchaseInfo.purchasePrice?.toLocaleString()}</p>{/if}
-      {#if item.purchaseInfo.maker}<p class="text-sm">メーカー: {item.purchaseInfo.maker}</p>{/if}
-      {#if item.purchaseInfo.artistName}<p class="text-sm">作家: {item.purchaseInfo.artistName}</p>{/if}
-    </div>
-  {/if}
-
-  <!-- 制作情報 -->
-  {#if item.handmadeInfo && item.isHandmade === 1}
-    <div class="border rounded-xl p-4 mb-4">
-      <h3 class="font-semibold mb-2">制作情報</h3>
-      {#if item.handmadeInfo.productionStart}<p class="text-sm">開始: {item.handmadeInfo.productionStart}</p>{/if}
-      {#if item.handmadeInfo.productionEnd}<p class="text-sm">完成: {item.handmadeInfo.productionEnd}</p>{/if}
-      {#if item.itemMaterials?.length}
-        <p class="text-sm mt-2">素材: {item.itemMaterials.map((m: any) => m.material.name).join(', ')}</p>
-      {/if}
-      {#if item.handmadeInfo.notes}<p class="text-sm mt-2 whitespace-pre-wrap">{item.handmadeInfo.notes}</p>{/if}
-    </div>
-  {/if}
-
-  <!-- タグ -->
-  {#if item.itemTags?.length}
-    <div class="flex flex-wrap gap-2 mt-2">
-      {#each item.itemTags as t}
-        <span class="text-xs border rounded-full px-3 py-1">{(t as any).tag.name}</span>
-      {/each}
-    </div>
-  {/if}
-
-  <!-- 全写真 -->
+  <!-- 全写真グリッド（常に表示） -->
   {#if item.photos.length > 1}
     <div class="mt-6 grid grid-cols-3 gap-2">
       {#each item.photos as photo}
