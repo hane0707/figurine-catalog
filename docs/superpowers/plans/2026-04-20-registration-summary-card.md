@@ -376,7 +376,7 @@ git commit -m "feat: SummaryCardコンポーネントを追加"
 `src/routes/items/new/+page.svelte` のテストはまだ存在しないため新規作成する。
 
 ```typescript
-// src/routes/items/new/+page.test.ts
+// src/routes/items/new/page.test.ts
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Page from './+page.svelte';
@@ -542,7 +542,7 @@ npm test
 
 ```bash
 cd /home/haku/projects/figurine-catalog
-git add src/routes/items/new/+page.svelte src/routes/items/new/+page.test.ts
+git add src/routes/items/new/+page.svelte src/routes/items/new/page.test.ts
 git commit -m "feat: 新規登録tagsステップにサマリーカードを表示"
 ```
 
