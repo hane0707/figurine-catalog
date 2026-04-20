@@ -196,7 +196,7 @@
             <input bind:value={editProductionEnd} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
           </div>
           <div>
-            <p class="text-xs text-muted-foreground mb-1">使用素材</p>
+            <p class="text-sm font-medium text-muted-foreground">使用素材</p>
             <TagPicker
               bind:selected={editMaterials}
               suggestions={data.materials.all}
