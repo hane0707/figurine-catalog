@@ -1,5 +1,5 @@
 // src/routes/items/new/+page.test.ts
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Page from './+page.svelte';
 
@@ -12,6 +12,13 @@ vi.mock('svelte-sonner', () => ({
 vi.mock('$lib/utils/uuid', () => ({
   generateId: () => 'test-item-id',
 }));
+
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+beforeEach(() => {
+  mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
+});
 
 const mockData = {
   allTags: [],
