@@ -53,7 +53,7 @@
     {:else}
       <div class="grid grid-cols-4 gap-1">
         {#each uploadedPhotos.slice(0, 4) as photo (photo.id)}
-          <img src={photo.thumbViewUrl} alt="thumbnail" class="w-full aspect-square object-cover" />
+          <img src={photo.thumbViewUrl} alt="" class="w-full aspect-square object-cover" />
         {/each}
       </div>
       <span>{uploadedPhotos.length}枚</span>
