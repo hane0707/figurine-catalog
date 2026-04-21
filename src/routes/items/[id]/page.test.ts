@@ -50,20 +50,21 @@ const mockData = {
     all: [{ id: 'mat-1', name: 'レジン', isPreset: 1 }],
     frequent: [{ id: 'mat-1', name: 'レジン', isPreset: 1 }],
   },
+  user: { email: 'test@example.com' },
 };
 
 describe('編集画面: 表示/編集の二重表示', () => {
   it('非編集時は購入情報の表示ブロックが表示される', () => {
     render(Page, { data: mockData });
-    expect(screen.getByText('購入情報')).toBeInTheDocument();
+    expect(screen.getByText('Source')).toBeInTheDocument();
   });
 
   it('編集時は購入情報の表示ブロックが非表示になる', async () => {
     render(Page, { data: mockData });
-    await fireEvent.click(screen.getByText('編集'));
-    // 表示用の h3「購入情報」は非表示になるべき
-    const headings = screen.queryAllByRole('heading', { name: '購入情報' });
-    expect(headings).toHaveLength(0);
+    const editButton = screen.getAllByText('編集')[0];
+    await fireEvent.click(editButton);
+    // 表示用の「Source」は非表示になるべき
+    expect(screen.queryByText('Source')).not.toBeInTheDocument();
   });
 });
 
@@ -75,13 +76,15 @@ describe('編集画面: タグ編集', () => {
 
   it('編集時はタグ編集UIが表示される', async () => {
     render(Page, { data: mockData });
-    await fireEvent.click(screen.getByText('編集'));
+    const editButton = screen.getAllByText('編集')[0];
+    await fireEvent.click(editButton);
     expect(screen.getByPlaceholderText('タグを追加...')).toBeInTheDocument();
   });
 
   it('編集開始時に既存タグが editTags に反映されている', async () => {
     render(Page, { data: mockData });
-    await fireEvent.click(screen.getByText('編集'));
+    const editButton = screen.getAllByText('編集')[0];
+    await fireEvent.click(editButton);
     // TagPicker の selected バッジに既存タグが表示される
     expect(screen.getByText(/既存タグ\s*✕/)).toBeInTheDocument();
   });
@@ -106,13 +109,15 @@ describe('編集画面: 素材編集（自作品）', () => {
 
   it('自作品の編集時は素材編集UIが表示される', async () => {
     render(Page, { data: handmadeData });
-    await fireEvent.click(screen.getByText('編集'));
+    const editButton = screen.getAllByText('編集')[0];
+    await fireEvent.click(editButton);
     expect(screen.getByPlaceholderText('素材を追加...')).toBeInTheDocument();
   });
 
   it('編集開始時に既存素材が editMaterials に反映されている', async () => {
     render(Page, { data: handmadeData });
-    await fireEvent.click(screen.getByText('編集'));
+    const editButton = screen.getAllByText('編集')[0];
+    await fireEvent.click(editButton);
     expect(screen.getByText(/レジン\s*✕/)).toBeInTheDocument();
   });
 });
