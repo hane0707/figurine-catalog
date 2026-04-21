@@ -19,6 +19,7 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 beforeEach(() => {
+  vi.clearAllMocks();
   mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
 });
 

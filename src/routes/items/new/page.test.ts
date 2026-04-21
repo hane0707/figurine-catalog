@@ -26,28 +26,6 @@ const mockData = {
   user: { email: 'test@example.com' },
 };
 
-async function advanceToTags() {
-  render(Page, { data: mockData });
-  // photo → basic（次へ）
-  let buttons = screen.getAllByRole('button');
-  let nextBtn = buttons.find(btn => btn.textContent.includes('次へ'));
-  if (nextBtn) await fireEvent.click(nextBtn);
-
-  // basic → type（次へ）
-  buttons = screen.getAllByRole('button');
-  nextBtn = buttons.find(btn => btn.textContent.includes('次へ'));
-  if (nextBtn) await fireEvent.click(nextBtn);
-
-  // type → details（購入品を選択）
-  const boughtButton = screen.getAllByText('購入品').find(btn => btn.tagName === 'BUTTON');
-  if (boughtButton) await fireEvent.click(boughtButton);
-
-  // details → tags（次へ）
-  buttons = screen.getAllByRole('button');
-  nextBtn = buttons.find(btn => btn.textContent.includes('次へ'));
-  if (nextBtn) await fireEvent.click(nextBtn);
-}
-
 describe('新規登録ウィザード: ページレンダリング', () => {
   it('userが設定されていればページが表示される', () => {
     render(Page, { data: mockData });
