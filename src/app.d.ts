@@ -3,7 +3,9 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			user?: { email: string };
+		}
 		// interface PageData {}
 		// interface PageState {}
 		interface Platform {
@@ -15,6 +17,7 @@ declare global {
 				R2_SECRET_ACCESS_KEY: string;
 				R2_BUCKET_NAME: string;
 				R2_KEY_PREFIX?: string; // 例: "dev"（ローカル開発時）/ ""（本番）
+				DEV_ADMIN_EMAIL?: string; // ローカル開発用認証バイパス
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };
