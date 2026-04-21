@@ -1,15 +1,19 @@
 import type { Handle } from '@sveltejs/kit';
 
-const CERTS_CACHE = new Map<string, { keys: JsonWebKey[]; cachedAt: number }>();
+interface CfJwk extends JsonWebKey {
+  kid?: string;
+}
+
+const CERTS_CACHE = new Map<string, { keys: CfJwk[]; cachedAt: number }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10分
 
-async function fetchCfPublicKeys(teamDomain: string): Promise<JsonWebKey[]> {
+async function fetchCfPublicKeys(teamDomain: string): Promise<CfJwk[]> {
   const cached = CERTS_CACHE.get(teamDomain);
   if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) return cached.keys;
 
   const res = await fetch(`https://${teamDomain}.cloudflareaccess.com/cdn-cgi/access/certs`);
   if (!res.ok) return [];
-  const data = await res.json() as { keys: JsonWebKey[] };
+  const data = await res.json() as { keys: CfJwk[] };
   CERTS_CACHE.set(teamDomain, { keys: data.keys, cachedAt: Date.now() });
   return data.keys;
 }
@@ -31,7 +35,7 @@ async function verifyCfJwt(
 
   // 公開鍵一覧を取得
   const jwks = await fetchCfPublicKeys(teamDomain);
-  const jwk = (kid ? jwks.find((k: JsonWebKey) => (k as any).kid === kid) : jwks[0]) ?? null;
+  const jwk = (kid ? (jwks as CfJwk[]).find(k => k.kid === kid) : jwks[0]) ?? null;
   if (!jwk) return null;
 
   try {
@@ -64,7 +68,7 @@ async function verifyCfJwt(
     if (!audiences.includes(aud)) return null;
 
     // 有効期限検証
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+    if (payload.exp === undefined || payload.exp < Math.floor(Date.now() / 1000)) return null;
 
     return { email: payload.email };
   } catch {
@@ -104,6 +108,7 @@ export const handle: Handle = async ({ event, resolve }) => {
       claims = await verifyCfJwt(cfJwt, aud, teamDomain);
     } else {
       // 署名検証なし（CF_ACCESS_AUD 未設定時のフォールバック）
+      console.warn('[auth] CF_ACCESS_AUD/CF_ACCESS_TEAM_DOMAIN 未設定のため署名検証をスキップ');
       claims = unsafeDecode(cfJwt);
     }
 
