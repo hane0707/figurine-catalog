@@ -18,6 +18,8 @@ declare global {
 				R2_BUCKET_NAME: string;
 				R2_KEY_PREFIX?: string; // 例: "dev"（ローカル開発時）/ ""（本番）
 				DEV_ADMIN_EMAIL?: string; // ローカル開発用認証バイパス
+				CF_ACCESS_AUD?: string;        // CF Access Application Audience Tag
+				CF_ACCESS_TEAM_DOMAIN?: string; // CF Access チームドメイン（例: "myteam"）
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };
