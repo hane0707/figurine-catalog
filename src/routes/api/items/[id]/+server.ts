@@ -22,7 +22,8 @@ export const GET: RequestHandler = async ({ params, platform }) => {
   return json(item);
 };
 
-export const PATCH: RequestHandler = async ({ params, request, platform }) => {
+export const PATCH: RequestHandler = async ({ params, request, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const body = await request.json() as Record<string, unknown>;
   const now = new Date().toISOString();
@@ -94,7 +95,8 @@ export const PATCH: RequestHandler = async ({ params, request, platform }) => {
   return json({ ok: true });
 };
 
-export const DELETE: RequestHandler = async ({ params, platform }) => {
+export const DELETE: RequestHandler = async ({ params, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const env = platform!.env;
 

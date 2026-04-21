@@ -5,7 +5,8 @@ import { getDb, photos } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { deleteR2Object } from '$lib/server/r2';
 
-export const POST: RequestHandler = async ({ params, request, platform }) => {
+export const POST: RequestHandler = async ({ params, request, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const body = await request.json() as { itemId: string; r2KeyOrig: string; r2KeyThumb: string; sortOrder?: number };
   const { itemId, r2KeyOrig, r2KeyThumb, sortOrder } = body;
@@ -25,7 +26,8 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
   return json({ ok: true }, { status: 201 });
 };
 
-export const DELETE: RequestHandler = async ({ params, platform }) => {
+export const DELETE: RequestHandler = async ({ params, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const env = platform!.env;
 

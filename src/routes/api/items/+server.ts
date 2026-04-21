@@ -1,11 +1,14 @@
 // src/routes/api/items/+server.ts
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDb, items, photos, itemTags } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
+import { items, photos, itemTags } from '$lib/server/db/schema';
 import { generateId } from '$lib/utils/uuid';
 import { getPresignedGetUrl } from '$lib/server/r2';
+import { eq, like, and, or, inArray, exists, sql, desc, asc } from 'drizzle-orm';
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
 
@@ -37,10 +40,10 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   const q = url.searchParams.get('q') ?? '';
   const tagsParam = url.searchParams.get('tags') ?? '';
   const tagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
+  const kind = url.searchParams.get('kind') ?? 'all'; // all | bought | handmade
+  const sort = url.searchParams.get('sort') ?? 'recent'; // recent | oldest
 
-  const { eq, like, and, or, inArray, exists, sql, desc } = await import('drizzle-orm');
-
-  // タグフィルタのサブクエリ（tagIds が指定されていれば）
+  // タグフィルタ
   const tagFilter = tagIds.length > 0
     ? exists(
         db.select({ one: sql`1` })
@@ -49,11 +52,18 @@ export const GET: RequestHandler = async ({ url, platform }) => {
       )
     : undefined;
 
+  // 種別フィルタ
+  const kindFilter =
+    kind === 'bought' ? eq(items.isHandmade, 0) :
+    kind === 'handmade' ? eq(items.isHandmade, 1) :
+    undefined;
+
   const rows = await db
     .select({
       id: items.id,
       name: items.name,
       series: items.series,
+      isHandmade: items.isHandmade,
       status: items.status,
       isPublic: items.isPublic,
       createdAt: items.createdAt,
@@ -66,18 +76,19 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         eq(items.status, status),
         q ? or(like(items.name, `%${q}%`), like(items.series, `%${q}%`)) : undefined,
         tagFilter,
+        kindFilter,
       )
     )
-    .orderBy(desc(items.createdAt))
+    .orderBy(sort === 'oldest' ? asc(items.createdAt) : desc(items.createdAt))
     .limit(limit)
     .offset(offset);
 
-  // presigned URLを生成
   const itemsWithUrls = await Promise.all(
     rows.map(async (row) => ({
       id: row.id,
       name: row.name,
       series: row.series,
+      isHandmade: row.isHandmade,
       status: row.status,
       isPublic: row.isPublic,
       createdAt: row.createdAt,

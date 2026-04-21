@@ -1,5 +1,5 @@
 // src/routes/api/materials/+server.ts
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb, materials, itemMaterials } from '$lib/server/db';
 import { eq, sql, desc } from 'drizzle-orm';
@@ -26,7 +26,8 @@ export const GET: RequestHandler = async ({ platform }) => {
   return json({ frequent, all });
 };
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const { name } = await request.json() as { name: string };
   const normalized = name.trim();
