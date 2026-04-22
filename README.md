@@ -20,45 +20,61 @@
 
 初回のみ必要な手順です。
 
+> **D1（データベース）はローカルで完結します。** `wrangler dev` が自動でローカル SQLite を作成するため、Cloudflare への D1 作成は不要です。
+> **必要なのは R2 の認証情報のみ**（写真のアップロード・表示に使用）。
+
 ### 1. 依存パッケージのインストール
 
 ```bash
 npm install
 ```
 
-### 2. Cloudflare にログイン
+### 2. ローカル D1 にマイグレーション適用
 
 ```bash
-npx wrangler login
-# ブラウザが開くので許可する
-```
-
-### 3. D1 データベースを作成
-
-```bash
-npx wrangler d1 create figurine-catalog-db
-```
-
-出力に `database_id = "xxxx-xxxx-xxxx"` が表示されるので、`wrangler.toml` を更新：
-
-```toml
-# wrangler.toml
-database_id = "ここに貼り付ける"
-```
-
-### 4. ローカル D1 にマイグレーション適用
-
-```bash
+# Cloudflare へのログイン・D1 作成は不要
+# .wrangler/state/d1/ 以下にローカル SQLite が自動生成される
 npx wrangler d1 migrations apply figurine-catalog-db --local
 ```
 
-### 5. R2 バケットを作成
+### 3. R2 バケットを作成
 
 ```bash
+npx wrangler login   # ブラウザでCloudflareにログイン
 npx wrangler r2 bucket create figurine-catalog-photos
 ```
 
-### 6. R2 API トークンを取得
+> 既にバケットが存在する場合はスキップ。
+
+### 4. R2 バケットに CORS ポリシーを設定
+
+ブラウザから R2 に直接アップロードするため、CORS の許可が必要です。
+
+```bash
+cat > /tmp/cors.json << 'EOF'
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "http://localhost:8788",
+          "http://localhost:5173"
+        ],
+        "methods": ["PUT", "GET"],
+        "headers": ["Content-Type", "x-amz-*", "x-id"]
+      },
+      "exposeHeaders": [],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}
+EOF
+npx wrangler r2 bucket cors set figurine-catalog-photos --file /tmp/cors.json
+```
+
+> **本番デプロイ後:** `AllowedOrigins` に本番ドメイン（例：`https://figurine-catalog.pages.dev`）を追加して再適用すること。
+
+### 5. R2 API トークンを取得
 
 [Cloudflare ダッシュボード](https://dash.cloudflare.com/) → R2 → **Manage R2 API Tokens** → **Create API Token**
 
@@ -67,7 +83,7 @@ npx wrangler r2 bucket create figurine-catalog-photos
 
 `Access Key ID` と `Secret Access Key` が表示されるのでメモしておく（再表示不可）。
 
-### 7. シークレットファイルを作成
+### 6. シークレットファイルを作成
 
 ```bash
 cp .dev.vars.example .dev.vars
@@ -78,42 +94,42 @@ cp .dev.vars.example .dev.vars
 ```bash
 # .dev.vars
 CLOUDFLARE_ACCOUNT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # ダッシュボード右下に表示
-R2_ACCESS_KEY_ID=（手順6で取得）
-R2_SECRET_ACCESS_KEY=（手順6で取得）
+R2_ACCESS_KEY_ID=（手順5で取得）
+R2_SECRET_ACCESS_KEY=（手順5で取得）
 R2_BUCKET_NAME=figurine-catalog-photos
 R2_KEY_PREFIX=dev   # ← ローカルデータを本番と分離するプレフィックス
+DEV_ADMIN_EMAIL=local@dev  # ← ローカル疑似認証用メール。セットされていると /admin でログインボタンが使えるようになる（デフォルトは未ログイン状態）
 ```
 
 > **CLOUDFLARE_ACCOUNT_ID の確認場所:**
 > ダッシュボード右サイドバー下部、または URL `https://dash.cloudflare.com/<ここがID>/...`
 
-> **セキュリティ:** `.dev.vars` は `.gitignore` 済みのためコミットされません。
-> Claude Code に読まれたくない場合は代わりにシェルで export する方法（下記参照）を使用してください。
-
-#### シェルの export を使う方法（より安全）
-
-```bash
-export CLOUDFLARE_ACCOUNT_ID="xxxx"
-export R2_ACCESS_KEY_ID="xxxx"
-export R2_SECRET_ACCESS_KEY="xxxx"
-export R2_BUCKET_NAME="figurine-catalog-photos"
-export R2_KEY_PREFIX="dev"
-npx wrangler dev
-```
-
-ターミナルを閉じると消えるため、ファイルに残りません。
+> **セキュリティ:** `.dev.vars` は `.gitignore` 済みのためコミットされません。また `.claudeignore` に追記済みのため Claude Code からも読み取られません。
+>
+> **注意:** シェルの `export` は `process.env` に入るため `platform.env`（Cloudflareバインディング）には反映されません。`wrangler pages dev` では `.dev.vars` への記入が唯一の方法です。
 
 ---
 
 ## 開発サーバー起動
 
-事前準備が完了したら：
+用途に応じて2通りの方法があります。
+
+### ① UIのみ確認（高速・HMRあり）
 
 ```bash
-npx wrangler dev
+npm run dev
 ```
 
-ブラウザで `http://localhost:8787` を開く。
+`http://localhost:5173` で起動。D1/R2バインディングは動作しないため、DBや写真機能は使えない。
+
+### ② D1/R2バインディングあり（本番に近い環境）
+
+```bash
+npm run build
+npx wrangler pages dev .svelte-kit/cloudflare
+```
+
+`http://localhost:8788` で起動。コード変更のたびに再ビルドが必要。
 
 > **ローカルのR2データについて:**
 > `R2_KEY_PREFIX=dev` を設定することで、アップロードした写真は R2 バケット内の `dev/items/...` 以下に保存され、本番データ（`items/...`）と混在しません。
@@ -154,7 +170,43 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 4. Pages の Settings → Environment variables でシークレットを設定（暗号化）
 5. Pages の Settings → Functions で D1・R2 バインディングを設定
 6. 本番 D1 にマイグレーション適用
-7. Cloudflare Access でアクセス制御を設定（`/items/*`, `/api/*` を保護）
+7. Cloudflare Access でアクセス制御を設定
+8. JWT 署名検証用の環境変数を設定（推奨）
+
+### 手順 7: Cloudflare Access の設定
+
+Access → Applications → **Add an Application** で Self-hosted アプリを作成し、書き込み操作を保護するパスを指定:
+
+- `https://your-domain.com/items`
+- `https://your-domain.com/items/*`
+- `https://your-domain.com/api/*`
+- `https://your-domain.com/admin`
+
+`/p/:id` のみ認証不要（公開ページ）。
+
+#### 許可するメールアドレスを設定
+
+Access → Applications → 該当アプリ → **Policies** → **Add a Policy**
+
+- Policy name: `Allow owner`
+- Action: `Allow`
+- Include: **Emails** → 自分の Google アカウントのメールアドレスを入力
+
+これで指定したメールアドレス以外は Google ログイン後も弾かれる。
+
+### 手順 8: JWT 署名検証の有効化（推奨）
+
+Cloudflare Access が付与する JWT をサーバー側で署名検証するために、以下の環境変数を Pages に追加する:
+
+```bash
+# wrangler.toml の [vars] に追記（非シークレット）
+# CF_ACCESS_TEAM_DOMAIN = "your-team"  ← your-team.cloudflareaccess.com の前半部分
+
+# シークレットとして登録（Cloudflare Access > Applications > 該当アプリ > Overview の AUD Tag）
+wrangler secret put CF_ACCESS_AUD --env production
+```
+
+> 未設定の場合は JWT の署名検証をスキップして base64 デコードのみ行うフォールバックモードで動作します（コンソールに警告が出力されます）。
 
 ```bash
 # 本番 D1 にマイグレーション適用
@@ -169,11 +221,16 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 |------|------|------|
 | `/items` | コレクション一覧 | 必要 |
 | `/items/new` | 新規登録ウィザード | 必要 |
-| `/items/:id` | アイテム詳細・編集 | 必要 |
+| `/items/:id` | アイテム詳細・編集・削除 | 必要 |
 | `/p/:id` | 公開ページ | 不要 |
-| `/admin` | `/items` へリダイレクト | 必要 |
+| `/admin` | devモード: ログインページ / 本番: `/items` へリダイレクト | devモードのみ不要 |
+| `/api/items` POST | アイテム作成 | 必要 |
+| `/api/items/:id` PATCH・DELETE | アイテム更新・削除 | 必要 |
+| `/api/photos/*` POST | 写真登録・署名付きURL発行 | 必要 |
+| `/api/tags` POST | タグ作成 | 必要 |
+| `/api/materials` POST | 素材作成 | 必要 |
 
-> 認証は Cloudflare Access（Google OAuth）でアプリの外側から制御。
+> **認証の仕組み:** `/items` 配下は `locals.user` がない場合 `/admin` へリダイレクト。書き込み系 API はサーバー側で `locals.user` を確認し、未認証なら 401 を返す。`locals.user` は Cloudflare Access の `CF_Authorization` cookie（JWT）から設定される。ローカル開発時は `.dev.vars` の `DEV_ADMIN_EMAIL` がセットされた状態で `/admin` のログインボタンを押すと認証済み扱いになる（`dev_logged_in` クッキーで管理）。
 
 ---
 
