@@ -88,10 +88,13 @@ function unsafeDecode(token: string): { email?: string } | null {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
-  // ローカル開発バイパス（DEV_ADMIN_EMAIL がセットされていれば認証済みとみなす）
+  // ローカル開発バイパス（DEV_ADMIN_EMAIL がセットされていて dev_logged_in=1 の場合のみ認証済みとみなす）
   const devEmail = event.platform?.env?.DEV_ADMIN_EMAIL;
   if (devEmail) {
-    event.locals.user = { email: devEmail };
+    const loggedIn = event.cookies.get('dev_logged_in');
+    if (loggedIn === '1') {
+      event.locals.user = { email: devEmail };
+    }
     return resolve(event);
   }
 
