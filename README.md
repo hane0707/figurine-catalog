@@ -177,7 +177,6 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 
 Access → Applications → **Add an Application** で Self-hosted アプリを作成し、書き込み操作を保護するパスを指定:
 
-- `https://your-domain.com/items`
 - `https://your-domain.com/items/*`
 - `https://your-domain.com/api/*`
 - `https://your-domain.com/admin`
@@ -219,7 +218,7 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 
 | パス | 説明 | 認証 |
 |------|------|------|
-| `/items` | コレクション一覧 | 必要 |
+| `/items` | コレクション一覧 | 不要（閲覧のみ） |
 | `/items/new` | 新規登録ウィザード | 必要 |
 | `/items/:id` | アイテム詳細・編集・削除 | 必要 |
 | `/p/:id` | 公開ページ | 不要 |
@@ -230,7 +229,7 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 | `/api/tags` POST | タグ作成 | 必要 |
 | `/api/materials` POST | 素材作成 | 必要 |
 
-> **認証の仕組み:** `/items` 配下は `locals.user` がない場合 `/admin` へリダイレクト。書き込み系 API はサーバー側で `locals.user` を確認し、未認証なら 401 を返す。`locals.user` は Cloudflare Access の `CF_Authorization` cookie（JWT）から設定される。ローカル開発時は `.dev.vars` の `DEV_ADMIN_EMAIL` がセットされた状態で `/admin` のログインボタンを押すと認証済み扱いになる（`dev_logged_in` クッキーで管理）。
+> **認証の仕組み:** `/items` は誰でも閲覧可能。`/items/new` および `/items/:id` は `locals.user` がない場合 `/admin` へリダイレクト。書き込み系 API はサーバー側で `locals.user` を確認し、未認証なら 401 を返す。`locals.user` は Cloudflare Access の `CF_Authorization` cookie（JWT）から設定される。ローカル開発時は `.dev.vars` の `DEV_ADMIN_EMAIL` がセットされた状態で `/admin` のログインボタンを押すと認証済み扱いになる（`dev_logged_in` クッキーで管理）。
 
 ---
 
