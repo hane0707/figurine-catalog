@@ -245,7 +245,7 @@
   {#if layout === 'grid'}
     <div class="items-grid rise rise-d4">
       {#each items as item (item.id)}
-        <ItemCard {item} />
+        <ItemCard {item} isOwner={!!data.user} />
       {/each}
       {#if data.user}
         <a href="/items/new" class="card --empty">
