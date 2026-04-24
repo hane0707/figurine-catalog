@@ -100,12 +100,25 @@ html, body {
   max-width: 1240px; margin: 0 auto;
   padding: 32px 40px 160px;
 }
-@media (max-width: 720px) { .app { padding: 20px 16px 140px; } }
+@media (max-width: 720px) {
+  .app { padding: 20px 16px 140px; }
+  .nav {
+    margin-left: -16px; margin-right: -16px;
+    padding-left: 16px; padding-right: 16px;
+  }
+}
 
 /* --- nav --- */
 .nav {
   display: flex; align-items: center;
   justify-content: space-between; margin-bottom: 56px;
+  position: sticky; top: 0; z-index: 100;
+  margin-left: -40px; margin-right: -40px;
+  padding-left: 40px; padding-right: 40px;
+  padding-top: 12px; padding-bottom: 12px;
+  background: rgba(240, 237, 248, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 .brand { display: flex; align-items: center; gap: 14px; }
 .brand-mark {
