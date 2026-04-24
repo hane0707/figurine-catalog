@@ -10,6 +10,7 @@
       isPublic: number;
       status: string;
       createdAt?: string | null;
+      tags?: { id: string; name: string }[];
     };
     isOwner?: boolean;
   } = $props();
@@ -40,6 +41,13 @@
   </div>
   <h3>{item.name ?? '名称未設定'}</h3>
   <p class="card-series">{item.series ?? '—'}</p>
+  {#if item.tags && item.tags.length > 0}
+    <div class="card-tags">
+      {#each item.tags as tag (tag.id)}
+        <span class="card-tag">{tag.name}</span>
+      {/each}
+    </div>
+  {/if}
   <div class={'card-meta ' + (item.isHandmade === 1 ? '' : '--haze')}>
     <span>
       <span class="dot"></span>
@@ -48,3 +56,22 @@
     <span class="mono" style="font-size:10px">{item.createdAt?.slice(0, 10) ?? ''}</span>
   </div>
 </a>
+
+<style>
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .card-tag {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-sunk);
+    color: var(--fg-soft);
+    box-shadow: var(--neu-inset);
+  }
+</style>

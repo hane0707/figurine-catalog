@@ -2,7 +2,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
-import { items, photos, itemTags } from '$lib/server/db/schema';
+import { items, photos, itemTags, tags } from '$lib/server/db/schema';
 import { generateId } from '$lib/utils/uuid';
 import { getPresignedGetUrl } from '$lib/server/r2';
 import { eq, like, and, or, inArray, exists, sql, desc, asc } from 'drizzle-orm';
@@ -99,5 +99,25 @@ export const GET: RequestHandler = async ({ url, platform, locals }) => {
     }))
   );
 
-  return json({ items: itemsWithUrls, offset, limit });
+  const itemIds = rows.map((r) => r.id);
+  const tagRows = itemIds.length > 0
+    ? await db
+        .select({ itemId: itemTags.itemId, tagId: tags.id, tagName: tags.name })
+        .from(itemTags)
+        .innerJoin(tags, eq(itemTags.tagId, tags.id))
+        .where(inArray(itemTags.itemId, itemIds))
+    : [];
+
+  const tagsByItemId = new Map<string, { id: string; name: string }[]>();
+  for (const r of tagRows) {
+    if (!tagsByItemId.has(r.itemId)) tagsByItemId.set(r.itemId, []);
+    tagsByItemId.get(r.itemId)!.push({ id: r.tagId, name: r.tagName });
+  }
+
+  const itemsWithTags = itemsWithUrls.map((item) => ({
+    ...item,
+    tags: tagsByItemId.get(item.id) ?? [],
+  }));
+
+  return json({ items: itemsWithTags, offset, limit });
 };
