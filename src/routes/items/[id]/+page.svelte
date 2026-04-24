@@ -1,7 +1,8 @@
+<!-- src/routes/items/[id]/+page.svelte -->
 <script lang="ts">
   import type { PageData } from './$types';
   import { toast } from 'svelte-sonner';
-  import { invalidateAll, goto } from '$app/navigation';
+  import { invalidateAll } from '$app/navigation';
   import TagPicker from '$lib/components/TagPicker.svelte';
 
   let { data }: { data: PageData } = $props();
@@ -10,7 +11,6 @@
   let editing = $state(false);
   let saving = $state(false);
 
-  // 編集用の一時データ
   let editName = $state('');
   let editSeries = $state('');
   let editIsPublic = $state(0);
@@ -18,14 +18,12 @@
   let editHandmadeInfoPublic = $state(0);
   let editStatus = $state('owned');
   let editIsHandmade = $state<number | null>(null);
-  // 購入情報
   let editStoreName = $state('');
   let editEventName = $state('');
   let editPurchaseDate = $state('');
   let editPurchasePrice = $state('');
   let editMaker = $state('');
   let editArtistName = $state('');
-  // 制作情報
   let editProductionStart = $state('');
   let editProductionEnd = $state('');
   let editNotes = $state('');
@@ -65,8 +63,8 @@
         handmadeInfoPublic: editHandmadeInfoPublic,
         status: editStatus,
         isHandmade: editIsHandmade,
+        tagIds: editTags.map((t) => t.id),
       };
-      body.tagIds = editTags.map((t) => t.id);
       if (editIsHandmade === 0) {
         body.purchaseInfo = {
           storeName: editStoreName || null,
@@ -103,8 +101,7 @@
 
   async function createTag(tagName: string): Promise<{ id: string; name: string }> {
     const res = await fetch('/api/tags', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: tagName }),
     });
     if (!res.ok) throw new Error(`タグ作成失敗: ${res.status}`);
@@ -113,8 +110,7 @@
 
   async function createMaterial(materialName: string): Promise<{ id: string; name: string }> {
     const res = await fetch('/api/materials', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: materialName }),
     });
     if (!res.ok) throw new Error(`素材作成失敗: ${res.status}`);
@@ -134,184 +130,227 @@
   }
 
   let coverPhoto = $derived(item.photos.find((p: any) => p.isCover) ?? item.photos[0]);
+  let otherPhotos = $derived(item.photos.filter((p: any) => p !== coverPhoto).slice(0, 3));
+  const kindLabel = $derived(item.isHandmade === 1 ? 'Handmade' : item.isHandmade === 0 ? 'Collected' : 'Item');
 </script>
 
-<div class="max-w-2xl mx-auto p-4">
-  <div class="flex items-center justify-between mb-4">
-    <a href="/items" class="text-muted-foreground hover:underline">← 一覧へ</a>
-    <div class="flex gap-2">
-      {#if !editing}
-        <button class="border rounded-lg px-3 py-1 text-sm" onclick={startEdit}>編集</button>
-        <button class="border rounded-lg px-3 py-1 text-sm text-destructive" onclick={deleteItem}>削除</button>
+<svelte:head>
+  <title>{item.name ?? '名称未設定'} — Haku's suitcase</title>
+</svelte:head>
+
+<div class="ambient" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="amb-ring r1"></div>
+  <div class="amb-ring r2"></div>
+</div>
+
+<div class="detail-page">
+  <!-- ブレッドクラム + アクション -->
+  <nav class="nav" style="margin-bottom: 0">
+    <a href="/items" class="btn --ghost" style="gap:6px; padding:8px 14px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.1em">COLLECTION</span>
+    </a>
+    <div class="nav-actions">
+      {#if data.user}
+        {#if !editing}
+          <button class="btn --ghost --danger" onclick={deleteItem}>削除</button>
+          <button class="btn --primary" onclick={startEdit}>編集</button>
+        {:else}
+          <button class="btn --ghost" onclick={() => (editing = false)}>キャンセル</button>
+          <button class="btn --primary" disabled={saving} onclick={saveEdit}>
+            {saving ? '保存中...' : '保存'}
+          </button>
+        {/if}
+      {/if}
+    </div>
+  </nav>
+
+  <!-- 2カラムレイアウト -->
+  <div class="detail-layout">
+    <!-- 左：画像パネル -->
+    <div class="detail-img-panel">
+      {#if coverPhoto}
+        <img src={coverPhoto.thumbUrl} alt={item.name ?? ''} />
+        <div class="overlay-tag">
+          {kindLabel} · {item.createdAt?.slice(0, 10) ?? ''}
+        </div>
+        {#if otherPhotos.length > 0}
+          <div class="thumbs">
+            {#each otherPhotos as photo}
+              <div class="t"><img src={photo.thumbUrl} alt="" /></div>
+            {/each}
+          </div>
+        {/if}
       {:else}
-        <button class="border rounded-lg px-3 py-1 text-sm" onclick={() => editing = false}>キャンセル</button>
-        <button class="bg-primary text-primary-foreground rounded-lg px-3 py-1 text-sm" disabled={saving} onclick={saveEdit}>
-          {saving ? '保存中...' : '保存'}
-        </button>
+        <div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-sunk)">
+          <span style="font-family:var(--f-display); font-size:72px; opacity:0.15; color:var(--fg)">✦</span>
+        </div>
+        <div class="overlay-tag">{kindLabel}</div>
+      {/if}
+    </div>
+
+    <!-- 右：情報パネル -->
+    <div class="detail-info-panel">
+      {#if !editing}
+        <!-- 表示モード -->
+        <div>
+          <h1>{item.name ?? '名称未設定'}</h1>
+          {#if item.series}<p class="series">{item.series}</p>{/if}
+          {#if item.isPublic}
+            <div style="margin-top:8px">
+              <a href="/p/{item.id}" style="font-family:var(--f-mono); font-size:10px; letter-spacing:0.1em; color:var(--accent-haze); text-decoration:none">
+                PUBLIC · /p/{item.id}
+              </a>
+            </div>
+          {/if}
+          {#if item.status === 'parted'}
+            <span style="display:inline-block; margin-top:8px; font-family:var(--f-mono); font-size:10px; letter-spacing:0.12em; padding:4px 12px; border-radius:var(--radius-pill); background:var(--bg-sunk); box-shadow:var(--neu-inset); color:var(--fg-soft)">
+              PARTED
+            </span>
+          {/if}
+        </div>
+
+        <!-- タグ -->
+        {#if item.itemTags?.length}
+          <div class="tag-list">
+            {#each item.itemTags as t, i}
+              <span class={'tag ' + (i % 2 === 0 ? '--amber' : '--haze')}>{(t as any).tag.name}</span>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- 購入情報 -->
+        {#if item.isHandmade === 0 && item.purchaseInfo}
+          <div>
+            <div class="eyebrow" style="margin-bottom:10px">Acquisition</div>
+            <dl class="meta-grid">
+              <dt>Source</dt><dd>{item.purchaseInfo.storeName || item.purchaseInfo.eventName || '—'}</dd>
+              <dt>Date</dt><dd>{item.purchaseInfo.purchaseDate ?? '—'}</dd>
+              <dt>Price</dt><dd class="mono">{item.purchaseInfo.purchasePrice != null ? '¥' + item.purchaseInfo.purchasePrice.toLocaleString() : '—'}</dd>
+              <dt>Maker</dt><dd>{item.purchaseInfo.maker ?? '—'}</dd>
+              <dt>Artist</dt><dd>{item.purchaseInfo.artistName ?? '—'}</dd>
+            </dl>
+          </div>
+        {/if}
+
+        <!-- 制作情報 -->
+        {#if item.isHandmade === 1 && item.handmadeInfo}
+          <div>
+            <div class="eyebrow" style="margin-bottom:10px">Production</div>
+            <dl class="meta-grid">
+              <dt>Started</dt><dd>{item.handmadeInfo.productionStart ?? '—'}</dd>
+              <dt>Finished</dt><dd>{item.handmadeInfo.productionEnd ?? '—'}</dd>
+              {#if item.itemMaterials?.length}
+                <dt>Materials</dt><dd>{item.itemMaterials.map((m: any) => m.material.name).join(' · ')}</dd>
+              {/if}
+            </dl>
+            {#if item.handmadeInfo.notes}
+              <div style="margin-top:14px; font-size:13px; line-height:1.7; white-space:pre-wrap; color:var(--fg-mute)">{item.handmadeInfo.notes}</div>
+            {/if}
+          </div>
+        {/if}
+
+      {:else}
+        <!-- 編集モード -->
+        <div class="edit-panel">
+          <div class="edit-section">
+            <div class="edit-section-title">基本情報</div>
+            <div class="edit-field">
+              <label>Name</label>
+              <input type="text" bind:value={editName} placeholder="名前" />
+            </div>
+            <div class="edit-field">
+              <label>Series</label>
+              <input type="text" bind:value={editSeries} placeholder="シリーズ名" />
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <div class="edit-section-title">種別</div>
+            <div class="kind-picker">
+              <button class={'kind-btn ' + (editIsHandmade === 0 ? '--active' : '')} onclick={() => (editIsHandmade = 0)}>
+                <div class="kind-btn-label">購入品</div>
+                <div class="kind-btn-desc">店舗・イベントで入手</div>
+              </button>
+              <button class={'kind-btn ' + (editIsHandmade === 1 ? '--active' : '')} onclick={() => (editIsHandmade = 1)}>
+                <div class="kind-btn-label">自作品</div>
+                <div class="kind-btn-desc">造形・塗装・制作</div>
+              </button>
+            </div>
+          </div>
+
+          {#if editIsHandmade === 0}
+            <div class="edit-section">
+              <div class="edit-section-title">購入情報</div>
+              <div class="edit-field"><label>Store / Shop</label><input type="text" bind:value={editStoreName} placeholder="店舗名・ECサイト名" /></div>
+              <div class="edit-field"><label>Event</label><input type="text" bind:value={editEventName} placeholder="イベント名" /></div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div class="edit-field"><label>Date</label><input type="date" bind:value={editPurchaseDate} /></div>
+                <div class="edit-field"><label>Price ¥</label><input type="number" bind:value={editPurchasePrice} placeholder="金額" /></div>
+              </div>
+              <div class="edit-field"><label>Maker</label><input type="text" bind:value={editMaker} placeholder="メーカー名" /></div>
+              <div class="edit-field"><label>Artist</label><input type="text" bind:value={editArtistName} placeholder="作家名・原型師名" /></div>
+            </div>
+          {:else if editIsHandmade === 1}
+            <div class="edit-section">
+              <div class="edit-section-title">制作情報</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div class="edit-field"><label>Started</label><input type="date" bind:value={editProductionStart} /></div>
+                <div class="edit-field"><label>Finished</label><input type="date" bind:value={editProductionEnd} /></div>
+              </div>
+              <div class="edit-field">
+                <label>Materials</label>
+                <TagPicker bind:selected={editMaterials} suggestions={data.materials.all} frequent={data.materials.frequent} placeholder="素材を追加..." onCreate={createMaterial} />
+              </div>
+              <div class="edit-field"><label>Notes</label><textarea bind:value={editNotes} placeholder="制作メモ・塗装記録" rows={3}></textarea></div>
+            </div>
+          {/if}
+
+          <div class="edit-section">
+            <div class="edit-section-title">タグ</div>
+            <TagPicker bind:selected={editTags} suggestions={data.allTags} frequent={[]} placeholder="タグを追加..." onCreate={createTag} />
+          </div>
+
+          <div class="edit-section">
+            <div class="edit-section-title">公開設定 / ステータス</div>
+            <label class="edit-check">
+              <input type="checkbox" checked={editIsPublic === 1} onchange={(e) => (editIsPublic = e.currentTarget.checked ? 1 : 0)} />
+              このアイテムを公開する
+            </label>
+            {#if editIsPublic === 1}
+              <label class="edit-check" style="margin-left:16px; color:var(--fg-mute)">
+                <input type="checkbox" checked={editPurchaseInfoPublic === 1} onchange={(e) => (editPurchaseInfoPublic = e.currentTarget.checked ? 1 : 0)} />
+                購入情報も公開する
+              </label>
+              <label class="edit-check" style="margin-left:16px; color:var(--fg-mute)">
+                <input type="checkbox" checked={editHandmadeInfoPublic === 1} onchange={(e) => (editHandmadeInfoPublic = e.currentTarget.checked ? 1 : 0)} />
+                制作情報も公開する
+              </label>
+            {/if}
+            <label class="edit-check" style="margin-top:6px; color:var(--fg-mute)">
+              <input type="checkbox" checked={editStatus === 'parted'} onchange={(e) => (editStatus = e.currentTarget.checked ? 'parted' : 'owned')} />
+              手放したアイテムとしてマーク
+            </label>
+          </div>
+        </div>
       {/if}
     </div>
   </div>
 
-  <!-- 写真 -->
-  {#if coverPhoto}
-    <img src={coverPhoto.thumbUrl} alt={item.name ?? ''} class="w-full rounded-xl mb-4 object-cover" style="max-height:400px" />
-  {/if}
-
-  <!-- 基本情報 -->
-  {#if editing}
-    <div class="space-y-3 mb-4">
-      <input bind:value={editName} placeholder="名前" class="w-full border rounded-lg px-3 py-2 text-xl font-bold bg-background text-foreground" />
-      <input bind:value={editSeries} placeholder="シリーズ名" class="w-full border rounded-lg px-3 py-2 bg-background text-foreground" />
-
-      <!-- 種別 -->
-      <div class="flex gap-2">
-        <button
-          class="flex-1 border rounded-xl p-3 text-sm {editIsHandmade === 0 ? 'border-primary bg-accent' : ''}"
-          onclick={() => editIsHandmade = 0}
-        >🛒 購入品</button>
-        <button
-          class="flex-1 border rounded-xl p-3 text-sm {editIsHandmade === 1 ? 'border-primary bg-accent' : ''}"
-          onclick={() => editIsHandmade = 1}
-        >🎨 自作品</button>
-      </div>
-
-      <!-- 購入情報 -->
-      {#if editIsHandmade === 0}
-        <div class="border rounded-xl p-3 space-y-2">
-          <p class="text-sm font-medium text-muted-foreground">購入情報</p>
-          <input bind:value={editStoreName} placeholder="店舗名 / ECサイト名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-          <input bind:value={editEventName} placeholder="イベント名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-          <div class="flex gap-2">
-            <input bind:value={editPurchaseDate} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-            <input bind:value={editPurchasePrice} type="number" placeholder="金額 ¥" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
+  <!-- 全写真グリッド -->
+  {#if item.photos.length > 1}
+    <div style="margin-top:48px">
+      <div class="eyebrow" style="margin-bottom:16px">All Photos</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:12px">
+        {#each item.photos as photo}
+          <div style="aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft)">
+            <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover" />
           </div>
-          <input bind:value={editMaker} placeholder="メーカー名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-          <input bind:value={editArtistName} placeholder="作家名・原型師名" class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-        </div>
-      {:else if editIsHandmade === 1}
-        <div class="border rounded-xl p-3 space-y-2">
-          <p class="text-sm font-medium text-muted-foreground">制作情報</p>
-          <div class="flex gap-2">
-            <input bind:value={editProductionStart} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-            <input bind:value={editProductionEnd} type="date" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-background text-foreground" />
-          </div>
-          <div>
-            <p class="text-sm font-medium text-muted-foreground">使用素材</p>
-            <TagPicker
-              bind:selected={editMaterials}
-              suggestions={data.materials.all}
-              frequent={data.materials.frequent}
-              placeholder="素材を追加..."
-              onCreate={createMaterial}
-            />
-          </div>
-          <textarea bind:value={editNotes} placeholder="制作メモ・塗装記録" rows={3} class="w-full border rounded-lg px-3 py-2 text-sm bg-background text-foreground resize-none"></textarea>
-        </div>
-      {/if}
-
-      <!-- 公開設定 -->
-      <div class="border rounded-xl p-4 space-y-2">
-        <label class="flex items-center gap-2">
-          <input type="checkbox"
-            checked={editIsPublic === 1}
-            onchange={(e) => editIsPublic = e.currentTarget.checked ? 1 : 0}
-          />
-          <span class="font-medium">このアイテムを公開する</span>
-        </label>
-        {#if editIsPublic === 1}
-          <label class="flex items-center gap-2 ml-4 text-sm text-muted-foreground">
-            <input type="checkbox"
-              checked={editPurchaseInfoPublic === 1}
-              onchange={(e) => editPurchaseInfoPublic = e.currentTarget.checked ? 1 : 0}
-            />
-            購入情報も公開する（店舗・金額・作家名など）
-          </label>
-          <label class="flex items-center gap-2 ml-4 text-sm text-muted-foreground">
-            <input type="checkbox"
-              checked={editHandmadeInfoPublic === 1}
-              onchange={(e) => editHandmadeInfoPublic = e.currentTarget.checked ? 1 : 0}
-            />
-            制作情報も公開する（制作期間・素材・メモ）
-          </label>
-        {/if}
-      </div>
-
-      <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox"
-          checked={editStatus === 'parted'}
-          onchange={(e) => editStatus = e.currentTarget.checked ? 'parted' : 'owned'}
-        />
-        手放したアイテムとしてマーク
-      </label>
-
-      <!-- タグ編集 -->
-      <div class="border rounded-xl p-3 space-y-2">
-        <p class="text-sm font-medium text-muted-foreground">タグ</p>
-        <TagPicker
-          bind:selected={editTags}
-          suggestions={data.allTags}
-          frequent={[]}
-          placeholder="タグを追加..."
-          onCreate={createTag}
-        />
-      </div>
-    </div>
-  {:else}
-    <h1 class="text-2xl font-bold mb-1">{item.name ?? '名称未設定'}</h1>
-    {#if item.series}<p class="text-muted-foreground mb-2">{item.series}</p>{/if}
-    {#if item.isPublic}
-      <div class="mb-2 text-sm">
-        <a href="/p/{item.id}" class="text-blue-500 hover:underline">公開ページ: /p/{item.id}</a>
-      </div>
-    {/if}
-    {#if item.status === 'parted'}
-      <span class="inline-block text-xs border rounded-full px-3 py-1 mb-2 text-muted-foreground">手放し済み</span>
-    {/if}
-
-    <!-- 購入情報 -->
-    {#if item.purchaseInfo && item.isHandmade === 0}
-      <div class="border rounded-xl p-4 mb-4">
-        <h3 class="font-semibold mb-2">購入情報</h3>
-        {#if item.purchaseInfo.storeName}<p class="text-sm">店舗: {item.purchaseInfo.storeName}</p>{/if}
-        {#if item.purchaseInfo.eventName}<p class="text-sm">イベント: {item.purchaseInfo.eventName}</p>{/if}
-        {#if item.purchaseInfo.purchaseDate}<p class="text-sm">購入日: {item.purchaseInfo.purchaseDate}</p>{/if}
-        {#if item.purchaseInfo.purchasePrice !== null}<p class="text-sm">金額: ¥{item.purchaseInfo.purchasePrice?.toLocaleString()}</p>{/if}
-        {#if item.purchaseInfo.maker}<p class="text-sm">メーカー: {item.purchaseInfo.maker}</p>{/if}
-        {#if item.purchaseInfo.artistName}<p class="text-sm">作家: {item.purchaseInfo.artistName}</p>{/if}
-      </div>
-    {/if}
-
-    <!-- 制作情報 -->
-    {#if item.handmadeInfo && item.isHandmade === 1}
-      <div class="border rounded-xl p-4 mb-4">
-        <h3 class="font-semibold mb-2">制作情報</h3>
-        {#if item.handmadeInfo.productionStart}<p class="text-sm">開始: {item.handmadeInfo.productionStart}</p>{/if}
-        {#if item.handmadeInfo.productionEnd}<p class="text-sm">完成: {item.handmadeInfo.productionEnd}</p>{/if}
-        {#if item.itemMaterials?.length}
-          <p class="text-sm mt-2">素材: {item.itemMaterials.map((m: any) => m.material.name).join(', ')}</p>
-        {/if}
-        {#if item.handmadeInfo.notes}<p class="text-sm mt-2 whitespace-pre-wrap">{item.handmadeInfo.notes}</p>{/if}
-      </div>
-    {/if}
-
-    <!-- タグ -->
-    {#if item.itemTags?.length}
-      <div class="flex flex-wrap gap-2 mt-2">
-        {#each item.itemTags as t}
-          <span class="text-xs border rounded-full px-3 py-1">{(t as any).tag.name}</span>
         {/each}
       </div>
-    {/if}
-  {/if}
-
-  <!-- 全写真グリッド（常に表示） -->
-  {#if item.photos.length > 1}
-    <div class="mt-6 grid grid-cols-3 gap-2">
-      {#each item.photos as photo}
-        <div class="rounded-lg overflow-hidden" style="aspect-ratio:1">
-          <img src={photo.thumbUrl} alt="" class="w-full h-full object-cover" />
-        </div>
-      {/each}
     </div>
   {/if}
 </div>
