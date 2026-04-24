@@ -1,13 +1,11 @@
 // src/routes/items/[id]/+page.server.ts
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getDb, items, tags, materials } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { getPresignedGetUrl } from '$lib/server/r2';
 
 export const load: PageServerLoad = async ({ params, locals, platform }) => {
-  if (!locals.user) throw redirect(302, '/admin');
-
   const db = getDb(platform!.env.DB);
 
   const [item, allTags, allMaterials] = await Promise.all([
@@ -26,6 +24,7 @@ export const load: PageServerLoad = async ({ params, locals, platform }) => {
   ]);
 
   if (!item) throw error(404, 'アイテムが見つかりません');
+  if (!locals.user && !item.isPublic) throw error(404, 'アイテムが見つかりません');
 
   const photosWithUrls = await Promise.all(
     item.photos.map(async (p) => ({

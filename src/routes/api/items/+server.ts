@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
   return json({ id }, { status: 201 });
 };
 
-export const GET: RequestHandler = async ({ url, platform }) => {
+export const GET: RequestHandler = async ({ url, platform, locals }) => {
   const db = getDb(platform!.env.DB);
   const limit = Math.min(Number(url.searchParams.get('limit') ?? 30), 100);
   const offset = Number(url.searchParams.get('offset') ?? 0);
@@ -40,10 +40,9 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   const q = url.searchParams.get('q') ?? '';
   const tagsParam = url.searchParams.get('tags') ?? '';
   const tagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
-  const kind = url.searchParams.get('kind') ?? 'all'; // all | bought | handmade
-  const sort = url.searchParams.get('sort') ?? 'recent'; // recent | oldest
+  const kind = url.searchParams.get('kind') ?? 'all';
+  const sort = url.searchParams.get('sort') ?? 'recent';
 
-  // タグフィルタ
   const tagFilter = tagIds.length > 0
     ? exists(
         db.select({ one: sql`1` })
@@ -52,11 +51,12 @@ export const GET: RequestHandler = async ({ url, platform }) => {
       )
     : undefined;
 
-  // 種別フィルタ
   const kindFilter =
     kind === 'bought' ? eq(items.isHandmade, 0) :
     kind === 'handmade' ? eq(items.isHandmade, 1) :
     undefined;
+
+  const publicFilter = locals.user ? undefined : eq(items.isPublic, 1);
 
   const rows = await db
     .select({
@@ -77,6 +77,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         q ? or(like(items.name, `%${q}%`), like(items.series, `%${q}%`)) : undefined,
         tagFilter,
         kindFilter,
+        publicFilter,
       )
     )
     .orderBy(sort === 'oldest' ? asc(items.createdAt) : desc(items.createdAt))
