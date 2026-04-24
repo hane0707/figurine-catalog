@@ -248,13 +248,6 @@
             {/if}
           </h1>
           {#if item.series}<p class="series">{item.series}</p>{/if}
-          {#if item.isPublic}
-            <div style="margin-top:8px">
-              <a href="/p/{item.id}" style="font-family:var(--f-mono); font-size:10px; letter-spacing:0.1em; color:var(--accent-haze); text-decoration:none">
-                PUBLIC · /p/{item.id}
-              </a>
-            </div>
-          {/if}
           {#if item.status === 'parted'}
             <span style="display:inline-block; margin-top:8px; font-family:var(--f-mono); font-size:10px; letter-spacing:0.12em; padding:4px 12px; border-radius:var(--radius-pill); background:var(--bg-sunk); box-shadow:var(--neu-inset); color:var(--fg-soft)">
               PARTED
