@@ -132,6 +132,7 @@
   }
 
   async function setCover(photoId: string) {
+    if (editPhotos.find((p) => p.id === photoId)?.isCover === 1) return;
     try {
       const res = await fetch(`/api/photos/${photoId}`, { method: 'PATCH' });
       if (!res.ok) throw new Error(`カバー変更失敗: ${res.status}`);
@@ -172,7 +173,7 @@
   }
 
   let coverPhoto = $derived(item.photos.find((p: any) => p.isCover) ?? item.photos[0]);
-  let selectedPhoto = $state(coverPhoto);
+  let selectedPhoto = $state<typeof coverPhoto | undefined>(undefined);
   $effect(() => { selectedPhoto = coverPhoto; });
   let otherPhotos = $derived(item.photos.filter((p: any) => p !== selectedPhoto).slice(0, 3));
   const kindLabel = $derived(item.isHandmade === 1 ? 'Handmade' : item.isHandmade === 0 ? 'Collected' : 'Item');
