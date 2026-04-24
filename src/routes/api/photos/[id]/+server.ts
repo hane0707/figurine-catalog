@@ -55,3 +55,16 @@ export const DELETE: RequestHandler = async ({ params, platform, locals }) => {
 
   return json({ ok: true });
 };
+
+export const PATCH: RequestHandler = async ({ params, platform, locals }) => {
+  if (!locals.user) throw error(401, 'Unauthorized');
+  const db = getDb(platform!.env.DB);
+
+  const [photo] = await db.select().from(photos).where(eq(photos.id, params.id));
+  if (!photo) throw error(404, '写真が見つかりません');
+
+  await db.update(photos).set({ isCover: 0 }).where(eq(photos.itemId, photo.itemId));
+  await db.update(photos).set({ isCover: 1 }).where(eq(photos.id, params.id));
+
+  return json({ ok: true });
+};
