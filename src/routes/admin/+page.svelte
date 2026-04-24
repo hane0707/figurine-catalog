@@ -15,5 +15,11 @@
         ログインする
       </button>
     </form>
+    <a
+      href="/items"
+      style="display: block; margin-top: 16px; font-size: 11px; letter-spacing: 0.08em; color: var(--fg-soft, #888); text-decoration: none;"
+    >
+      ← 一覧へ戻る
+    </a>
   </div>
 </div>
