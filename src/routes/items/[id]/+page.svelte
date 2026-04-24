@@ -152,7 +152,7 @@
         body: JSON.stringify({ itemId: item.id, r2KeyOrig: photo.r2KeyOrig, r2KeyThumb: photo.r2KeyThumb }),
       });
       if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
-      editPhotos = [...editPhotos, { id: photo.id, thumbUrl: photo.thumbViewUrl }];
+      editPhotos = [...editPhotos, { id: photo.id, thumbUrl: photo.thumbViewUrl, isCover: 0 }];
     } catch (e) {
       toast.error('写真の追加に失敗しました');
       console.error(e);
