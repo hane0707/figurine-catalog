@@ -130,7 +130,9 @@
   }
 
   let coverPhoto = $derived(item.photos.find((p: any) => p.isCover) ?? item.photos[0]);
-  let otherPhotos = $derived(item.photos.filter((p: any) => p !== coverPhoto).slice(0, 3));
+  let selectedPhoto = $state(coverPhoto);
+  $effect(() => { selectedPhoto = coverPhoto; });
+  let otherPhotos = $derived(item.photos.filter((p: any) => p !== selectedPhoto).slice(0, 3));
   const kindLabel = $derived(item.isHandmade === 1 ? 'Handmade' : item.isHandmade === 0 ? 'Collected' : 'Item');
 </script>
 
@@ -172,15 +174,21 @@
   <div class="detail-layout">
     <!-- 左：画像パネル -->
     <div class="detail-img-panel">
-      {#if coverPhoto}
-        <img src={coverPhoto.thumbUrl} alt={item.name ?? ''} />
+      {#if selectedPhoto}
+        <img src={selectedPhoto.thumbUrl} alt={item.name ?? ''} />
         <div class="overlay-tag">
           {kindLabel} · {item.createdAt?.slice(0, 10) ?? ''}
         </div>
         {#if otherPhotos.length > 0}
           <div class="thumbs">
             {#each otherPhotos as photo}
-              <div class="t"><img src={photo.thumbUrl} alt="" /></div>
+              <button
+                class="t"
+                onclick={() => (selectedPhoto = photo)}
+                style="background:none; border:none; padding:0; cursor:pointer"
+              >
+                <img src={photo.thumbUrl} alt="" />
+              </button>
             {/each}
           </div>
         {/if}
@@ -356,9 +364,12 @@
       <div class="eyebrow" style="margin-bottom:16px">All Photos</div>
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:12px">
         {#each item.photos as photo}
-          <div style="aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft)">
-            <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover" />
-          </div>
+          <button
+            onclick={() => (selectedPhoto = photo)}
+            style="aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft); background:none; border:none; padding:0; cursor:pointer; display:block; width:100%"
+          >
+            <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
+          </button>
         {/each}
       </div>
     </div>
