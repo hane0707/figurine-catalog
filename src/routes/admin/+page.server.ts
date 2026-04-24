@@ -18,6 +18,6 @@ export const actions: Actions = {
   },
   logout: ({ cookies }) => {
     cookies.delete('dev_logged_in', { path: '/' });
-    throw redirect(302, '/admin');
+    throw redirect(302, '/items');
   },
 };
