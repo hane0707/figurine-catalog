@@ -30,7 +30,7 @@
   let editNotes = $state('');
   let editTags = $state<{ id: string; name: string }[]>([]);
   let editMaterials = $state<{ id: string; name: string }[]>([]);
-  let editPhotos = $state<Array<{ id: string; thumbUrl: string }>>([]);
+  let editPhotos = $state<Array<{ id: string; thumbUrl: string; isCover: number }>>([]);
 
   function startEdit() {
     editName = item.name ?? '';
@@ -51,7 +51,7 @@
     editNotes = item.handmadeInfo?.notes ?? '';
     editTags = item.itemTags?.map((t: any) => t.tag) ?? [];
     editMaterials = item.itemMaterials?.map((m: any) => m.material) ?? [];
-    editPhotos = item.photos.map((p: any) => ({ id: p.id, thumbUrl: p.thumbUrl }));
+    editPhotos = item.photos.map((p: any) => ({ id: p.id, thumbUrl: p.thumbUrl, isCover: p.isCover }));
     editing = true;
   }
 
@@ -127,6 +127,17 @@
       editPhotos = editPhotos.filter((p) => p.id !== photoId);
     } catch (e) {
       toast.error('写真の削除に失敗しました');
+      console.error(e);
+    }
+  }
+
+  async function setCover(photoId: string) {
+    try {
+      const res = await fetch(`/api/photos/${photoId}`, { method: 'PATCH' });
+      if (!res.ok) throw new Error(`カバー変更失敗: ${res.status}`);
+      editPhotos = editPhotos.map((p) => ({ ...p, isCover: p.id === photoId ? 1 : 0 }));
+    } catch (e) {
+      toast.error('カバー写真の変更に失敗しました');
       console.error(e);
     }
   }
@@ -303,11 +314,20 @@
             {#if editPhotos.length > 0}
               <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px; margin-bottom:12px">
                 {#each editPhotos as photo (photo.id)}
-                  <div style="position:relative; aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft)">
-                    <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover" />
+                  <div style="position:relative; aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft); border:{photo.isCover ? '2px solid var(--accent-haze)' : '2px solid transparent'}">
                     <button
                       type="button"
-                      onclick={() => deleteEditPhoto(photo.id)}
+                      onclick={() => setCover(photo.id)}
+                      style="position:absolute; inset:0; background:none; border:none; padding:0; cursor:pointer; display:block; width:100%; height:100%"
+                    >
+                      <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
+                    </button>
+                    {#if photo.isCover}
+                      <div style="position:absolute; top:4px; left:4px; background:var(--accent-haze); color:#fff; font-family:var(--f-mono); font-size:9px; letter-spacing:0.08em; padding:2px 5px; border-radius:3px; pointer-events:none">COVER</div>
+                    {/if}
+                    <button
+                      type="button"
+                      onclick={(e) => { e.stopPropagation(); deleteEditPhoto(photo.id); }}
                       style="position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,0.6); color:#fff; border:none; cursor:pointer; display:grid; place-items:center; font-size:12px; line-height:1; padding:0"
                     >×</button>
                   </div>
