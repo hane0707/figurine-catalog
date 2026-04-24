@@ -414,19 +414,18 @@
               このアイテムを公開する
             </label>
             {#if editIsPublic === 1}
-              <label class="edit-check" style="margin-left:16px; color:var(--fg-mute)">
-                <input type="checkbox" checked={editPurchaseInfoPublic === 1} onchange={(e) => (editPurchaseInfoPublic = e.currentTarget.checked ? 1 : 0)} />
-                購入情報も公開する
-              </label>
-              <label class="edit-check" style="margin-left:16px; color:var(--fg-mute)">
-                <input type="checkbox" checked={editHandmadeInfoPublic === 1} onchange={(e) => (editHandmadeInfoPublic = e.currentTarget.checked ? 1 : 0)} />
-                制作情報も公開する
-              </label>
+              {#if editIsHandmade === 0}
+                <label class="edit-check" style="margin-left:16px; color:var(--fg-mute)">
+                  <input type="checkbox" checked={editPurchaseInfoPublic === 1} onchange={(e) => (editPurchaseInfoPublic = e.currentTarget.checked ? 1 : 0)} />
+                  購入情報も公開する
+                </label>
+              {:else if editIsHandmade === 1}
+                <label class="edit-check" style="margin-left:16px; color:var(--fg-mute)">
+                  <input type="checkbox" checked={editHandmadeInfoPublic === 1} onchange={(e) => (editHandmadeInfoPublic = e.currentTarget.checked ? 1 : 0)} />
+                  制作情報も公開する
+                </label>
+              {/if}
             {/if}
-            <label class="edit-check" style="margin-top:6px; color:var(--fg-mute)">
-              <input type="checkbox" checked={editStatus === 'parted'} onchange={(e) => (editStatus = e.currentTarget.checked ? 'parted' : 'owned')} />
-              手放したアイテムとしてマーク
-            </label>
           </div>
         </div>
       {/if}
