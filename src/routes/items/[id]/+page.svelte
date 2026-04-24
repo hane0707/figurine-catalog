@@ -4,6 +4,7 @@
   import { toast } from 'svelte-sonner';
   import { invalidateAll } from '$app/navigation';
   import TagPicker from '$lib/components/TagPicker.svelte';
+  import PhotoUploader from '$lib/components/PhotoUploader.svelte';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
@@ -29,6 +30,7 @@
   let editNotes = $state('');
   let editTags = $state<{ id: string; name: string }[]>([]);
   let editMaterials = $state<{ id: string; name: string }[]>([]);
+  let editPhotos = $state<Array<{ id: string; thumbUrl: string }>>([]);
 
   function startEdit() {
     editName = item.name ?? '';
@@ -49,6 +51,7 @@
     editNotes = item.handmadeInfo?.notes ?? '';
     editTags = item.itemTags?.map((t: any) => t.tag) ?? [];
     editMaterials = item.itemMaterials?.map((m: any) => m.material) ?? [];
+    editPhotos = item.photos.map((p: any) => ({ id: p.id, thumbUrl: p.thumbUrl }));
     editing = true;
   }
 
@@ -115,6 +118,34 @@
     });
     if (!res.ok) throw new Error(`素材作成失敗: ${res.status}`);
     return (await res.json()) as { id: string; name: string };
+  }
+
+  async function deleteEditPhoto(photoId: string) {
+    try {
+      const res = await fetch(`/api/photos/${photoId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`削除失敗: ${res.status}`);
+      editPhotos = editPhotos.filter((p) => p.id !== photoId);
+    } catch (e) {
+      toast.error('写真の削除に失敗しました');
+      console.error(e);
+    }
+  }
+
+  async function handlePhotoUploaded(
+    photo: { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string },
+  ) {
+    try {
+      const res = await fetch(`/api/photos/${photo.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: item.id, r2KeyOrig: photo.r2KeyOrig, r2KeyThumb: photo.r2KeyThumb }),
+      });
+      if (!res.ok) throw new Error(`登録失敗: ${res.status}`);
+      editPhotos = [...editPhotos, { id: photo.id, thumbUrl: photo.thumbViewUrl }];
+    } catch (e) {
+      toast.error('写真の追加に失敗しました');
+      console.error(e);
+    }
   }
 
   async function deleteItem() {
@@ -274,6 +305,30 @@
       {:else}
         <!-- 編集モード -->
         <div class="edit-panel">
+          <div class="edit-section">
+            <div class="edit-section-title">写真</div>
+            {#if editPhotos.length > 0}
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px; margin-bottom:12px">
+                {#each editPhotos as photo (photo.id)}
+                  <div style="position:relative; aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft)">
+                    <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover" />
+                    <button
+                      type="button"
+                      onclick={() => deleteEditPhoto(photo.id)}
+                      style="position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,0.6); color:#fff; border:none; cursor:pointer; display:grid; place-items:center; font-size:12px; line-height:1; padding:0"
+                    >×</button>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+            <PhotoUploader
+              itemId={item.id}
+              itemCreated={true}
+              onUploaded={handlePhotoUploaded}
+              onSystemError={() => toast.error('アップロードに失敗しました')}
+            />
+          </div>
+
           <div class="edit-section">
             <div class="edit-section-title">基本情報</div>
             <div class="edit-field">
