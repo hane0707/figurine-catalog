@@ -247,12 +247,14 @@
       {#each items as item (item.id)}
         <ItemCard {item} />
       {/each}
-      <a href="/items/new" class="card --empty">
-        <div class="plus">+</div>
-        <div style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase">
-          新しいアイテムを登録
-        </div>
-      </a>
+      {#if data.user}
+        <a href="/items/new" class="card --empty">
+          <div class="plus">+</div>
+          <div style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase">
+            新しいアイテムを登録
+          </div>
+        </a>
+      {/if}
     </div>
   {:else}
     <div class="rise rise-d4" style="display:flex; flex-direction:column; gap:10px">
