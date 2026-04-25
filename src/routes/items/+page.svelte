@@ -84,7 +84,7 @@
 </script>
 
 <svelte:head>
-  <title>Haku's suitcase — Made · Met · Kept</title>
+  <title>Haku's suitcase</title>
 </svelte:head>
 
 <!-- 背景装飾 -->
@@ -103,36 +103,9 @@
 </div>
 
 <div class="app">
-  <!-- ナビ -->
-  <nav class="nav">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true"></div>
-      <div>
-        <div class="brand-name">Haku's suitcase</div>
-        <div class="brand-sub">Made · Met · Kept</div>
-      </div>
-    </div>
-    <div class="nav-actions">
-      {#if data.user}
-        {#if data.isDevMode}
-          <form method="POST" action="/admin?/logout" style="display:contents">
-            <button type="submit" class="btn --ghost" style="font-size:12px; letter-spacing:0.04em">
-              ログアウト
-            </button>
-          </form>
-        {:else}
-          <a href="/cdn-cgi/access/logout" class="btn --ghost" style="font-size:12px; letter-spacing:0.04em">
-            ログアウト
-          </a>
-        {/if}
-      {/if}
-    </div>
-  </nav>
-
   <!-- ヒーロー -->
   <section class="hero rise">
     <div>
-      <div class="eyebrow" style="margin-bottom: 20px">Made · Met · Kept</div>
       <h1 class="display hero-title">
         雨のあたらない、<br />
         <em>スーツケース</em>の中。
