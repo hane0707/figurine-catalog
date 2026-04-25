@@ -78,14 +78,14 @@ describe('/admin actions: login', () => {
 });
 
 describe('/admin actions: logout', () => {
-  it('dev_logged_in クッキーを削除して /admin へリダイレクト', () => {
+  it('dev_logged_in クッキーを削除して /items へリダイレクト', () => {
     const cookies = makeCookies();
     try {
       actions.logout({ cookies } as any);
       expect.fail('リダイレクトが throw されるべき');
     } catch (e: any) {
       expect(e.status).toBe(302);
-      expect(e.location).toBe('/admin');
+      expect(e.location).toBe('/items');
     }
     expect(cookies.delete).toHaveBeenCalledWith('dev_logged_in', { path: '/' });
   });
