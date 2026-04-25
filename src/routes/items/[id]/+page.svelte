@@ -198,26 +198,20 @@
 </div>
 
 <div class="detail-page">
-  <!-- ブレッドクラム + アクション -->
-  <nav class="nav" style="margin-bottom: 0">
-    <a href="/items" class="btn --ghost" style="gap:6px; padding:8px 14px">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      <span style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.1em">COLLECTION</span>
-    </a>
-    <div class="nav-actions">
-      {#if data.user}
-        {#if !editing}
-          <button class="btn --ghost --danger" onclick={deleteItem}>削除</button>
-          <button class="btn --primary" onclick={startEdit}>編集</button>
-        {:else}
-          <button class="btn --ghost" onclick={() => (editing = false)}>キャンセル</button>
-          <button class="btn --primary" disabled={saving} onclick={saveEdit}>
-            {saving ? '保存中...' : '保存'}
-          </button>
-        {/if}
+  <!-- ページアクション（編集・削除） -->
+  {#if data.user}
+    <div class="page-actions">
+      {#if !editing}
+        <button class="btn --ghost --danger" onclick={deleteItem}>削除</button>
+        <button class="btn --primary" onclick={startEdit}>編集</button>
+      {:else}
+        <button class="btn --ghost" onclick={() => (editing = false)}>キャンセル</button>
+        <button class="btn --primary" disabled={saving} onclick={saveEdit}>
+          {saving ? '保存中...' : '保存'}
+        </button>
       {/if}
     </div>
-  </nav>
+  {/if}
 
   <!-- 2カラムレイアウト -->
   <div class="detail-layout">
@@ -449,3 +443,12 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .page-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+  }
+</style>
