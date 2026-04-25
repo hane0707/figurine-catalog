@@ -2,8 +2,9 @@
 	import '../app.css';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { page } from '$app/state';
+	import type { LayoutData } from './$types';
 
-	let { children, data } = $props();
+	let { children, data }: { children: any; data: LayoutData } = $props();
 	const isSecondary = $derived(page.url.pathname !== '/items');
 </script>
 
@@ -19,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,50..100;1,9..144,300..700,50..100&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 </svelte:head>
 
-<nav class="nav">
+<nav class="nav" aria-label="Main">
   <div class="nav-inner">
     <a href="/items" class="brand" style="text-decoration:none; color:inherit">
       <div class="brand-mark" aria-hidden="true"></div>
@@ -28,7 +29,7 @@
     <div class="nav-actions">
       {#if isSecondary}
         <a href="/items" class="btn --ghost" style="gap:6px; padding:8px 14px">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
           <span style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.1em">COLLECTION</span>
