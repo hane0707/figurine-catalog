@@ -103,29 +103,6 @@
 </div>
 
 <div class="app">
-  <!-- ナビ -->
-  <nav class="nav">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true"></div>
-      <div class="brand-name">Haku's suitcase</div>
-    </div>
-    <div class="nav-actions">
-      {#if data.user}
-        {#if data.isDevMode}
-          <form method="POST" action="/admin?/logout" style="display:contents">
-            <button type="submit" class="btn --ghost" style="font-size:12px; letter-spacing:0.04em">
-              ログアウト
-            </button>
-          </form>
-        {:else}
-          <a href="/cdn-cgi/access/logout" class="btn --ghost" style="font-size:12px; letter-spacing:0.04em">
-            ログアウト
-          </a>
-        {/if}
-      {/if}
-    </div>
-  </nav>
-
   <!-- ヒーロー -->
   <section class="hero rise">
     <div>
