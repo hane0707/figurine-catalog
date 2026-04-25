@@ -11,13 +11,6 @@
 </div>
 
 <div class="privacy-page">
-  <nav class="nav" style="margin-bottom: 0">
-    <a href="/items" class="btn --ghost" style="gap:6px; padding:8px 14px">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      <span style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.1em">COLLECTION</span>
-    </a>
-  </nav>
-
   <div class="privacy-content">
     <div class="eyebrow" style="margin-bottom: 16px">Legal</div>
     <h1 class="display" style="font-size: clamp(28px, 4vw, 52px); margin-bottom: 40px; line-height: 1.1">
@@ -73,12 +66,6 @@
       </section>
     </div>
   </div>
-
-  <footer class="page-footer">
-    <a href="/about">About</a>
-    <span>·</span>
-    <a href="/items">← Collection へ戻る</a>
-  </footer>
 </div>
 
 <style>
@@ -104,11 +91,4 @@
   .privacy-body ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
   .privacy-body a { color: var(--fg); }
   .privacy-body a:hover { opacity: 0.7; }
-  .page-footer {
-    margin-top: 64px;
-    display: flex; gap: 16px; align-items: center;
-    font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--fg-soft);
-  }
-  .page-footer a { color: inherit; text-decoration: none; }
-  .page-footer a:hover { color: var(--fg); }
 </style>
