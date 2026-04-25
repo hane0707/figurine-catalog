@@ -11,13 +11,6 @@
 </div>
 
 <div class="about-page">
-  <nav class="nav" style="margin-bottom: 0">
-    <a href="/items" class="btn --ghost" style="gap:6px; padding:8px 14px">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      <span style="font-family:var(--f-mono); font-size:11px; letter-spacing:0.1em">COLLECTION</span>
-    </a>
-  </nav>
-
   <div class="about-content">
     <div class="eyebrow" style="margin-bottom: 16px">About</div>
     <h1 class="display" style="font-size: clamp(32px, 5vw, 64px); margin-bottom: 32px; line-height: 1.1">
@@ -41,12 +34,6 @@
       </p>
     </div>
   </div>
-
-  <footer class="page-footer">
-    <a href="/privacy">Privacy Policy</a>
-    <span>·</span>
-    <a href="/items">← Collection へ戻る</a>
-  </footer>
 </div>
 
 <style>
@@ -65,11 +52,4 @@
   }
   .about-body p { margin: 0; }
   .about-body hr { border: none; border-top: 1px dashed var(--line); margin: 8px 0; }
-  .page-footer {
-    margin-top: 64px;
-    display: flex; gap: 16px; align-items: center;
-    font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--fg-soft);
-  }
-  .page-footer a { color: inherit; text-decoration: none; }
-  .page-footer a:hover { color: var(--fg); }
 </style>
