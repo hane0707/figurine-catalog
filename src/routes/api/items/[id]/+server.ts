@@ -5,7 +5,7 @@ import { getDb, items, photos, purchaseInfo, handmadeInfo, itemTags, itemMateria
 import { eq } from 'drizzle-orm';
 import { deleteR2Object } from '$lib/server/r2';
 
-export const GET: RequestHandler = async ({ params, platform }) => {
+export const GET: RequestHandler = async ({ params, platform, locals }) => {
   const db = getDb(platform!.env.DB);
   const item = await db.query.items.findFirst({
     where: eq(items.id, params.id),
@@ -19,6 +19,7 @@ export const GET: RequestHandler = async ({ params, platform }) => {
   });
 
   if (!item) throw error(404, 'アイテムが見つかりません');
+  if (!locals.user && !item.isPublic) throw error(404, 'アイテムが見つかりません');
   return json(item);
 };
 
@@ -76,8 +77,10 @@ export const PATCH: RequestHandler = async ({ params, request, platform, locals 
 
   // tagIds: アイテムタグの更新
   if (body.tagIds !== undefined) {
+    if (!Array.isArray(body.tagIds)) throw error(400, 'tagIds は配列である必要があります');
+    if (body.tagIds.length > 50) throw error(400, 'タグ数の上限は 50 です');
     await db.delete(itemTags).where(eq(itemTags.itemId, params.id));
-    const ids = body.tagIds as string[];
+    const ids = body.tagIds.filter((id): id is string => typeof id === 'string');
     if (ids.length > 0) {
       await db.insert(itemTags).values(ids.map((tagId) => ({ itemId: params.id, tagId })));
     }
@@ -85,8 +88,10 @@ export const PATCH: RequestHandler = async ({ params, request, platform, locals 
 
   // materialIds: アイテム素材の更新
   if (body.materialIds !== undefined) {
+    if (!Array.isArray(body.materialIds)) throw error(400, 'materialIds は配列である必要があります');
+    if (body.materialIds.length > 50) throw error(400, '素材数の上限は 50 です');
     await db.delete(itemMaterials).where(eq(itemMaterials.itemId, params.id));
-    const ids = body.materialIds as string[];
+    const ids = body.materialIds.filter((id): id is string => typeof id === 'string');
     if (ids.length > 0) {
       await db.insert(itemMaterials).values(ids.map((materialId) => ({ itemId: params.id, materialId })));
     }

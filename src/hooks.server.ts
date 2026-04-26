@@ -76,16 +76,6 @@ async function verifyCfJwt(
   }
 }
 
-function unsafeDecode(token: string): { email?: string } | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(payload)) as { email?: string };
-  } catch {
-    return null;
-  }
-}
 
 export const handle: Handle = async ({ event, resolve }) => {
   // ローカル開発バイパス（DEV_ADMIN_EMAIL がセットされていて dev_logged_in=1 の場合のみ認証済みとみなす）
@@ -107,12 +97,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     let claims: { email?: string } | null = null;
 
     if (aud && teamDomain) {
-      // 署名検証あり（本番推奨）
       claims = await verifyCfJwt(cfJwt, aud, teamDomain);
-    } else {
-      // 署名検証なし（CF_ACCESS_AUD 未設定時のフォールバック）
-      console.warn('[auth] CF_ACCESS_AUD/CF_ACCESS_TEAM_DOMAIN 未設定のため署名検証をスキップ');
-      claims = unsafeDecode(cfJwt);
     }
 
     if (claims?.email) {
@@ -120,5 +105,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   }
 
-  return resolve(event);
+  const response = await resolve(event);
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  return response;
 };

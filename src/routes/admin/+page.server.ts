@@ -13,7 +13,7 @@ export const load: PageServerLoad = ({ locals, platform }) => {
 export const actions: Actions = {
   login: ({ cookies, platform }) => {
     if (!platform?.env?.DEV_ADMIN_EMAIL) throw redirect(302, '/items');
-    cookies.set('dev_logged_in', '1', { path: '/', httpOnly: true, sameSite: 'lax' });
+    cookies.set('dev_logged_in', '1', { path: '/', httpOnly: true, sameSite: 'lax', secure: false });
     throw redirect(302, '/items');
   },
   logout: ({ cookies }) => {
