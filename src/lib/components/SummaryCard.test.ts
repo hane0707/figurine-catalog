@@ -45,9 +45,9 @@ describe('SummaryCard: 写真セクション', () => {
 });
 
 describe('SummaryCard: 基本情報セクション', () => {
-  it('名前が空のとき「未入力」を表示する', () => {
+  it('名前が空のとき「—」を表示する', () => {
     render(SummaryCard, { ...baseProps, name: '' });
-    expect(screen.getByText('未入力')).toBeInTheDocument();
+    expect(screen.getByTestId('name-value').textContent?.trim()).toContain('—');
   });
 
   it('名前が入力済みのとき値を表示する', () => {
@@ -57,10 +57,7 @@ describe('SummaryCard: 基本情報セクション', () => {
 
   it('シリーズ名が空のとき「—」を表示する', () => {
     render(SummaryCard, { ...baseProps, name: 'test', series: '' });
-    // "Series" の key を含むセクションを取得
-    const seriesLabel = screen.getByText('Series');
-    const seriesValue = seriesLabel.nextElementSibling;
-    expect(seriesValue?.textContent).toContain('—');
+    expect(screen.getByTestId('series-value').textContent?.trim()).toContain('—');
   });
 
   it('シリーズ名が入力済みのとき値を表示する', () => {
@@ -80,8 +77,7 @@ describe('SummaryCard: 基本情報セクション', () => {
 describe('SummaryCard: isHandmade === null のとき', () => {
   it('詳細情報セクションを表示しない', () => {
     render(SummaryCard, { ...baseProps, isHandmade: null });
-    expect(screen.queryByText('Purchase Info')).not.toBeInTheDocument();
-    expect(screen.queryByText('Production Info')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('details-section')).not.toBeInTheDocument();
   });
 });
 
@@ -90,15 +86,12 @@ describe('SummaryCard: 購入情報セクション（isHandmade === 0）', () =>
 
   it('購入情報セクションが表示される', () => {
     render(SummaryCard, purchaseProps);
-    expect(screen.getByText('Purchase Info')).toBeInTheDocument();
+    expect(screen.getByTestId('details-section')).toBeInTheDocument();
   });
 
   it('店舗名が空のとき「—」を表示する', () => {
     render(SummaryCard, { ...purchaseProps, storeName: '' });
-    // "Store" の key を含むセクションを取得
-    const storeLabel = screen.getByText('Store');
-    const storeValue = storeLabel.nextElementSibling;
-    expect(storeValue?.textContent).toContain('—');
+    expect(screen.getByTestId('storeName-value').textContent?.trim()).toContain('—');
   });
 
   it('店舗名が入力済みのとき値を表示する', () => {
@@ -113,10 +106,7 @@ describe('SummaryCard: 購入情報セクション（isHandmade === 0）', () =>
 
   it('金額が空のとき「—」を表示する', () => {
     render(SummaryCard, { ...purchaseProps, purchasePrice: '' });
-    // "Price" の key を含むセクションを取得
-    const priceLabel = screen.getByText('Price');
-    const priceValue = priceLabel.nextElementSibling;
-    expect(priceValue?.textContent).toContain('—');
+    expect(screen.getByTestId('purchasePrice-value').textContent?.trim()).toContain('—');
   });
 
   it('購入情報の編集ボタンをクリックすると onEdit("details") が呼ばれる', async () => {
@@ -133,15 +123,12 @@ describe('SummaryCard: 制作情報セクション（isHandmade === 1）', () =>
 
   it('制作情報セクションが表示される', () => {
     render(SummaryCard, handmadeProps);
-    expect(screen.getByText('Production Info')).toBeInTheDocument();
+    expect(screen.getByTestId('details-section')).toBeInTheDocument();
   });
 
   it('制作開始日が空のとき「—」を表示する', () => {
     render(SummaryCard, { ...handmadeProps, productionStart: '' });
-    // "Started" の key を含むセクションを取得
-    const startedLabel = screen.getByText('Started');
-    const startedValue = startedLabel.nextElementSibling;
-    expect(startedValue?.textContent).toContain('—');
+    expect(screen.getByTestId('productionStart-value').textContent?.trim()).toContain('—');
   });
 
   it('素材が選択済みのとき名前を表示する', () => {
@@ -152,9 +139,8 @@ describe('SummaryCard: 制作情報セクション（isHandmade === 1）', () =>
     expect(screen.getByText('レジン')).toBeInTheDocument();
   });
 
-  it('素材が未選択のとき素材セクションを表示しない', () => {
+  it('素材が未選択のとき「—」を表示する', () => {
     render(SummaryCard, { ...handmadeProps, selectedMaterials: [] });
-    // Materials キーが表示されないことを確認
-    expect(screen.queryByText('Materials')).not.toBeInTheDocument();
+    expect(screen.getByTestId('materials-value').textContent?.trim()).toContain('—');
   });
 });

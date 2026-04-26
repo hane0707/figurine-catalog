@@ -30,7 +30,7 @@ describe('新規登録ウィザード: ページレンダリング', () => {
   it('userが設定されていればページが表示される', () => {
     render(Page, { data: mockData });
     // ページが正常にレンダリングされることを確認
-    expect(screen.getByText('写真を置く')).toBeInTheDocument();
+    expect(screen.getByText('写真を追加')).toBeInTheDocument();
   });
 
   it('tagsステップ以外ではサマリーカードが表示されない', () => {
