@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ platform, locals }) => {
   let spotlight = null;
   if (spotlightRows[0]) {
     const row = spotlightRows[0];
-    const thumbUrl = await getPresignedGetUrl(platform!.env.R2, row.r2KeyThumb);
+    const thumbUrl = await getPresignedGetUrl(platform!.env, row.r2KeyThumb);
     spotlight = { ...row, thumbUrl };
   }
 
