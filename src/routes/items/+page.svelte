@@ -134,8 +134,7 @@
         <em>スーツケース</em>の中。
       </h1>
       <p class="hero-lede">
-        作ったものも、出会ったものも。<br />
-        ここに置いておきます。
+        作ったものと、出会ったもの。
       </p>
       <div class="hero-meta">
         <span class="eyebrow">Now showing</span>
