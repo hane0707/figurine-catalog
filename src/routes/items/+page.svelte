@@ -16,6 +16,11 @@
   let activeTags = $state<string[]>([]);
   let layout = $state('grid');
 
+  let displayTotal    = $state(0);
+  let displayHandmade = $state(0);
+  let displayBought   = $state(0);
+  let displaySeries   = $state(0);
+
   let sentinel: HTMLDivElement;
 
   const kindOptions = [
@@ -59,6 +64,23 @@
   }
 
   onMount(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      displayTotal = data.stats.total; displayHandmade = data.stats.handmade;
+      displayBought = data.stats.bought; displaySeries = data.stats.series;
+    } else {
+      const dur = 1200, start = performance.now();
+      const tick = () => {
+        const t = Math.min((performance.now() - start) / dur, 1);
+        const e = 1 - Math.pow(1 - t, 3);
+        displayTotal    = Math.round(e * data.stats.total);
+        displayHandmade = Math.round(e * data.stats.handmade);
+        displayBought   = Math.round(e * data.stats.bought);
+        displaySeries   = Math.round(e * data.stats.series);
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
     fetchItems();
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) fetchItems();
@@ -147,25 +169,25 @@
   <section class="stats rise rise-d1">
     <div class="stat">
       <span class="eyebrow">Total Items</span>
-      <div class="stat-value">{data.stats.total}</div>
+      <div class="stat-value">{displayTotal}</div>
       <div class="stat-delta"><span class="dot"></span>owned now</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
     <div class="stat --haze">
       <span class="eyebrow">Handmade</span>
-      <div class="stat-value">{data.stats.handmade}</div>
+      <div class="stat-value">{displayHandmade}</div>
       <div class="stat-delta"><span class="dot"></span>自作品</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
     <div class="stat --line">
       <span class="eyebrow">Purchased</span>
-      <div class="stat-value">{data.stats.bought}</div>
+      <div class="stat-value">{displayBought}</div>
       <div class="stat-delta"><span class="dot"></span>購入品</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
     <div class="stat --diamond">
       <span class="eyebrow">Series</span>
-      <div class="stat-value">{data.stats.series}</div>
+      <div class="stat-value">{displaySeries}</div>
       <div class="stat-delta"><span class="dot"></span>unique</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
