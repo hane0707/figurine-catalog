@@ -64,6 +64,7 @@
   }
 
   onMount(() => {
+    let rafId: number;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
       displayTotal = data.stats.total; displayHandmade = data.stats.handmade;
@@ -77,16 +78,16 @@
         displayHandmade = Math.round(e * data.stats.handmade);
         displayBought   = Math.round(e * data.stats.bought);
         displaySeries   = Math.round(e * data.stats.series);
-        if (t < 1) requestAnimationFrame(tick);
+        if (t < 1) rafId = requestAnimationFrame(tick);
       };
-      requestAnimationFrame(tick);
+      rafId = requestAnimationFrame(tick);
     }
     fetchItems();
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) fetchItems();
     });
     observer.observe(sentinel);
-    return () => observer.disconnect();
+    return () => { cancelAnimationFrame(rafId); observer.disconnect(); };
   });
 
   let searchTimer: ReturnType<typeof setTimeout>;
