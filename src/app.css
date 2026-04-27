@@ -263,7 +263,7 @@ html, body {
   font-size: 12px; font-family: var(--f-mono); letter-spacing: 0.04em;
   color: var(--fg-mute); transition: all var(--dur) var(--ease); cursor: pointer; background: none; border: none;
 }
-.seg button.--active { background: var(--surface); color: var(--fg); box-shadow: var(--neu-soft); }
+.seg button.--active { background: var(--surface); color: var(--fg); box-shadow: var(--neu-soft); transform: scale(1.06); }
 
 /* --- chips --- */
 .chiprow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
