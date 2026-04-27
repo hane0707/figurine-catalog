@@ -175,7 +175,7 @@
         <GlitchText
           segments={[
             { text: "ここは", small: true, breakAfter: true },
-            { text: "雨", large: true },
+            { text: "雨", large: true, stain: true },
             { text: "のあたらない、", breakAfter: true },
             { text: "スーツケース", em: true },
             { text: "の中。" },

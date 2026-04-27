@@ -6,6 +6,7 @@
     em?: boolean;
     small?: boolean;
     large?: boolean;
+    stain?: boolean;
     breakAfter?: boolean;
   };
 
@@ -27,6 +28,8 @@
   const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
   async function animateChar(el: HTMLElement): Promise<void> {
+    const isStain = el.dataset.stain === 'true';
+
     // Phase 1: random blink reveal
     const blinkCount = randInt(2, 6);
     const blinkInterval = rand(40, 120);
@@ -38,7 +41,7 @@
     // Phase 2: settle at partial opacity, maybe add mask
     el.style.opacity = String(rand(0.6, 0.9));
 
-    if (Math.random() < 0.55) {
+    if (isStain || Math.random() < 0.55) {
       const maskIsCircle = Math.random() < 0.4;
       const maskColor = pick(MASK_COLORS);
       const mask = document.createElement('span');
@@ -58,16 +61,17 @@
 
       el.appendChild(mask);
 
-      // Phase 3: dissolve mask
+      // Phase 3: dissolve mask (stain: stop at residual opacity)
+      const floor = isStain ? rand(0.18, 0.26) : 0;
       const dissolveSteps = randInt(3, 8);
       const dissolveDelay = rand(60, 180);
       let opacity = 1;
       for (let s = 0; s < dissolveSteps; s++) {
         await sleep(dissolveDelay);
         opacity -= opacity / (dissolveSteps - s);
-        mask.style.opacity = String(Math.max(0, opacity));
+        mask.style.opacity = String(Math.max(floor, opacity));
       }
-      mask.remove();
+      if (!isStain) mask.remove();
     }
 
     // Phase 4: snap to full opacity, occasional extra flash
@@ -113,7 +117,7 @@
       </em>
     {:else}
       {#each [...seg.text] as char}
-        <span class="glitch-ch" class:punct={PUNCT.has(char)} class:small-ch={seg.small} class:large-ch={seg.large}>{char}</span>
+        <span class="glitch-ch" class:punct={PUNCT.has(char)} class:small-ch={seg.small} class:large-ch={seg.large} data-stain={seg.stain ? 'true' : undefined}>{char}</span>
       {/each}
     {/if}
     {#if seg.breakAfter}<br />{/if}
