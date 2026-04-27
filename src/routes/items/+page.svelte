@@ -174,8 +174,9 @@
       <h1 class="display hero-title">
         <GlitchText
           segments={[
-            { text: "ここは", small: true },
-            { text: "雨のあたらない、", breakAfter: true },
+            { text: "ここは", small: true, breakAfter: true },
+            { text: "雨", large: true },
+            { text: "のあたらない、", breakAfter: true },
             { text: "スーツケース", em: true },
             { text: "の中。" },
           ]}

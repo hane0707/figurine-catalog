@@ -5,6 +5,7 @@
     text: string;
     em?: boolean;
     small?: boolean;
+    large?: boolean;
     breakAfter?: boolean;
   };
 
@@ -112,7 +113,7 @@
       </em>
     {:else}
       {#each [...seg.text] as char}
-        <span class="glitch-ch" class:punct={PUNCT.has(char)} class:small-ch={seg.small}>{char}</span>
+        <span class="glitch-ch" class:punct={PUNCT.has(char)} class:small-ch={seg.small} class:large-ch={seg.large}>{char}</span>
       {/each}
     {/if}
     {#if seg.breakAfter}<br />{/if}
@@ -130,5 +131,8 @@
   }
   .small-ch {
     font-size: 0.65em;
+  }
+  .large-ch {
+    font-size: 1.3em;
   }
 </style>
