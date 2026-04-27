@@ -15,6 +15,12 @@
   let sort = $state('recent');
   let activeTags = $state<string[]>([]);
   let layout = $state('grid');
+  let columnCount = $state(4);
+  let columns = $derived(
+    Array.from({ length: columnCount }, (_, col) =>
+      items.filter((_, i) => i % columnCount === col)
+    )
+  );
 
   let displayTotal    = $state(0);
   let displayHandmade = $state(0);
@@ -82,12 +88,19 @@
       };
       rafId = requestAnimationFrame(tick);
     }
+    const updateColumns = () => {
+      columnCount = window.innerWidth <= 720 ? 2
+                  : window.innerWidth <= 1100 ? 3
+                  : 4;
+    };
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
     fetchItems();
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) fetchItems();
     });
     observer.observe(sentinel);
-    return () => { cancelAnimationFrame(rafId); observer.disconnect(); };
+    return () => { cancelAnimationFrame(rafId); observer.disconnect(); window.removeEventListener('resize', updateColumns); };
   });
 
   let searchTimer: ReturnType<typeof setTimeout>;
@@ -245,8 +258,12 @@
   <!-- アイテム一覧 -->
   {#if layout === 'grid'}
     <div class="items-grid rise rise-d4">
-      {#each items as item (item.id)}
-        <ItemCard {item} isOwner={!!data.user} />
+      {#each columns as column, colIdx (colIdx)}
+        <div class="items-column">
+          {#each column as item (item.id)}
+            <ItemCard {item} isOwner={!!data.user} />
+          {/each}
+        </div>
       {/each}
     </div>
   {:else}
