@@ -23,7 +23,7 @@
     {#if item.thumbUrl}
       <img src={item.thumbUrl} alt={item.name ?? '名称未設定'} loading="lazy" />
     {:else}
-      <div style="width:100%; height:100%; display:grid; place-items:center; font-family:var(--f-display); font-size:40px; opacity:0.2; color:var(--fg)">✦</div>
+      <div style="width:100%; min-height:160px; display:grid; place-items:center; font-family:var(--f-display); font-size:40px; opacity:0.2; color:var(--fg)">✦</div>
     {/if}
     {#if item.isHandmade !== undefined && item.isHandmade !== null}
       <div class={'card-badge ' + (item.isHandmade === 1 ? '--handmade' : '--bought')}>
