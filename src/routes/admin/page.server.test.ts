@@ -73,6 +73,7 @@ describe('/admin actions: login', () => {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
+      secure: false,
     });
   });
 });
