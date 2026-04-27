@@ -295,10 +295,11 @@ html, body {
   transition: all var(--dur) var(--ease); cursor: pointer;
   text-align: left; display: flex; flex-direction: column;
   position: relative; text-decoration: none; color: inherit;
-  break-inside: avoid; margin-bottom: 24px;
+  break-inside: avoid;
 }
+.items-grid .card { margin-bottom: 24px; }
 @media (max-width: 720px) {
-  .card { margin-bottom: 16px; }
+  .items-grid .card { margin-bottom: 16px; }
 }
 .card:hover { transform: translateY(-3px); box-shadow: var(--neu-mid); }
 .card-img {
