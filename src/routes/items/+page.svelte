@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { PageData } from './$types';
-  import { onMount } from 'svelte';
-  import ItemCard from '$lib/components/ItemCard.svelte';
-  import GlitchText from '$lib/components/GlitchText.svelte';
+  import type { PageData } from "./$types";
+  import { onMount } from "svelte";
+  import ItemCard from "$lib/components/ItemCard.svelte";
+  import GlitchText from "$lib/components/GlitchText.svelte";
 
   let { data }: { data: PageData } = $props();
 
@@ -11,59 +11,63 @@
   const limit = 30;
   let loading = $state(false);
   let hasMore = $state(true);
-  let query = $state('');
-  let kindFilter = $state('all');
-  let sort = $state('recent');
+  let query = $state("");
+  let kindFilter = $state("all");
+  let sort = $state("recent");
   let activeTags = $state<string[]>([]);
-  let layout = $state('grid');
+  let layout = $state("grid");
   let columnCount = $state(4);
   let columns = $derived(
     Array.from({ length: columnCount }, (_, col) =>
-      items.filter((_, i) => i % columnCount === col)
-    )
+      items.filter((_, i) => i % columnCount === col),
+    ),
   );
 
-  let displayTotal    = $state(0);
+  let displayTotal = $state(0);
   let displayHandmade = $state(0);
-  let displayBought   = $state(0);
-  let displaySeries   = $state(0);
+  let displayBought = $state(0);
+  let displaySeries = $state(0);
 
   let sentinel: HTMLDivElement;
 
   const kindOptions = [
-    { key: 'all', label: 'すべて' },
-    { key: 'bought', label: '購入品' },
-    { key: 'handmade', label: '自作品' },
+    { key: "all", label: "すべて" },
+    { key: "bought", label: "購入品" },
+    { key: "handmade", label: "自作品" },
   ];
   const sortOptions = [
-    { key: 'recent', label: '最新' },
-    { key: 'oldest', label: '古い順' },
+    { key: "recent", label: "最新" },
+    { key: "oldest", label: "古い順" },
   ];
 
   async function fetchItems(reset = false) {
     if (loading) return;
     loading = true;
-    if (reset) { items = []; offset = 0; hasMore = true; }
+    if (reset) {
+      items = [];
+      offset = 0;
+      hasMore = true;
+    }
 
     const params = new URLSearchParams({
       limit: String(limit),
       offset: String(offset),
-      status: 'owned',
+      status: "owned",
       sort,
     });
-    if (query) params.set('q', query);
-    if (kindFilter !== 'all') params.set('kind', kindFilter);
-    if (activeTags.length > 0) params.set('tags', activeTags.join(','));
+    if (query) params.set("q", query);
+    if (kindFilter !== "all") params.set("kind", kindFilter);
+    if (activeTags.length > 0) params.set("tags", activeTags.join(","));
 
     try {
       const res = await fetch(`/api/items?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json() as { items: any[] };
+      const json = (await res.json()) as { items: any[] };
       items = reset ? json.items : [...items, ...json.items];
       offset += json.items.length;
       hasMore = json.items.length === limit;
     } catch (e) {
-      console.error('Failed to fetch items:', e);
+      console.error("Failed to fetch items:", e);
       hasMore = false;
     } finally {
       loading = false;
@@ -72,36 +76,44 @@
 
   onMount(() => {
     let rafId: number;
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReduced) {
-      displayTotal = data.stats.total; displayHandmade = data.stats.handmade;
-      displayBought = data.stats.bought; displaySeries = data.stats.series;
+      displayTotal = data.stats.total;
+      displayHandmade = data.stats.handmade;
+      displayBought = data.stats.bought;
+      displaySeries = data.stats.series;
     } else {
-      const dur = 1200, start = performance.now();
+      const dur = 1200,
+        start = performance.now();
       const tick = () => {
         const t = Math.min((performance.now() - start) / dur, 1);
         const e = 1 - Math.pow(1 - t, 3);
-        displayTotal    = Math.round(e * data.stats.total);
+        displayTotal = Math.round(e * data.stats.total);
         displayHandmade = Math.round(e * data.stats.handmade);
-        displayBought   = Math.round(e * data.stats.bought);
-        displaySeries   = Math.round(e * data.stats.series);
+        displayBought = Math.round(e * data.stats.bought);
+        displaySeries = Math.round(e * data.stats.series);
         if (t < 1) rafId = requestAnimationFrame(tick);
       };
       rafId = requestAnimationFrame(tick);
     }
     const updateColumns = () => {
-      columnCount = window.innerWidth <= 720 ? 2
-                  : window.innerWidth <= 1100 ? 3
-                  : 4;
+      columnCount =
+        window.innerWidth <= 720 ? 2 : window.innerWidth <= 1100 ? 3 : 4;
     };
     updateColumns();
-    window.addEventListener('resize', updateColumns);
+    window.addEventListener("resize", updateColumns);
     fetchItems();
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) fetchItems();
     });
     observer.observe(sentinel);
-    return () => { cancelAnimationFrame(rafId); observer.disconnect(); window.removeEventListener('resize', updateColumns); };
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      window.removeEventListener("resize", updateColumns);
+    };
   });
 
   let searchTimer: ReturnType<typeof setTimeout>;
@@ -110,8 +122,14 @@
     searchTimer = setTimeout(() => fetchItems(true), 300);
   }
 
-  function setKind(k: string) { kindFilter = k; fetchItems(true); }
-  function setSort(s: string) { sort = s; fetchItems(true); }
+  function setKind(k: string) {
+    kindFilter = k;
+    fetchItems(true);
+  }
+  function setSort(s: string) {
+    sort = s;
+    fetchItems(true);
+  }
   function toggleTag(tagId: string) {
     activeTags = activeTags.includes(tagId)
       ? activeTags.filter((id) => id !== tagId)
@@ -130,12 +148,22 @@
   <div class="blob b2"></div>
   <div class="blob b3"></div>
   <svg class="amb-ring r1" viewBox="-350 -350 700 700" aria-hidden="true">
-    <polygon points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
-      fill="none" stroke="var(--line)" stroke-width="1" transform="rotate(12)"/>
+    <polygon
+      points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
+      fill="none"
+      stroke="var(--line)"
+      stroke-width="1"
+      transform="rotate(12)"
+    />
   </svg>
   <svg class="amb-ring r2" viewBox="-210 -210 420 420" aria-hidden="true">
-    <polygon points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
-      fill="none" stroke="var(--line)" stroke-width="1" transform="rotate(12)"/>
+    <polygon
+      points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
+      fill="none"
+      stroke="var(--line)"
+      stroke-width="1"
+      transform="rotate(12)"
+    />
   </svg>
 </div>
 
@@ -144,15 +172,16 @@
   <section class="hero rise">
     <div>
       <h1 class="display hero-title">
-        <GlitchText segments={[
-          { text: '雨のあたらない、', breakAfter: true },
-          { text: 'スーツケース', em: true },
-          { text: 'の中。' }
-        ]} />
+        <GlitchText
+          segments={[
+            { text: "ここは", small: true },
+            { text: "雨のあたらない、", breakAfter: true },
+            { text: "スーツケース", em: true },
+            { text: "の中。" },
+          ]}
+        />
       </h1>
-      <p class="hero-lede">
-        作ったものと、出会ったもの。
-      </p>
+      <p class="hero-lede">作ったものと、出会ったもの。</p>
       <div class="hero-meta">
         <span class="eyebrow">Now showing</span>
         <span class="mono" style="font-size:11px; color:var(--fg-soft)">
@@ -164,19 +193,30 @@
     <div class="spotlight">
       {#if data.spotlight}
         <div class="spotlight-tag">
-          Spotlight · {data.spotlight.isHandmade === 1 ? 'Handmade' : 'Collected'}
+          Spotlight · {data.spotlight.isHandmade === 1
+            ? "Handmade"
+            : "Collected"}
         </div>
         <div class="spotlight-inner">
-          <img src={data.spotlight.thumbUrl} alt={data.spotlight.name ?? 'Spotlight'} />
+          <img
+            src={data.spotlight.thumbUrl}
+            alt={data.spotlight.name ?? "Spotlight"}
+          />
         </div>
         <div class="spotlight-caption">
-          <h3>{data.spotlight.name ?? '名称未設定'}</h3>
+          <h3>{data.spotlight.name ?? "名称未設定"}</h3>
           {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
         </div>
       {:else}
         <div class="spotlight-tag">Spotlight</div>
-        <div class="spotlight-inner" style="display:grid; place-items:center; background:var(--bg-sunk)">
-          <span style="font-family:var(--f-display); font-size:56px; opacity:0.2; color:var(--fg)">✦</span>
+        <div
+          class="spotlight-inner"
+          style="display:grid; place-items:center; background:var(--bg-sunk)"
+        >
+          <span
+            style="font-family:var(--f-display); font-size:56px; opacity:0.2; color:var(--fg)"
+            >✦</span
+          >
         </div>
       {/if}
     </div>
@@ -214,11 +254,44 @@
   <div class="section-head rise rise-d2">
     <h2>Collection</h2>
     <div class="seg">
-      <button class={layout === 'grid' ? '--active' : ''} onclick={() => (layout = 'grid')} aria-label="グリッド表示">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <button
+        class={layout === "grid" ? "--active" : ""}
+        onclick={() => (layout = "grid")}
+        aria-label="グリッド表示"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          ><rect x="3" y="3" width="7" height="7" /><rect
+            x="14"
+            y="3"
+            width="7"
+            height="7"
+          /><rect x="3" y="14" width="7" height="7" /><rect
+            x="14"
+            y="14"
+            width="7"
+            height="7"
+          /></svg
+        >
       </button>
-      <button class={layout === 'list' ? '--active' : ''} onclick={() => (layout = 'list')} aria-label="リスト表示">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <button
+        class={layout === "list" ? "--active" : ""}
+        onclick={() => (layout = "list")}
+        aria-label="リスト表示"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18" /></svg
+        >
       </button>
     </div>
   </div>
@@ -226,19 +299,38 @@
   <!-- フィルターバー -->
   <div class="filterbar rise rise-d2">
     <div class="search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input placeholder="名前・シリーズ・タグで検索…" bind:value={query} oninput={handleSearch} />
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        ><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg
+      >
+      <input
+        placeholder="名前・シリーズ・タグで検索…"
+        bind:value={query}
+        oninput={handleSearch}
+      />
     </div>
     <div class="seg">
       {#each kindOptions as opt}
-        <button class={kindFilter === opt.key ? '--active' : ''} onclick={() => setKind(opt.key)}>
+        <button
+          class={kindFilter === opt.key ? "--active" : ""}
+          onclick={() => setKind(opt.key)}
+        >
           {opt.label}
         </button>
       {/each}
     </div>
     <div class="seg">
       {#each sortOptions as opt}
-        <button class={sort === opt.key ? '--active' : ''} onclick={() => setSort(opt.key)}>
+        <button
+          class={sort === opt.key ? "--active" : ""}
+          onclick={() => setSort(opt.key)}
+        >
           {opt.label}
         </button>
       {/each}
@@ -249,18 +341,29 @@
   {#if data.tags.length > 0}
     <div class="chiprow rise rise-d3">
       {#each data.tags as tag}
-        <button class={'chip ' + (activeTags.includes(tag.id) ? '--active' : '')} onclick={() => toggleTag(tag.id)}>
-          {tag.name}{#if tag.count > 0}&nbsp;<span class="count">{tag.count}</span>{/if}
+        <button
+          class={"chip " + (activeTags.includes(tag.id) ? "--active" : "")}
+          onclick={() => toggleTag(tag.id)}
+        >
+          {tag.name}{#if tag.count > 0}&nbsp;<span class="count"
+              >{tag.count}</span
+            >{/if}
         </button>
       {/each}
       {#if activeTags.length > 0}
-        <button class="chip" onclick={() => { activeTags = []; fetchItems(true); }}>クリア ×</button>
+        <button
+          class="chip"
+          onclick={() => {
+            activeTags = [];
+            fetchItems(true);
+          }}>クリア ×</button
+        >
       {/if}
     </div>
   {/if}
 
   <!-- アイテム一覧 -->
-  {#if layout === 'grid'}
+  {#if layout === "grid"}
     <div class="items-grid rise rise-d4">
       {#each columns as column, colIdx (colIdx)}
         <div class="items-column">
@@ -271,27 +374,53 @@
       {/each}
     </div>
   {:else}
-    <div class="rise rise-d4" style="display:flex; flex-direction:column; gap:10px">
+    <div
+      class="rise rise-d4"
+      style="display:flex; flex-direction:column; gap:10px"
+    >
       {#each items as item (item.id)}
-        <a href="/items/{item.id}" class="card"
-          style="display:grid; grid-template-columns:72px 1fr auto; gap:18px; align-items:center; padding:12px">
-          <div style="width:72px; height:72px; border-radius:14px; overflow:hidden; box-shadow:var(--neu-inset); flex-shrink:0">
+        <a
+          href="/items/{item.id}"
+          class="card"
+          style="display:grid; grid-template-columns:72px 1fr auto; gap:18px; align-items:center; padding:12px"
+        >
+          <div
+            style="width:72px; height:72px; border-radius:14px; overflow:hidden; box-shadow:var(--neu-inset); flex-shrink:0"
+          >
             {#if item.thumbUrl}
-              <img src={item.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover" />
+              <img
+                src={item.thumbUrl}
+                alt=""
+                style="width:100%; height:100%; object-fit:cover"
+              />
             {:else}
-              <div style="width:100%; height:100%; background:var(--bg-sunk); display:grid; place-items:center; font-family:var(--f-display); font-size:24px; opacity:0.25; color:var(--fg)">✦</div>
+              <div
+                style="width:100%; height:100%; background:var(--bg-sunk); display:grid; place-items:center; font-family:var(--f-display); font-size:24px; opacity:0.25; color:var(--fg)"
+              >
+                ✦
+              </div>
             {/if}
           </div>
           <div style="text-align:left; overflow:hidden">
-            <h3 style="margin:0; font-family:var(--f-display); font-size:17px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-              {item.name ?? '名称未設定'}
+            <h3
+              style="margin:0; font-family:var(--f-display); font-size:17px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis"
+            >
+              {item.name ?? "名称未設定"}
             </h3>
-            <div style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); letter-spacing:0.05em; margin-top:3px">
-              {item.series ?? '—'} · {item.isHandmade === 1 ? 'HANDMADE' : item.isHandmade === 0 ? 'COLLECTED' : '—'}
+            <div
+              style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); letter-spacing:0.05em; margin-top:3px"
+            >
+              {item.series ?? "—"} · {item.isHandmade === 1
+                ? "HANDMADE"
+                : item.isHandmade === 0
+                  ? "COLLECTED"
+                  : "—"}
             </div>
           </div>
-          <div style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); white-space:nowrap">
-            {item.createdAt?.slice(0, 10) ?? ''}
+          <div
+            style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); white-space:nowrap"
+          >
+            {item.createdAt?.slice(0, 10) ?? ""}
           </div>
         </a>
       {/each}
@@ -299,15 +428,23 @@
   {/if}
 
   {#if loading}
-    <div style="text-align:center; padding:48px 20px; color:var(--fg-soft); font-family:var(--f-mono); font-size:11px; letter-spacing:0.16em">
+    <div
+      style="text-align:center; padding:48px 20px; color:var(--fg-soft); font-family:var(--f-mono); font-size:11px; letter-spacing:0.16em"
+    >
       LOADING...
     </div>
   {/if}
 
   {#if !loading && items.length === 0}
     <div style="text-align:center; padding:80px 20px; color:var(--fg-soft)">
-      <div style="font-family:var(--f-display); font-size:36px; margin-bottom:12px">該当なし</div>
-      <div style="font-size:13px; color:var(--fg-mute)">フィルタを変えるか、新しいアイテムを登録してください。</div>
+      <div
+        style="font-family:var(--f-display); font-size:36px; margin-bottom:12px"
+      >
+        該当なし
+      </div>
+      <div style="font-size:13px; color:var(--fg-mute)">
+        フィルタを変えるか、新しいアイテムを登録してください。
+      </div>
     </div>
   {/if}
 
@@ -317,7 +454,15 @@
 <!-- FAB (ログイン時のみ) -->
 {#if data.user}
   <a href="/items/new" class="fab" aria-label="新規登録">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg
+    >
     <div class="fab-ring"></div>
   </a>
 {/if}

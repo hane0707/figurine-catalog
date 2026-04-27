@@ -4,6 +4,7 @@
   type Segment = {
     text: string;
     em?: boolean;
+    small?: boolean;
     breakAfter?: boolean;
   };
 
@@ -111,7 +112,7 @@
       </em>
     {:else}
       {#each [...seg.text] as char}
-        <span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>
+        <span class="glitch-ch" class:punct={PUNCT.has(char)} class:small-ch={seg.small}>{char}</span>
       {/each}
     {/if}
     {#if seg.breakAfter}<br />{/if}
@@ -126,5 +127,8 @@
   }
   .punct {
     font-size: 0.75em;
+  }
+  .small-ch {
+    font-size: 0.65em;
   }
 </style>
