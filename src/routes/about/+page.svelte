@@ -1,3 +1,7 @@
+<script lang="ts">
+  import GlitchText from '$lib/components/GlitchText.svelte';
+</script>
+
 <svelte:head>
   <title>About — Haku's suitcase</title>
 </svelte:head>
@@ -14,7 +18,7 @@
   <div class="about-content">
     <div class="eyebrow" style="margin-bottom: 16px">About</div>
     <h1 class="display" style="font-size: clamp(32px, 5vw, 64px); margin-bottom: 32px; line-height: 1.1">
-      Haku's suitcase
+      <GlitchText segments={[{ text: "Haku's suitcase" }]} />
     </h1>
 
     <div class="about-body">
