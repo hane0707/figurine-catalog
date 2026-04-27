@@ -2,6 +2,7 @@
   import type { PageData } from './$types';
   import { onMount } from 'svelte';
   import ItemCard from '$lib/components/ItemCard.svelte';
+  import GlitchText from '$lib/components/GlitchText.svelte';
 
   let { data }: { data: PageData } = $props();
 
@@ -143,8 +144,11 @@
   <section class="hero rise">
     <div>
       <h1 class="display hero-title">
-        雨のあたらない、<br />
-        <em>スーツケース</em>の中。
+        <GlitchText segments={[
+          { text: '雨のあたらない、', breakAfter: true },
+          { text: 'スーツケース', em: true },
+          { text: 'の中。' }
+        ]} />
       </h1>
       <p class="hero-lede">
         作ったものと、出会ったもの。
