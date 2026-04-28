@@ -186,7 +186,7 @@
       <div class="hero-meta">
         <span class="eyebrow">Now showing</span>
         <span class="mono" style="font-size:11px; color:var(--fg-soft)">
-          {data.stats.total} items · {data.stats.handmade} handmade · <a href="/about" class="hero-about-link">このサイトについて →</a>
+          {data.stats.total} items · {data.stats.handmade} handmade<span class="hero-about-sep"> · </span><a href="/about" class="hero-about-link">このサイトについて →</a>
         </span>
       </div>
     </div>
@@ -481,5 +481,9 @@
   .hero-about-link:focus-visible {
     outline: 1.5px solid var(--fg-soft);
     border-radius: 2px;
+  }
+  @media (max-width: 720px) {
+    .hero-about-sep { display: none; }
+    .hero-about-link { display: block; margin-top: 4px; }
   }
 </style>
