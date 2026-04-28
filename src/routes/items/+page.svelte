@@ -470,8 +470,9 @@
 
 <style>
   .hero-about-link {
-    color: inherit;
-    text-decoration: none;
+    color: var(--fg-mute);
+    text-decoration: underline dashed;
+    text-underline-offset: 3px;
     transition: color var(--dur) var(--ease);
   }
   .hero-about-link:hover {
