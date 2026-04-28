@@ -477,4 +477,8 @@
   .hero-about-link:hover {
     color: var(--fg);
   }
+  .hero-about-link:focus-visible {
+    outline: 1.5px solid var(--fg-soft);
+    border-radius: 2px;
+  }
 </style>
