@@ -186,7 +186,7 @@
       <div class="hero-meta">
         <span class="eyebrow">Now showing</span>
         <span class="mono" style="font-size:11px; color:var(--fg-soft)">
-          {data.stats.total} items · {data.stats.handmade} handmade
+          {data.stats.total} items · {data.stats.handmade} handmade · <a href="/about" class="hero-about-link">このサイトについて →</a>
         </span>
       </div>
     </div>
@@ -467,3 +467,14 @@
     <div class="fab-ring"></div>
   </a>
 {/if}
+
+<style>
+  .hero-about-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--dur) var(--ease);
+  }
+  .hero-about-link:hover {
+    color: var(--fg);
+  }
+</style>
