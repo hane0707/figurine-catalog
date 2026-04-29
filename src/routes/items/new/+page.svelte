@@ -257,101 +257,80 @@
     </div>
 
   {:else if step === 'type'}
-    <h2 class="text-lg font-semibold mb-4">購入品？自作品？</h2>
-    <div class="space-y-3">
+    <h2 style="margin-bottom:16px">購入品？自作品？</h2>
+    <div class="type-picker">
       <button
-        class="w-full border rounded-xl p-4 text-left hover:bg-accent {isHandmade === 0
-          ? 'border-primary'
-          : ''}"
-        onclick={() => {
-          isHandmade = 0;
-          step = 'details';
-        }}
+        class={'type-card --bought ' + (isHandmade === 0 ? '--active' : '')}
+        onclick={() => { isHandmade = 0; step = 'details'; }}
       >
-        🛒 <strong>購入品</strong><br /><span class="text-sm text-muted-foreground"
-          >店舗・EC・イベントで入手</span
-        >
+        <div class="mark"></div>
+        <h4>購入品</h4>
+        <p>店舗・EC・イベントで入手</p>
       </button>
       <button
-        class="w-full border rounded-xl p-4 text-left hover:bg-accent {isHandmade === 1
-          ? 'border-primary'
-          : ''}"
-        onclick={() => {
-          isHandmade = 1;
-          step = 'details';
-        }}
+        class={'type-card --handmade ' + (isHandmade === 1 ? '--active' : '')}
+        onclick={() => { isHandmade = 1; step = 'details'; }}
       >
-        🎨 <strong>自作品</strong><br /><span class="text-sm text-muted-foreground"
-          >造形・塗装・改造など</span
-        >
+        <div class="mark"></div>
+        <h4>自作品</h4>
+        <p>造形・塗装・改造など</p>
       </button>
     </div>
-    <div class="mt-4 flex gap-2">
-      <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'basic')}>← 戻る</button>
-      <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'tags')}>スキップ</button>
+    <div style="margin-top:16px; display:flex; gap:10px">
+      <button class="btn --ghost" onclick={() => (step = 'basic')}>← 戻る</button>
+      <button class="btn --ghost" onclick={() => (step = 'tags')}>スキップ</button>
     </div>
 
   {:else if step === 'details'}
     {#if isHandmade === 0}
-      <h2 class="text-lg font-semibold mb-4">購入情報</h2>
-      <div class="space-y-3">
-        <input
-          bind:value={storeName}
-          placeholder="店舗名 / ECサイト名"
-          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground"
-        />
-        <input
-          bind:value={eventName}
-          placeholder="イベント名（例: ワンフェス2024夏）"
-          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground"
-        />
-        <div class="flex gap-2">
-          <input
-            bind:value={purchaseDate}
-            type="date"
-            class="flex-1 border rounded-lg px-3 py-2 bg-background text-foreground"
-          />
-          <input
-            bind:value={purchasePrice}
-            type="number"
-            placeholder="金額 ¥"
-            class="flex-1 border rounded-lg px-3 py-2 bg-background text-foreground"
-          />
+      <h2 style="margin-bottom:16px">購入情報</h2>
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <div class="field">
+          <label>Store</label>
+          <input bind:value={storeName} placeholder="店舗名 / ECサイト名" />
         </div>
-        <input
-          bind:value={maker}
-          placeholder="メーカー名"
-          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground"
-        />
-        <input
-          bind:value={artistName}
-          placeholder="作家名・原型師名"
-          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground"
-        />
+        <div class="field">
+          <label>Event</label>
+          <input bind:value={eventName} placeholder="イベント名（例: ワンフェス2024夏）" />
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+          <div class="field">
+            <label>Date</label>
+            <input bind:value={purchaseDate} type="date" />
+          </div>
+          <div class="field">
+            <label>Price ¥</label>
+            <input bind:value={purchasePrice} type="number" placeholder="金額" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Maker</label>
+          <input bind:value={maker} placeholder="メーカー名" />
+        </div>
+        <div class="field">
+          <label>Artist</label>
+          <input bind:value={artistName} placeholder="作家名・原型師名" />
+        </div>
       </div>
     {:else}
-      <h2 class="text-lg font-semibold mb-4">制作情報</h2>
-      <div class="space-y-3">
-        <textarea
-          bind:value={quote}
-          placeholder="台詞・印象的なセリフ（スキップ可）"
-          rows={2}
-          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground resize-none"
-        ></textarea>
-        <div class="flex gap-2">
-          <input
-            bind:value={productionStart}
-            type="date"
-            class="flex-1 border rounded-lg px-3 py-2 bg-background text-foreground"
-          />
-          <input
-            bind:value={productionEnd}
-            type="date"
-            class="flex-1 border rounded-lg px-3 py-2 bg-background text-foreground"
-          />
+      <h2 style="margin-bottom:16px">制作情報</h2>
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <div class="field">
+          <label>Quote</label>
+          <textarea bind:value={quote} placeholder="台詞・印象的なセリフ（スキップ可）" rows={2}></textarea>
         </div>
-        <div>
-          <p class="text-sm text-muted-foreground mb-2">使用素材</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+          <div class="field">
+            <label>Started</label>
+            <input bind:value={productionStart} type="date" />
+          </div>
+          <div class="field">
+            <label>Finished</label>
+            <input bind:value={productionEnd} type="date" />
+          </div>
+        </div>
+        <div class="field">
+          <label>素材</label>
           <TagPicker
             bind:selected={selectedMaterials}
             suggestions={data.materials.all}
@@ -360,24 +339,19 @@
             onCreate={createMaterial}
           />
         </div>
-        <textarea
-          bind:value={notes}
-          placeholder="制作メモ・塗装記録（自由記述）"
-          rows={4}
-          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground resize-none"
-        ></textarea>
+        <div class="field">
+          <label>Notes</label>
+          <textarea bind:value={notes} placeholder="制作メモ・塗装記録（自由記述）" rows={4}></textarea>
+        </div>
       </div>
     {/if}
-    <div class="mt-4 flex gap-2">
-      <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'type')}>← 戻る</button>
-      <button
-        class="flex-1 bg-primary text-primary-foreground rounded-lg py-2"
-        onclick={() => (step = 'tags')}
-      >次へ →</button>
+    <div style="margin-top:16px; display:flex; gap:10px">
+      <button class="btn --ghost" onclick={() => (step = 'type')}>← 戻る</button>
+      <button class="btn --primary" onclick={() => (step = 'tags')}>次へ →</button>
     </div>
 
   {:else if step === 'tags'}
-    <h2 class="text-lg font-semibold mb-4">入力内容の確認</h2>
+    <h2 style="margin-bottom:16px">入力内容の確認</h2>
     <SummaryCard
       {uploadedPhotos}
       {name}
@@ -396,7 +370,7 @@
       {notes}
       onEdit={(s) => (step = s)}
     />
-    <h2 class="text-lg font-semibold mb-4">タグを設定</h2>
+    <h2 style="margin-bottom:16px">タグを設定</h2>
     <TagPicker
       bind:selected={selectedTags}
       suggestions={data.allTags}
@@ -404,13 +378,13 @@
       placeholder="タグを追加..."
       onCreate={createTag}
     />
-    <div class="mt-4 flex gap-2">
+    <div style="margin-top:16px; display:flex; gap:10px">
       <button
-        class="flex-1 border rounded-lg py-2"
+        class="btn --ghost"
         onclick={() => (step = isHandmade !== null ? 'details' : 'type')}
       >← 戻る</button>
       <button
-        class="flex-1 bg-primary text-primary-foreground rounded-lg py-2"
+        class="btn --primary"
         disabled={isSaving}
         onclick={saveAndFinish}
       >{isSaving ? '保存中...' : '完了 ✓'}</button>
