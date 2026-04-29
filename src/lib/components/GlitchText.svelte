@@ -107,22 +107,14 @@
   });
 </script>
 
-<span bind:this={container}>
-  {#each segments as seg}
-    {#if seg.em}
-      <em>
-        {#each [...seg.text] as char}
-          <span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>
-        {/each}
-      </em>
-    {:else}
-      {#each [...seg.text] as char}
-        <span class="glitch-ch" class:punct={PUNCT.has(char)} class:small-ch={seg.small} class:large-ch={seg.large} data-stain={seg.stain ? 'true' : undefined}>{char}</span>
-      {/each}
-    {/if}
-    {#if seg.breakAfter}<br />{/if}
-  {/each}
-</span>
+<!-- WARNING: ブロック間に改行・スペースを入れないこと。インライン要素間の空白テキストノードになりセグメント間に不要スペースが生じる -->
+<span bind:this={container}>{#each segments as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
+        class="glitch-ch"
+        class:punct={PUNCT.has(char)}
+        class:small-ch={seg.small}
+        class:large-ch={seg.large}
+        data-stain={seg.stain ? 'true' : undefined}
+      >{char}</span>{/if}{/each}{/if}{#if seg.breakAfter}<br />{/if}{/each}</span>
 
 <style>
   .glitch-ch {
