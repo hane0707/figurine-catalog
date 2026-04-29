@@ -13,6 +13,7 @@
     productionStart: string;
     productionEnd: string;
     selectedMaterials: { id: string; name: string }[];
+    quote: string;
     notes: string;
     onEdit: (step: 'photo' | 'basic' | 'type' | 'details' | 'tags') => void;
   }
@@ -31,6 +32,7 @@
     productionStart,
     productionEnd,
     selectedMaterials,
+    quote,
     notes,
     onEdit,
   }: Props = $props();
@@ -178,6 +180,14 @@
         <dd data-testid="productionEnd-value">
           {#if productionEnd}
             {productionEnd}
+          {:else}
+            <span class="text-muted-foreground">—</span>
+          {/if}
+        </dd>
+        <dt>台詞</dt>
+        <dd data-testid="quote-value">
+          {#if quote}
+            {quote}
           {:else}
             <span class="text-muted-foreground">—</span>
           {/if}

@@ -37,6 +37,7 @@
   // 自作品
   let productionStart = $state('');
   let productionEnd = $state('');
+  let quote = $state('');
   let notes = $state('');
 
   const steps = ['photo', 'basic', 'type', 'details', 'tags'];
@@ -127,6 +128,7 @@
         updateBody.handmadeInfo = {
           productionStart: productionStart || null,
           productionEnd: productionEnd || null,
+          quote: quote || null,
           notes: notes || null,
         };
         if (selectedMaterials.length > 0) {
@@ -338,6 +340,12 @@
     {:else}
       <h2 class="text-lg font-semibold mb-4">制作情報</h2>
       <div class="space-y-3">
+        <textarea
+          bind:value={quote}
+          placeholder="台詞・印象的なセリフ（スキップ可）"
+          rows={2}
+          class="w-full border rounded-lg px-3 py-2 bg-background text-foreground resize-none"
+        ></textarea>
         <div class="flex gap-2">
           <input
             bind:value={productionStart}
@@ -392,6 +400,7 @@
       {productionStart}
       {productionEnd}
       {selectedMaterials}
+      {quote}
       {notes}
       onEdit={(s) => (step = s)}
     />
