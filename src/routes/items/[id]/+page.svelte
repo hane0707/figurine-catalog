@@ -28,6 +28,7 @@
   let editProductionStart = $state('');
   let editProductionEnd = $state('');
   let editNotes = $state('');
+  let editQuote = $state('');
   let editTags = $state<{ id: string; name: string }[]>([]);
   let editMaterials = $state<{ id: string; name: string }[]>([]);
   let editPhotos = $state<Array<{ id: string; thumbUrl: string; isCover: number }>>([]);
@@ -49,6 +50,7 @@
     editProductionStart = item.handmadeInfo?.productionStart ?? '';
     editProductionEnd = item.handmadeInfo?.productionEnd ?? '';
     editNotes = item.handmadeInfo?.notes ?? '';
+    editQuote = item.handmadeInfo?.quote ?? '';
     editTags = item.itemTags?.map((t: any) => t.tag) ?? [];
     editMaterials = item.itemMaterials?.map((m: any) => m.material) ?? [];
     editPhotos = item.photos.map((p: any) => ({ id: p.id, thumbUrl: p.thumbUrl, isCover: p.isCover }));
@@ -81,6 +83,7 @@
         body.handmadeInfo = {
           productionStart: editProductionStart || null,
           productionEnd: editProductionEnd || null,
+          quote: editQuote || null,
           notes: editNotes || null,
         };
         body.materialIds = editMaterials.map((m) => m.id);
@@ -384,6 +387,10 @@
           {:else if editIsHandmade === 1}
             <div class="edit-section">
               <div class="edit-section-title">制作情報</div>
+              <div class="edit-field">
+                <label>Quote</label>
+                <textarea bind:value={editQuote} placeholder="台詞・印象的なセリフ" rows={2}></textarea>
+              </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div class="edit-field"><label>Started</label><input type="date" bind:value={editProductionStart} /></div>
                 <div class="edit-field"><label>Finished</label><input type="date" bind:value={editProductionEnd} /></div>
