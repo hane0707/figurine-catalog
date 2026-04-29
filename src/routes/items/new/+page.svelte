@@ -223,45 +223,37 @@
     />
 
     {#if uploadedPhotos.length > 0}
-      <div class="mt-3 grid grid-cols-4 gap-2">
+      <div style="margin-top:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:8px">
         {#each uploadedPhotos as photo}
-          <div class="aspect-square rounded-lg overflow-hidden bg-muted">
-            <img src={photo.thumbViewUrl} alt="" class="w-full h-full object-cover" />
+          <div style="aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-sunk)">
+            <img src={photo.thumbViewUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
           </div>
         {/each}
       </div>
     {/if}
 
-    <div class="mt-4 flex gap-2">
-      <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'basic')}>スキップ</button>
+    <div style="margin-top:16px; display:flex; gap:10px">
+      <button class="btn --ghost" onclick={() => (step = 'basic')}>スキップ</button>
       {#if uploadedPhotos.length > 0}
-        <button
-          class="flex-1 bg-primary text-primary-foreground rounded-lg py-2"
-          onclick={() => (step = 'basic')}
-        >次へ →</button>
+        <button class="btn --primary" onclick={() => (step = 'basic')}>次へ →</button>
       {/if}
     </div>
 
   {:else if step === 'basic'}
-    <h2 class="text-lg font-semibold mb-4">名前・シリーズ名</h2>
-    <div class="space-y-3">
-      <input
-        bind:value={name}
-        placeholder="アイテム名（スキップ可）"
-        class="w-full border rounded-lg px-3 py-2 bg-background text-foreground"
-      />
-      <input
-        bind:value={series}
-        placeholder="シリーズ名（スキップ可）"
-        class="w-full border rounded-lg px-3 py-2 bg-background text-foreground"
-      />
+    <h2 style="margin-bottom:16px">名前・シリーズ名</h2>
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div class="field">
+        <label>Name</label>
+        <input bind:value={name} placeholder="アイテム名（スキップ可）" />
+      </div>
+      <div class="field">
+        <label>Series</label>
+        <input bind:value={series} placeholder="シリーズ名（スキップ可）" />
+      </div>
     </div>
-    <div class="mt-4 flex gap-2">
-      <button class="flex-1 border rounded-lg py-2" onclick={() => (step = 'photo')}>← 戻る</button>
-      <button
-        class="flex-1 bg-primary text-primary-foreground rounded-lg py-2"
-        onclick={() => (step = 'type')}
-      >次へ →</button>
+    <div style="margin-top:16px; display:flex; gap:10px">
+      <button class="btn --ghost" onclick={() => (step = 'photo')}>← 戻る</button>
+      <button class="btn --primary" onclick={() => (step = 'type')}>次へ →</button>
     </div>
 
   {:else if step === 'type'}
