@@ -40,6 +40,7 @@ export const handmadeInfo = sqliteTable('handmade_info', {
   itemId: text('item_id').primaryKey().references(() => items.id, { onDelete: 'cascade' }),
   productionStart: text('production_start'),
   productionEnd: text('production_end'),
+  quote: text('quote'),
   notes: text('notes'),
 });
 
