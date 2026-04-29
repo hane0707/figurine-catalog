@@ -279,6 +279,14 @@
           </div>
         {/if}
 
+        <!-- 台詞ブロック（自作品かつ quote あり、公開設定に連動） -->
+        {#if item.isHandmade === 1 && item.handmadeInfo?.quote &&
+             (data.user || (item.isPublic === 1 && item.handmadeInfoPublic === 1))}
+          <div class="quote-block">
+            &ldquo;{item.handmadeInfo.quote}&rdquo;
+          </div>
+        {/if}
+
         <!-- 購入情報 -->
         {#if item.isHandmade === 0 && item.purchaseInfo}
           <div>
@@ -457,5 +465,12 @@
     gap: 10px;
     justify-content: flex-end;
     margin-bottom: 24px;
+  }
+
+  .quote-block {
+    font-size: 1.2rem;
+    font-style: italic;
+    line-height: 1.65;
+    color: var(--fg-mute);
   }
 </style>
