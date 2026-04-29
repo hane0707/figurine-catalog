@@ -70,6 +70,7 @@ export const PATCH: RequestHandler = async ({ params, request, platform, locals 
         itemId: params.id,
         productionStart: (hi.productionStart as string | null) ?? null,
         productionEnd: (hi.productionEnd as string | null) ?? null,
+        quote:           (hi.quote           as string | null) ?? null,
         notes: (hi.notes as string | null) ?? null,
       });
     }
