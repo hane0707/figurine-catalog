@@ -131,7 +131,7 @@ export function toApiError(result: z.SafeParseError<unknown>) {
   // サーバーログにのみ詳細を出力
   console.error('[validation]', result.error.flatten());
   // 外部には汎用メッセージのみ
-  return error(400, JSON.stringify({ code: 'VALIDATION_ERROR', message: '入力値が不正です' }));
+  return json({ code: 'VALIDATION_ERROR', message: '入力値が不正です' }, { status: 400 });
 }
 ```
 
@@ -144,7 +144,7 @@ export function toApiError(result: z.SafeParseError<unknown>) {
 | タイミング | 対象 |
 |---|---|
 | `on-blur`（フォーカス離脱） | フィールド単体の検証（主要ゲート） |
-| `on-input`（入力中） | 文字数が上限に近い場合のカウント表示 |
+| `on-input`（入力中） | 残り文字数が 20 文字以下になったらカウント表示 |
 | 保存ボタン押下時 | 全フィールドの一括検証（最終ゲート） |
 
 ### エラー表示
@@ -186,11 +186,10 @@ Finished は Started 以降の日付を入力してください
 - `src/lib/validation/errors.ts`
 
 **変更:**
-- `src/routes/api/items/+server.ts`
+- `src/routes/api/items/+server.ts`（POST: name/id 検証、GET: offset チェック）
 - `src/routes/api/items/[id]/+server.ts`
 - `src/routes/api/tags/+server.ts`
 - `src/routes/api/materials/+server.ts`
 - `src/routes/api/photos/[id]/+server.ts`
-- `src/routes/api/items/+server.ts`（GET の offset チェック）
 - `src/routes/items/new/+page.svelte`
 - `src/routes/items/[id]/+page.svelte`
