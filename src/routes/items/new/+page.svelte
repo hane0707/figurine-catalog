@@ -225,7 +225,7 @@
     {#if uploadedPhotos.length > 0}
       <div style="margin-top:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:8px">
         {#each uploadedPhotos as photo}
-          <div style="aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-sunk)">
+          <div style="aspect-ratio:1; border-radius:var(--r-sm); overflow:hidden; background:var(--bg-sunk)">
             <img src={photo.thumbViewUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
           </div>
         {/each}

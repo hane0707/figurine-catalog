@@ -69,7 +69,7 @@
     font-size: 9px;
     letter-spacing: 0.06em;
     padding: 2px 8px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--r-pill);
     background: var(--bg-sunk);
     color: var(--fg-soft);
     box-shadow: var(--neu-inset);

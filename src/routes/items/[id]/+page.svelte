@@ -264,7 +264,7 @@
           </h1>
           {#if item.series}<p class="series">{item.series}</p>{/if}
           {#if item.status === 'parted'}
-            <span style="display:inline-block; margin-top:8px; font-family:var(--f-mono); font-size:10px; letter-spacing:0.12em; padding:4px 12px; border-radius:var(--radius-pill); background:var(--bg-sunk); box-shadow:var(--neu-inset); color:var(--fg-soft)">
+            <span style="display:inline-block; margin-top:8px; font-family:var(--f-mono); font-size:10px; letter-spacing:0.12em; padding:4px 12px; border-radius:var(--r-pill); background:var(--bg-sunk); box-shadow:var(--neu-inset); color:var(--fg-soft)">
               PARTED
             </span>
           {/if}
@@ -326,7 +326,7 @@
             {#if editPhotos.length > 0}
               <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px; margin-bottom:12px">
                 {#each editPhotos as photo (photo.id)}
-                  <div style="position:relative; aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft); border:{photo.isCover ? '2px solid var(--accent-haze)' : '2px solid transparent'}">
+                  <div style="position:relative; aspect-ratio:1; border-radius:var(--r-sm); overflow:hidden; box-shadow:var(--neu-soft); border:{photo.isCover ? '2px solid var(--accent-haze)' : '2px solid transparent'}">
                     <button
                       type="button"
                       onclick={() => setCover(photo.id)}
@@ -449,7 +449,7 @@
         {#each item.photos as photo}
           <button
             onclick={() => (selectedPhoto = photo)}
-            style="aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; box-shadow:var(--neu-soft); background:none; border:none; padding:0; cursor:pointer; display:block; width:100%"
+            style="aspect-ratio:1; border-radius:var(--r-sm); overflow:hidden; box-shadow:var(--neu-soft); background:none; border:none; padding:0; cursor:pointer; display:block; width:100%"
           >
             <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
           </button>

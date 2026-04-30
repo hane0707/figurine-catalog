@@ -38,7 +38,7 @@
   }: Props = $props();
 </script>
 
-<div style="background:var(--surface); box-shadow:var(--neu-soft); border-radius:var(--radius); padding:20px; margin-bottom:16px; font-size:13px">
+<div style="background:var(--surface); box-shadow:var(--neu-soft); border-radius:var(--r); padding:20px; margin-bottom:16px; font-size:13px">
   <!-- 写真セクション -->
   <div style="border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:12px">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
@@ -197,7 +197,7 @@
           {#if selectedMaterials.length > 0}
             <div style="display:flex; flex-wrap:wrap; gap:4px">
               {#each selectedMaterials as material (material.id)}
-                <span style="display:inline-block; border:1px solid var(--line); border-radius:var(--radius-sm); padding:1px 6px; font-size:11px">{material.name}</span>
+                <span style="display:inline-block; border:1px solid var(--line); border-radius:var(--r-sm); padding:1px 6px; font-size:11px">{material.name}</span>
               {/each}
             </div>
           {:else}
