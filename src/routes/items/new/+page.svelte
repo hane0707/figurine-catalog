@@ -244,11 +244,11 @@
     <div style="display:flex; flex-direction:column; gap:12px">
       <div class="field">
         <label>Name</label>
-        <input bind:value={name} placeholder="アイテム名（スキップ可）" />
+        <input type="text" bind:value={name} placeholder="アイテム名（スキップ可）" />
       </div>
       <div class="field">
         <label>Series</label>
-        <input bind:value={series} placeholder="シリーズ名（スキップ可）" />
+        <input type="text" bind:value={series} placeholder="シリーズ名（スキップ可）" />
       </div>
     </div>
     <div style="margin-top:16px; display:flex; gap:10px">
@@ -287,11 +287,11 @@
       <div style="display:flex; flex-direction:column; gap:12px">
         <div class="field">
           <label>Store</label>
-          <input bind:value={storeName} placeholder="店舗名 / ECサイト名" />
+          <input type="text" bind:value={storeName} placeholder="店舗名 / ECサイト名" />
         </div>
         <div class="field">
           <label>Event</label>
-          <input bind:value={eventName} placeholder="イベント名（例: ワンフェス2024夏）" />
+          <input type="text" bind:value={eventName} placeholder="イベント名（例: ワンフェス2024夏）" />
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
           <div class="field">
@@ -305,11 +305,11 @@
         </div>
         <div class="field">
           <label>Maker</label>
-          <input bind:value={maker} placeholder="メーカー名" />
+          <input type="text" bind:value={maker} placeholder="メーカー名" />
         </div>
         <div class="field">
           <label>Artist</label>
-          <input bind:value={artistName} placeholder="作家名・原型師名" />
+          <input type="text" bind:value={artistName} placeholder="作家名・原型師名" />
         </div>
       </div>
     {:else}
