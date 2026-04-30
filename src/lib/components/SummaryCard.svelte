@@ -41,7 +41,7 @@
 <div style="background:var(--surface); box-shadow:var(--neu-soft); border-radius:var(--radius); padding:20px; margin-bottom:16px; font-size:13px">
   <!-- 写真セクション -->
   <div style="border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:12px">
-    <div class="flex justify-between items-center mb-2">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
       <span class="eyebrow">📷 写真</span>
       <button
         style="font-size:11px; color:var(--fg-mute); background:none; border:none; cursor:pointer; font-family:var(--f-mono)"
@@ -64,7 +64,7 @@
 
   <!-- 基本情報セクション -->
   <div style="border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:12px">
-    <div class="flex justify-between items-center mb-2">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
       <span class="eyebrow">📋 基本情報</span>
       <button
         style="font-size:11px; color:var(--fg-mute); background:none; border:none; cursor:pointer; font-family:var(--f-mono)"
@@ -96,7 +96,7 @@
   <!-- 詳細セクション -->
   {#if isHandmade === 0}
     <div data-testid="details-section">
-      <div class="flex justify-between items-center mb-2">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
         <span class="eyebrow">🛒 購入情報</span>
         <button
           style="font-size:11px; color:var(--fg-mute); background:none; border:none; cursor:pointer; font-family:var(--f-mono)"
@@ -158,7 +158,7 @@
     </div>
   {:else if isHandmade === 1}
     <div data-testid="details-section">
-      <div class="flex justify-between items-center mb-2">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
         <span class="eyebrow">🎨 制作情報</span>
         <button
           style="font-size:11px; color:var(--fg-mute); background:none; border:none; cursor:pointer; font-family:var(--f-mono)"

@@ -213,7 +213,7 @@
   {/if}
 
   {#if step === 'photo'}
-    <h2 class="text-lg font-semibold mb-4">写真を追加</h2>
+    <h2 style="margin-bottom:16px">写真を追加</h2>
 
     <PhotoUploader
       {itemId}
