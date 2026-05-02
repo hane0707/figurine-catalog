@@ -74,7 +74,7 @@
   }
   function validateMaker() { makerError = validateField(purchaseInfoSchema.shape.maker, maker || null); }
   function validateArtistName() { artistNameError = validateField(purchaseInfoSchema.shape.artistName, artistName || null); }
-  function validateProductionStart() { productionStartError = validateField(handmadeInfoBaseSchema.shape.productionStart, productionStart || null); }
+  function validateProductionStart() { productionStartError = validateField(handmadeInfoBaseSchema.shape.productionStart, productionStart || null); validateProductionEnd(); }
   function validateProductionEnd() {
     const r = handmadeInfoSchema.safeParse({
       productionStart: productionStart || null,
@@ -452,7 +452,7 @@
       >← 戻る</button>
       <button
         class="btn --primary"
-        disabled={isSaving}
+        disabled={isSaving || hasErrors()}
         onclick={saveAndFinish}
       >{isSaving ? '保存中...' : '完了 ✓'}</button>
     </div>

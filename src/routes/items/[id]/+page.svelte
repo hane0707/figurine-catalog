@@ -63,7 +63,7 @@
   }
   function validateEditMaker() { editMakerError = validateEditField(purchaseInfoSchema.shape.maker, editMaker || null); }
   function validateEditArtistName() { editArtistNameError = validateEditField(purchaseInfoSchema.shape.artistName, editArtistName || null); }
-  function validateEditProductionStart() { editProductionStartError = validateEditField(handmadeInfoBaseSchema.shape.productionStart, editProductionStart || null); }
+  function validateEditProductionStart() { editProductionStartError = validateEditField(handmadeInfoBaseSchema.shape.productionStart, editProductionStart || null); validateEditProductionEnd(); }
   function validateEditProductionEnd() {
     const r = handmadeInfoSchema.safeParse({
       productionStart: editProductionStart || null,
@@ -264,7 +264,7 @@
         <button class="btn --primary" onclick={startEdit}>編集</button>
       {:else}
         <button class="btn --ghost" onclick={() => (editing = false)}>キャンセル</button>
-        <button class="btn --primary" disabled={saving} onclick={saveEdit}>
+        <button class="btn --primary" disabled={saving || hasEditErrors()} onclick={saveEdit}>
           {saving ? '保存中...' : '保存'}
         </button>
       {/if}
