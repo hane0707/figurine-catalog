@@ -5,6 +5,7 @@
   import { invalidateAll } from '$app/navigation';
   import TagPicker from '$lib/components/TagPicker.svelte';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
+  import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
@@ -33,6 +34,52 @@
   let editMaterials = $state<{ id: string; name: string }[]>([]);
   let editPhotos = $state<Array<{ id: string; thumbUrl: string; isCover: number }>>([]);
 
+  let editNameError = $state('');
+  let editSeriesError = $state('');
+  let editStoreNameError = $state('');
+  let editEventNameError = $state('');
+  let editPurchaseDateError = $state('');
+  let editPurchasePriceError = $state('');
+  let editMakerError = $state('');
+  let editArtistNameError = $state('');
+  let editProductionStartError = $state('');
+  let editProductionEndError = $state('');
+  let editQuoteError = $state('');
+  let editNotesError = $state('');
+
+  function validateEditField<T>(schema: import('zod').ZodType<T>, value: T): string {
+    const r = schema.safeParse(value);
+    return r.success ? '' : (r.error.errors[0]?.message ?? '入力値が不正です');
+  }
+
+  function validateEditName() { editNameError = validateEditField(itemWriteSchema.shape.name, editName || null); }
+  function validateEditSeries() { editSeriesError = validateEditField(itemWriteSchema.shape.series, editSeries || null); }
+  function validateEditStoreName() { editStoreNameError = validateEditField(purchaseInfoSchema.shape.storeName, editStoreName || null); }
+  function validateEditEventName() { editEventNameError = validateEditField(purchaseInfoSchema.shape.eventName, editEventName || null); }
+  function validateEditPurchaseDate() { editPurchaseDateError = validateEditField(purchaseInfoSchema.shape.purchaseDate, editPurchaseDate || null); }
+  function validateEditPurchasePrice() {
+    const v = editPurchasePrice ? Number(editPurchasePrice) : null;
+    editPurchasePriceError = validateEditField(purchaseInfoSchema.shape.purchasePrice, v);
+  }
+  function validateEditMaker() { editMakerError = validateEditField(purchaseInfoSchema.shape.maker, editMaker || null); }
+  function validateEditArtistName() { editArtistNameError = validateEditField(purchaseInfoSchema.shape.artistName, editArtistName || null); }
+  function validateEditProductionStart() { editProductionStartError = validateEditField(handmadeInfoBaseSchema.shape.productionStart, editProductionStart || null); }
+  function validateEditProductionEnd() {
+    const r = handmadeInfoSchema.safeParse({
+      productionStart: editProductionStart || null,
+      productionEnd: editProductionEnd || null,
+    });
+    editProductionEndError = r.success ? '' : (r.error.errors.find(e => e.path[0] === 'productionEnd')?.message ?? '');
+  }
+  function validateEditQuote() { editQuoteError = validateEditField(handmadeInfoBaseSchema.shape.quote, editQuote || null); }
+  function validateEditNotes() { editNotesError = validateEditField(handmadeInfoBaseSchema.shape.notes, editNotes || null); }
+
+  function hasEditErrors(): boolean {
+    return !![editNameError, editSeriesError, editStoreNameError, editEventNameError,
+      editPurchaseDateError, editPurchasePriceError, editMakerError, editArtistNameError,
+      editProductionStartError, editProductionEndError, editQuoteError, editNotesError].find(Boolean);
+  }
+
   function startEdit() {
     editName = item.name ?? '';
     editSeries = item.series ?? '';
@@ -59,6 +106,14 @@
 
   async function saveEdit() {
     saving = true;
+    validateEditName(); validateEditSeries();
+    if (editIsHandmade === 0) {
+      validateEditStoreName(); validateEditEventName(); validateEditPurchaseDate();
+      validateEditPurchasePrice(); validateEditMaker(); validateEditArtistName();
+    } else if (editIsHandmade === 1) {
+      validateEditProductionStart(); validateEditProductionEnd(); validateEditQuote(); validateEditNotes();
+    }
+    if (hasEditErrors()) { saving = false; return; }
     try {
       const body: Record<string, unknown> = {
         name: editName || null,
@@ -358,11 +413,13 @@
             <div class="edit-section-title">基本情報</div>
             <div class="edit-field">
               <label>Name</label>
-              <input type="text" bind:value={editName} placeholder="名前" />
+              <input type="text" bind:value={editName} placeholder="名前" onblur={validateEditName} />
+              {#if editNameError}<p class="field-error">{editNameError}</p>{/if}
             </div>
             <div class="edit-field">
               <label>Series</label>
-              <input type="text" bind:value={editSeries} placeholder="シリーズ名" />
+              <input type="text" bind:value={editSeries} placeholder="シリーズ名" onblur={validateEditSeries} />
+              {#if editSeriesError}<p class="field-error">{editSeriesError}</p>{/if}
             </div>
           </div>
 
@@ -383,31 +440,68 @@
           {#if editIsHandmade === 0}
             <div class="edit-section">
               <div class="edit-section-title">購入情報</div>
-              <div class="edit-field"><label>Store / Shop</label><input type="text" bind:value={editStoreName} placeholder="店舗名・ECサイト名" /></div>
-              <div class="edit-field"><label>Event</label><input type="text" bind:value={editEventName} placeholder="イベント名" /></div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div class="edit-field"><label>Date</label><input type="date" bind:value={editPurchaseDate} /></div>
-                <div class="edit-field"><label>Price ¥</label><input type="number" bind:value={editPurchasePrice} placeholder="金額" /></div>
+              <div class="edit-field">
+                <label>Store / Shop</label>
+                <input type="text" bind:value={editStoreName} placeholder="店舗名・ECサイト名" onblur={validateEditStoreName} />
+                {#if editStoreNameError}<p class="field-error">{editStoreNameError}</p>{/if}
               </div>
-              <div class="edit-field"><label>Maker</label><input type="text" bind:value={editMaker} placeholder="メーカー名" /></div>
-              <div class="edit-field"><label>Artist</label><input type="text" bind:value={editArtistName} placeholder="作家名・原型師名" /></div>
+              <div class="edit-field">
+                <label>Event</label>
+                <input type="text" bind:value={editEventName} placeholder="イベント名" onblur={validateEditEventName} />
+                {#if editEventNameError}<p class="field-error">{editEventNameError}</p>{/if}
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div class="edit-field">
+                  <label>Date</label>
+                  <input type="date" bind:value={editPurchaseDate} onblur={validateEditPurchaseDate} />
+                  {#if editPurchaseDateError}<p class="field-error">{editPurchaseDateError}</p>{/if}
+                </div>
+                <div class="edit-field">
+                  <label>Price ¥</label>
+                  <input type="number" bind:value={editPurchasePrice} placeholder="金額" onblur={validateEditPurchasePrice} />
+                  {#if editPurchasePriceError}<p class="field-error">{editPurchasePriceError}</p>{/if}
+                </div>
+              </div>
+              <div class="edit-field">
+                <label>Maker</label>
+                <input type="text" bind:value={editMaker} placeholder="メーカー名" onblur={validateEditMaker} />
+                {#if editMakerError}<p class="field-error">{editMakerError}</p>{/if}
+              </div>
+              <div class="edit-field">
+                <label>Artist</label>
+                <input type="text" bind:value={editArtistName} placeholder="作家名・原型師名" onblur={validateEditArtistName} />
+                {#if editArtistNameError}<p class="field-error">{editArtistNameError}</p>{/if}
+              </div>
             </div>
           {:else if editIsHandmade === 1}
             <div class="edit-section">
               <div class="edit-section-title">制作情報</div>
               <div class="edit-field">
                 <label>Quote</label>
-                <textarea bind:value={editQuote} placeholder="台詞・印象的なセリフ" rows={2}></textarea>
+                <textarea bind:value={editQuote} placeholder="台詞・印象的なセリフ" rows={2} onblur={validateEditQuote}></textarea>
+                {#if editQuoteError}<p class="field-error">{editQuoteError}</p>{/if}
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div class="edit-field"><label>Started</label><input type="date" bind:value={editProductionStart} /></div>
-                <div class="edit-field"><label>Finished</label><input type="date" bind:value={editProductionEnd} /></div>
+                <div class="edit-field">
+                  <label>Started</label>
+                  <input type="date" bind:value={editProductionStart} onblur={validateEditProductionStart} />
+                  {#if editProductionStartError}<p class="field-error">{editProductionStartError}</p>{/if}
+                </div>
+                <div class="edit-field">
+                  <label>Finished</label>
+                  <input type="date" bind:value={editProductionEnd} onblur={validateEditProductionEnd} />
+                  {#if editProductionEndError}<p class="field-error">{editProductionEndError}</p>{/if}
+                </div>
               </div>
               <div class="edit-field">
                 <label>Materials</label>
                 <TagPicker bind:selected={editMaterials} suggestions={data.materials.all} frequent={data.materials.frequent} placeholder="素材を追加..." onCreate={createMaterial} />
               </div>
-              <div class="edit-field"><label>Notes</label><textarea bind:value={editNotes} placeholder="制作メモ・塗装記録" rows={3}></textarea></div>
+              <div class="edit-field">
+                <label>Notes</label>
+                <textarea bind:value={editNotes} placeholder="制作メモ・塗装記録" rows={3} onblur={validateEditNotes}></textarea>
+                {#if editNotesError}<p class="field-error">{editNotesError}</p>{/if}
+              </div>
             </div>
           {/if}
 
