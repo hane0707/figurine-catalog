@@ -4,6 +4,8 @@ import type { RequestHandler } from './$types';
 import { getDb, items, photos, purchaseInfo, handmadeInfo, itemTags, itemMaterials } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { deleteR2Object } from '$lib/server/r2';
+import { itemWriteSchema } from '$lib/validation/schemas';
+import { validationError } from '$lib/validation/errors';
 
 export const GET: RequestHandler = async ({ params, platform, locals }) => {
   const db = getDb(platform!.env.DB);
@@ -27,15 +29,11 @@ export const PATCH: RequestHandler = async ({ params, request, platform, locals 
   if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const body = await request.json() as Record<string, unknown>;
-  const now = new Date().toISOString();
 
-  // isPublic / status の入力バリデーション
-  if ('isPublic' in body && ![0, 1].includes(body.isPublic as number)) {
-    throw error(400, 'isPublic は 0 または 1 のみ有効です');
-  }
-  if ('status' in body && !['owned', 'parted'].includes(body.status as string)) {
-    throw error(400, 'status は owned または parted のみ有効です');
-  }
+  const parsed = itemWriteSchema.safeParse(body);
+  if (!parsed.success) return validationError(parsed.error);
+
+  const now = new Date().toISOString();
 
   const itemFields = ['name', 'series', 'isHandmade', 'isPublic', 'purchaseInfoPublic', 'handmadeInfoPublic', 'status'];
   const itemUpdate: Record<string, unknown> = { updatedAt: now };
@@ -78,8 +76,6 @@ export const PATCH: RequestHandler = async ({ params, request, platform, locals 
 
   // tagIds: アイテムタグの更新
   if (body.tagIds !== undefined) {
-    if (!Array.isArray(body.tagIds)) throw error(400, 'tagIds は配列である必要があります');
-    if (body.tagIds.length > 50) throw error(400, 'タグ数の上限は 50 です');
     await db.delete(itemTags).where(eq(itemTags.itemId, params.id));
     const ids = body.tagIds.filter((id): id is string => typeof id === 'string');
     if (ids.length > 0) {
@@ -89,8 +85,6 @@ export const PATCH: RequestHandler = async ({ params, request, platform, locals 
 
   // materialIds: アイテム素材の更新
   if (body.materialIds !== undefined) {
-    if (!Array.isArray(body.materialIds)) throw error(400, 'materialIds は配列である必要があります');
-    if (body.materialIds.length > 50) throw error(400, '素材数の上限は 50 です');
     await db.delete(itemMaterials).where(eq(itemMaterials.itemId, params.id));
     const ids = body.materialIds.filter((id): id is string => typeof id === 'string');
     if (ids.length > 0) {
