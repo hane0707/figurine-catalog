@@ -6,11 +6,16 @@ import { items, photos, itemTags, tags } from '$lib/server/db/schema';
 import { generateId } from '$lib/utils/uuid';
 import { getPresignedGetUrl } from '$lib/server/r2';
 import { eq, like, and, or, inArray, exists, sql, desc, asc } from 'drizzle-orm';
+import { itemPostSchema, paginationSchema } from '$lib/validation/schemas';
+import { validationError } from '$lib/validation/errors';
 
 export const POST: RequestHandler = async ({ request, platform, locals }) => {
   if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  const parsed = itemPostSchema.safeParse(body);
+  if (!parsed.success) return validationError(parsed.error);
 
   const clientId = typeof body.id === 'string' && body.id.trim() ? body.id.trim() : undefined;
   const id = clientId ?? generateId();
@@ -34,8 +39,12 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
 
 export const GET: RequestHandler = async ({ url, platform, locals }) => {
   const db = getDb(platform!.env.DB);
-  const limit = Math.min(Number(url.searchParams.get('limit') ?? 30), 100);
-  const offset = Number(url.searchParams.get('offset') ?? 0);
+  const rawOffset = Number(url.searchParams.get('offset') ?? 0);
+  const rawLimit = Math.min(Number(url.searchParams.get('limit') ?? 30), 100);
+  const paginationParsed = paginationSchema.safeParse({ offset: rawOffset, limit: rawLimit });
+  if (!paginationParsed.success) return validationError(paginationParsed.error);
+  const limit = rawLimit;
+  const offset = rawOffset;
   const status = url.searchParams.get('status') ?? 'owned';
   const q = url.searchParams.get('q') ?? '';
   const tagsParam = url.searchParams.get('tags') ?? '';
