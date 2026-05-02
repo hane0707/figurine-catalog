@@ -549,6 +549,7 @@ html, body {
   box-shadow: var(--neu-inset-deep), 0 0 0 2px var(--accent-amber);
 }
 .field textarea { min-height: 96px; resize: vertical; }
+.field-error { color: var(--error, #ef4444); font-size: 0.75rem; margin-top: 2px; }
 .type-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .type-card {
   background: var(--surface); box-shadow: var(--neu-soft);

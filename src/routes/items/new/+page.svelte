@@ -7,6 +7,7 @@
   import TagPicker from '$lib/components/TagPicker.svelte';
   import SummaryCard from '$lib/components/SummaryCard.svelte';
   import { generateId } from '$lib/utils/uuid';
+  import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
 
   let { data }: { data: PageData } = $props();
 
@@ -43,6 +44,52 @@
   const steps = ['photo', 'basic', 'type', 'details', 'tags'];
   let stepIndex = $derived(steps.indexOf(step));
   let isSaving = $state(false);
+
+  let nameError = $state('');
+  let seriesError = $state('');
+  let storeNameError = $state('');
+  let eventNameError = $state('');
+  let purchaseDateError = $state('');
+  let purchasePriceError = $state('');
+  let makerError = $state('');
+  let artistNameError = $state('');
+  let productionStartError = $state('');
+  let productionEndError = $state('');
+  let quoteError = $state('');
+  let notesError = $state('');
+
+  function validateField<T>(schema: import('zod').ZodType<T>, value: T): string {
+    const r = schema.safeParse(value);
+    return r.success ? '' : (r.error.errors[0]?.message ?? '入力値が不正です');
+  }
+
+  function validateName() { nameError = validateField(itemWriteSchema.shape.name, name || null); }
+  function validateSeries() { seriesError = validateField(itemWriteSchema.shape.series, series || null); }
+  function validateStoreName() { storeNameError = validateField(purchaseInfoSchema.shape.storeName, storeName || null); }
+  function validateEventName() { eventNameError = validateField(purchaseInfoSchema.shape.eventName, eventName || null); }
+  function validatePurchaseDate() { purchaseDateError = validateField(purchaseInfoSchema.shape.purchaseDate, purchaseDate || null); }
+  function validatePurchasePrice() {
+    const v = purchasePrice ? Number(purchasePrice) : null;
+    purchasePriceError = validateField(purchaseInfoSchema.shape.purchasePrice, v);
+  }
+  function validateMaker() { makerError = validateField(purchaseInfoSchema.shape.maker, maker || null); }
+  function validateArtistName() { artistNameError = validateField(purchaseInfoSchema.shape.artistName, artistName || null); }
+  function validateProductionStart() { productionStartError = validateField(handmadeInfoBaseSchema.shape.productionStart, productionStart || null); }
+  function validateProductionEnd() {
+    const r = handmadeInfoSchema.safeParse({
+      productionStart: productionStart || null,
+      productionEnd: productionEnd || null,
+    });
+    productionEndError = r.success ? '' : (r.error.errors.find(e => e.path[0] === 'productionEnd')?.message ?? '');
+  }
+  function validateQuote() { quoteError = validateField(handmadeInfoBaseSchema.shape.quote, quote || null); }
+  function validateNotes() { notesError = validateField(handmadeInfoBaseSchema.shape.notes, notes || null); }
+
+  function hasErrors(): boolean {
+    return !![nameError, seriesError, storeNameError, eventNameError, purchaseDateError,
+      purchasePriceError, makerError, artistNameError, productionStartError,
+      productionEndError, quoteError, notesError].find(Boolean);
+  }
 
   async function handlePhotoUploaded(
     photo: { id: string; r2KeyOrig: string; r2KeyThumb: string; thumbViewUrl: string },
@@ -96,6 +143,14 @@
 
   async function saveAndFinish() {
     if (isSaving) return;
+    validateName(); validateSeries();
+    if (isHandmade === 0) {
+      validateStoreName(); validateEventName(); validatePurchaseDate();
+      validatePurchasePrice(); validateMaker(); validateArtistName();
+    } else if (isHandmade === 1) {
+      validateProductionStart(); validateProductionEnd(); validateQuote(); validateNotes();
+    }
+    if (hasErrors()) return;
     isSaving = true;
     try {
       if (!itemCreated) {
@@ -244,11 +299,13 @@
     <div style="display:flex; flex-direction:column; gap:12px">
       <div class="field">
         <label>Name</label>
-        <input type="text" bind:value={name} placeholder="アイテム名（スキップ可）" />
+        <input type="text" bind:value={name} placeholder="アイテム名（スキップ可）" onblur={validateName} />
+        {#if nameError}<p class="field-error">{nameError}</p>{/if}
       </div>
       <div class="field">
         <label>Series</label>
-        <input type="text" bind:value={series} placeholder="シリーズ名（スキップ可）" />
+        <input type="text" bind:value={series} placeholder="シリーズ名（スキップ可）" onblur={validateSeries} />
+        {#if seriesError}<p class="field-error">{seriesError}</p>{/if}
       </div>
     </div>
     <div style="margin-top:16px; display:flex; gap:10px">
@@ -287,29 +344,35 @@
       <div style="display:flex; flex-direction:column; gap:12px">
         <div class="field">
           <label>Store</label>
-          <input type="text" bind:value={storeName} placeholder="店舗名 / ECサイト名" />
+          <input type="text" bind:value={storeName} placeholder="店舗名 / ECサイト名" onblur={validateStoreName} />
+          {#if storeNameError}<p class="field-error">{storeNameError}</p>{/if}
         </div>
         <div class="field">
           <label>Event</label>
-          <input type="text" bind:value={eventName} placeholder="イベント名（例: ワンフェス2024夏）" />
+          <input type="text" bind:value={eventName} placeholder="イベント名（例: ワンフェス2024夏）" onblur={validateEventName} />
+          {#if eventNameError}<p class="field-error">{eventNameError}</p>{/if}
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
           <div class="field">
             <label>Date</label>
-            <input bind:value={purchaseDate} type="date" />
+            <input bind:value={purchaseDate} type="date" onblur={validatePurchaseDate} />
+            {#if purchaseDateError}<p class="field-error">{purchaseDateError}</p>{/if}
           </div>
           <div class="field">
             <label>Price ¥</label>
-            <input bind:value={purchasePrice} type="number" placeholder="金額" />
+            <input bind:value={purchasePrice} type="number" min="0" max="100000000" placeholder="金額" onblur={validatePurchasePrice} />
+            {#if purchasePriceError}<p class="field-error">{purchasePriceError}</p>{/if}
           </div>
         </div>
         <div class="field">
           <label>Maker</label>
-          <input type="text" bind:value={maker} placeholder="メーカー名" />
+          <input type="text" bind:value={maker} placeholder="メーカー名" onblur={validateMaker} />
+          {#if makerError}<p class="field-error">{makerError}</p>{/if}
         </div>
         <div class="field">
           <label>Artist</label>
-          <input type="text" bind:value={artistName} placeholder="作家名・原型師名" />
+          <input type="text" bind:value={artistName} placeholder="作家名・原型師名" onblur={validateArtistName} />
+          {#if artistNameError}<p class="field-error">{artistNameError}</p>{/if}
         </div>
       </div>
     {:else}
@@ -317,16 +380,19 @@
       <div style="display:flex; flex-direction:column; gap:12px">
         <div class="field">
           <label>Quote</label>
-          <textarea bind:value={quote} placeholder="台詞・印象的なセリフ（スキップ可）" rows={2}></textarea>
+          <textarea bind:value={quote} placeholder="台詞・印象的なセリフ（スキップ可）" rows={2} onblur={validateQuote}></textarea>
+          {#if quoteError}<p class="field-error">{quoteError}</p>{/if}
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
           <div class="field">
             <label>Started</label>
-            <input bind:value={productionStart} type="date" />
+            <input bind:value={productionStart} type="date" onblur={validateProductionStart} />
+            {#if productionStartError}<p class="field-error">{productionStartError}</p>{/if}
           </div>
           <div class="field">
             <label>Finished</label>
-            <input bind:value={productionEnd} type="date" />
+            <input bind:value={productionEnd} type="date" onblur={validateProductionEnd} />
+            {#if productionEndError}<p class="field-error">{productionEndError}</p>{/if}
           </div>
         </div>
         <div class="field">
@@ -341,7 +407,8 @@
         </div>
         <div class="field">
           <label>Notes</label>
-          <textarea bind:value={notes} placeholder="制作メモ・塗装記録（自由記述）" rows={4}></textarea>
+          <textarea bind:value={notes} placeholder="制作メモ・塗装記録（自由記述）" rows={4} onblur={validateNotes}></textarea>
+          {#if notesError}<p class="field-error">{notesError}</p>{/if}
         </div>
       </div>
     {/if}
