@@ -566,5 +566,7 @@
     font-style: italic;
     line-height: 1.65;
     color: var(--fg-mute);
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 </style>
