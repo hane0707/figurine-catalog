@@ -4,6 +4,8 @@ import type { RequestHandler } from './$types';
 import { getDb, tags } from '$lib/server/db';
 import { sql } from 'drizzle-orm';
 import { generateId } from '$lib/utils/uuid';
+import { tagNameSchema } from '$lib/validation/schemas';
+import { validationError } from '$lib/validation/errors';
 
 export const GET: RequestHandler = async ({ platform }) => {
   const db = getDb(platform!.env.DB);
@@ -16,7 +18,8 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
   const db = getDb(platform!.env.DB);
   const { name } = await request.json() as { name: string };
   const normalized = name.trim();
-  if (!normalized) return json({ error: 'タグ名が空です' }, { status: 400 });
+  const nameResult = tagNameSchema.safeParse(normalized);
+  if (!nameResult.success) return validationError(nameResult.error);
 
   const existing = await db.select().from(tags).where(
     sql`lower(${tags.name}) = lower(${normalized})`

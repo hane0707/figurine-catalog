@@ -4,6 +4,8 @@ import type { RequestHandler } from './$types';
 import { getDb, photos } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { deleteR2Object } from '$lib/server/r2';
+import { photoPostSchema } from '$lib/validation/schemas';
+import { validationError } from '$lib/validation/errors';
 
 const R2_KEY_PATTERN = /^(?:[a-zA-Z0-9_-]+\/)?items\/[a-zA-Z0-9_-]+\/(?:orig|thumb)_[a-zA-Z0-9_-]+\.(?:jpg|webp)$/;
 
@@ -11,6 +13,10 @@ export const POST: RequestHandler = async ({ params, request, platform, locals }
   if (!locals.user) throw error(401, 'Unauthorized');
   const db = getDb(platform!.env.DB);
   const body = await request.json() as { itemId: string; r2KeyOrig: string; r2KeyThumb: string; sortOrder?: number };
+
+  const parsed = photoPostSchema.safeParse(body);
+  if (!parsed.success) return validationError(parsed.error);
+
   const { itemId, r2KeyOrig, r2KeyThumb, sortOrder } = body;
 
   if (!R2_KEY_PATTERN.test(r2KeyOrig) || !R2_KEY_PATTERN.test(r2KeyThumb)) {

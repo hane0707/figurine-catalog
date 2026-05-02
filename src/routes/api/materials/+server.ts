@@ -4,6 +4,8 @@ import type { RequestHandler } from './$types';
 import { getDb, materials, itemMaterials } from '$lib/server/db';
 import { eq, sql, desc } from 'drizzle-orm';
 import { generateId } from '$lib/utils/uuid';
+import { materialNameSchema } from '$lib/validation/schemas';
+import { validationError } from '$lib/validation/errors';
 
 export const GET: RequestHandler = async ({ platform }) => {
   const db = getDb(platform!.env.DB);
@@ -31,7 +33,8 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
   const db = getDb(platform!.env.DB);
   const { name } = await request.json() as { name: string };
   const normalized = name.trim();
-  if (!normalized) return json({ error: '素材名が空です' }, { status: 400 });
+  const nameResult = materialNameSchema.safeParse(normalized);
+  if (!nameResult.success) return validationError(nameResult.error);
 
   const existing = await db.select().from(materials).where(
     sql`lower(${materials.name}) = lower(${normalized})`
