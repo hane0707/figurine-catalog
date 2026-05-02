@@ -49,7 +49,7 @@
 
   function validateEditField<T>(schema: import('zod').ZodType<T>, value: T): string {
     const r = schema.safeParse(value);
-    return r.success ? '' : (r.error.errors[0]?.message ?? '入力値が不正です');
+    return r.success ? '' : (r.error.issues[0]?.message ?? '入力値が不正です');
   }
 
   function validateEditName() { editNameError = validateEditField(itemWriteSchema.shape.name, editName || null); }
@@ -69,7 +69,7 @@
       productionStart: editProductionStart || null,
       productionEnd: editProductionEnd || null,
     });
-    editProductionEndError = r.success ? '' : (r.error.errors.find(e => e.path[0] === 'productionEnd')?.message ?? '');
+    editProductionEndError = r.success ? '' : (r.error.issues.find(e => e.path[0] === 'productionEnd')?.message ?? '');
   }
   function validateEditQuote() { editQuoteError = validateEditField(handmadeInfoBaseSchema.shape.quote, editQuote || null); }
   function validateEditNotes() { editNotesError = validateEditField(handmadeInfoBaseSchema.shape.notes, editNotes || null); }
