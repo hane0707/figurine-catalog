@@ -239,7 +239,7 @@
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
     <div class="stat --line">
-      <span class="eyebrow">Purchased</span>
+      <span class="eyebrow">COLLECTED</span>
       <div class="stat-value">{displayBought}</div>
       <div class="stat-delta"><span class="dot"></span>購入品</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
