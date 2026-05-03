@@ -178,6 +178,9 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 
 | パス | 説明 | 認証 |
 |------|------|------|
+| `/` | トップページ | 不要 |
+| `/about` | このアプリについて | 不要 |
+| `/privacy` | プライバシーポリシー | 不要 |
 | `/items` | コレクション一覧 | 不要（閲覧のみ） |
 | `/items/new` | 新規登録ウィザード | 必要 |
 | `/items/:id` | アイテム詳細・編集・削除 | 必要 |

@@ -318,4 +318,4 @@ wrangler secret put CF_ACCESS_AUD --env production
 
 または Cloudflare ダッシュボード → Pages → Settings → Environment variables から直接入力（Encrypt ON）。
 
-> **未設定の場合:** JWT の署名検証をスキップして base64 デコードのみ行うフォールバックモードで動作します（コンソールに警告が出力されます）。
+> **未設定の場合:** JWT を信頼せず `locals.user` が設定されません。Cloudflare Access は通過できても、アプリ内で「未ログイン」扱いになり管理機能が使えない状態になります。**本番運用には必ず設定してください。**
