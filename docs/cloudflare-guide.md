@@ -55,24 +55,138 @@ graph TB
 
 ### 初回セットアップ（一度だけ）
 
-```mermaid
-flowchart TD
-    Start([開始]) --> A["① Cloudflare アカウント作成\ncloudflare.com"]
-    A --> B["② wrangler login\nブラウザでOAuth認証"]
-    B --> C["③ D1 データベース作成\nnpx wrangler d1 create figurine-catalog-db"]
-    C --> D["④ wrangler.toml の\ndatabase_id を更新してコミット"]
-    D --> E["⑤ R2 バケット作成\nnpx wrangler r2 bucket create figurine-catalog-photos"]
-    E --> F["⑥ R2 API トークン取得\nダッシュボード → R2 → Manage API Tokens"]
-    F --> G["⑦ シークレット設定\n（詳細は下記『シークレット管理』参照）"]
-    G --> H["⑧ ローカルでマイグレーション確認\nnpx wrangler dev"]
-    H --> I["⑨ GitHub リポジトリ作成\ngit remote add origin ..."]
-    I --> J["⑩ Cloudflare Pages プロジェクト作成\nダッシュボード → Pages → Create a project"]
-    J --> K["⑪ D1・R2 バインディング設定\nPages → Settings → Functions"]
-    K --> L["⑫ 本番 D1 にマイグレーション適用\nnpx wrangler d1 migrations apply ... --remote"]
-    L --> M["⑬ Cloudflare Access 設定\nZero Trust → Access → Applications"]
-    M --> N["⑭ JWT 署名検証の設定（推奨）\nCF_ACCESS_TEAM_DOMAIN・CF_ACCESS_AUD"]
-    N --> End(["✅ デプロイ完了"])
+上から順に実行する。
+
+---
+
+**① Cloudflare アカウント作成**
+
+🌐 ブラウザ: `https://cloudflare.com` でアカウント作成
+
+---
+
+**② wrangler ログイン**
+
+💻 ターミナル:
+```bash
+npx wrangler login
 ```
+
+---
+
+**③ D1 データベース作成**
+
+💻 ターミナル:
+```bash
+npx wrangler d1 create figurine-catalog-db
+```
+出力された `database_id`（UUID形式）をメモ。次のステップで使用する。
+
+---
+
+**④ wrangler.toml を更新してコミット**
+
+📝 エディタ: `wrangler.toml` の `database_id = "REPLACE_AFTER_CREATION"` を③の値に書き換えてコミット。
+
+---
+
+**⑤ R2 バケット作成**
+
+💻 ターミナル:
+```bash
+npx wrangler r2 bucket create figurine-catalog-photos
+```
+
+---
+
+**⑥ R2 API トークン取得**
+
+🌐 ダッシュボード: `dash.cloudflare.com` → R2 → **Manage R2 API Tokens** → **Create API Token**
+- Permissions: **Object Read & Write**
+- Specify bucket: `figurine-catalog-photos`
+
+表示される `Access Key ID` と `Secret Access Key` をメモ（**再表示不可**）。
+
+---
+
+**⑦ 本番シークレットを Pages 環境変数に設定**
+
+🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Environment variables**
+
+以下をすべて **Encrypt ON** で登録する:
+
+| 変数名 | 値 |
+|--------|-----|
+| `CLOUDFLARE_ACCOUNT_ID` | ダッシュボード右サイドバー下部の ID |
+| `R2_ACCESS_KEY_ID` | ⑥で取得した Access Key ID |
+| `R2_SECRET_ACCESS_KEY` | ⑥で取得した Secret Access Key |
+
+> `R2_BUCKET_NAME` と `R2_KEY_PREFIX` は `wrangler.toml` の `[vars]` に記載済みのため設定不要。
+
+---
+
+**⑧ ローカル動作確認**
+
+💻 ターミナル（README の手順に従いローカルで動作確認済みであること）:
+```bash
+npx wrangler d1 migrations apply figurine-catalog-db --local
+npm run build && npx wrangler pages dev .svelte-kit/cloudflare
+```
+
+---
+
+**⑨ GitHub リポジトリを作成して push**
+
+💻 ターミナル:
+```bash
+git remote add origin https://github.com/<your-username>/figurine-catalog.git
+git push -u origin main
+```
+
+---
+
+**⑩ Cloudflare Pages プロジェクト作成**
+
+🌐 ダッシュボード: Pages → **Create a project** → **Connect to Git** → リポジトリを選択
+
+| 設定項目 | 値 |
+|----------|-----|
+| Build command | `npm run build` |
+| Build output directory | `.svelte-kit/cloudflare` |
+
+---
+
+**⑪ D1・R2 バインディングを設定**
+
+🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Functions**
+
+- **D1 database bindings**: Variable name `DB` → `figurine-catalog-db`
+- **R2 bucket bindings**: Variable name `R2` → `figurine-catalog-photos`
+
+---
+
+**⑫ 本番 D1 にマイグレーション適用**
+
+💻 ターミナル:
+```bash
+npx wrangler d1 migrations apply figurine-catalog-db --remote
+```
+
+---
+
+**⑬ Cloudflare Access 設定**
+
+🌐 ダッシュボード: `one.dash.cloudflare.com` → Access → Applications → **Add an application**（詳細は[「Cloudflare Access の設定方法」](#cloudflare-access-の設定方法)を参照）
+
+---
+
+**⑭ JWT 署名検証の設定（推奨）**
+
+🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Environment variables**（詳細は[「JWT 署名検証の設定」](#jwt-署名検証の設定推奨)を参照）
+
+---
+
+✅ **デプロイ完了**
 
 ### 継続的デプロイ（2回目以降）
 
