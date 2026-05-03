@@ -26,8 +26,8 @@ graph TB
         GHSecrets["🔑 GitHub Secrets\nCF_API_TOKEN 等"]
     end
 
-    Browser -->|"① 公開ページ /p/:id\n（認証不要）"| Pages
-    Browser -->|"② 管理ページ /items/*\n（認証が必要）"| Access
+    Browser -->|"① /items 一覧\n（認証不要）"| Pages
+    Browser -->|"② /items/* など\n（認証が必要）"| Access
     Access -->|"③ 認証OK → 通過"| Pages
     Pages <-->|"④ DB 読み書き"| D1
     Pages -->|"⑤ presigned URL を生成\n（有効期限付き署名URL）"| R2
@@ -42,8 +42,8 @@ graph TB
 
 | 番号 | 説明 |
 |------|------|
-| ① | `/p/:id` は誰でもアクセス可能（フォロワーに共有する用途） |
-| ② | 管理ページへのアクセスは Cloudflare Access が Google ログインを要求 |
+| ① | `/items` 一覧は認証不要（未ログイン時は `isPublic` のアイテムのみ表示） |
+| ② | `/items/*`・`/api/*`・`/admin` へのアクセスは Cloudflare Access が Google ログインを要求 |
 | ③ | メールアドレスが許可リストにあればアクセス通過 |
 | ④ | D1 は Cloudflare のエッジ内にあるため低遅延 |
 | ⑤ | R2 の認証情報はサーバー（Workers）側にしか存在しない。ブラウザには署名済み URL のみ渡す |
@@ -70,7 +70,8 @@ flowchart TD
     J --> K["⑪ D1・R2 バインディング設定\nPages → Settings → Functions"]
     K --> L["⑫ 本番 D1 にマイグレーション適用\nnpx wrangler d1 migrations apply ... --remote"]
     L --> M["⑬ Cloudflare Access 設定\nZero Trust → Access → Applications"]
-    M --> End(["✅ デプロイ完了"])
+    M --> N["⑭ JWT 署名検証の設定（推奨）\nCF_ACCESS_TEAM_DOMAIN・CF_ACCESS_AUD"]
+    N --> End(["✅ デプロイ完了"])
 ```
 
 ### 継続的デプロイ（2回目以降）
@@ -272,15 +273,12 @@ Cloudflare Zero Trust（one.dash.cloudflare.com）
   Session Duration: 24 hours（お好みで）
   Application domain: <your-pages-domain>.pages.dev
 
-  Path を追加（3つ）:
-    /items
+  Path を追加:
     /items/*
     /admin
     /admin/*
     /api
     /api/*
-
-  ※ /p/* は追加しない（公開ページ）
 
 Policies:
   Policy name: Owner only
@@ -289,3 +287,35 @@ Policies:
 ```
 
 > `<your-pages-domain>` は Pages プロジェクト作成時に決まります（例: `figurine-catalog-abc.pages.dev`）。カスタムドメインを使う場合はそちらを設定。
+
+---
+
+## JWT 署名検証の設定（推奨）
+
+Cloudflare Access が付与する JWT をサーバー側で署名検証するために、以下の環境変数を Pages に追加する。
+
+### 設定する値
+
+| 変数名 | 値 | 設定場所 |
+|--------|-----|---------|
+| `CF_ACCESS_TEAM_DOMAIN` | `your-team`（`your-team.cloudflareaccess.com` の前半部分） | Pages 環境変数（非シークレット） |
+| `CF_ACCESS_AUD` | AUD Tag（下記参照） | Pages 環境変数（**Encrypt ON**） |
+
+**AUD Tag の確認場所:**
+```
+Cloudflare Zero Trust
+  → Access → Applications → 該当アプリ → Overview
+  → AUD Tag
+```
+
+### 設定手順
+
+```bash
+# CF_ACCESS_TEAM_DOMAIN は wrangler.toml の [vars] に追記しても可（非シークレット）
+# CF_ACCESS_AUD はシークレットとして登録
+wrangler secret put CF_ACCESS_AUD --env production
+```
+
+または Cloudflare ダッシュボード → Pages → Settings → Environment variables から直接入力（Encrypt ON）。
+
+> **未設定の場合:** JWT の署名検証をスキップして base64 デコードのみ行うフォールバックモードで動作します（コンソールに警告が出力されます）。

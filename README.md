@@ -11,7 +11,6 @@
 - **クイック登録** — 写真1枚で即保存、後から詳細を追記
 - **5ステップウィザード** — 写真 → 名前 → 購入品/自作品 → 詳細 → タグ
 - **コレクション一覧** — グリッド表示・キーワード検索・タグフィルタ・無限スクロール
-- **公開ページ** (`/p/:id`) — 認証不要で共有可能、公開範囲を細かく制御
 - **PWA対応** — ホーム画面に追加してアプリのように使える
 
 ---
@@ -162,7 +161,7 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 
 ## デプロイ（本番）
 
-詳細な手順は [`docs/cloudflare-guide.md`](docs/cloudflare-guide.md) を参照。
+**全手順は [`docs/cloudflare-guide.md`](docs/cloudflare-guide.md) を参照。** 以下は概要のみ。
 
 1. `wrangler.toml` の `database_id` が正しく設定されているか確認
 2. GitHub リポジトリを作成して push
@@ -173,45 +172,6 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 7. Cloudflare Access でアクセス制御を設定
 8. JWT 署名検証用の環境変数を設定（推奨）
 
-### 手順 7: Cloudflare Access の設定
-
-Access → Applications → **Add an Application** で Self-hosted アプリを作成し、書き込み操作を保護するパスを指定:
-
-- `https://your-domain.com/items/*`
-- `https://your-domain.com/api/*`
-- `https://your-domain.com/admin`
-
-`/p/:id` のみ認証不要（公開ページ）。
-
-#### 許可するメールアドレスを設定
-
-Access → Applications → 該当アプリ → **Policies** → **Add a Policy**
-
-- Policy name: `Allow owner`
-- Action: `Allow`
-- Include: **Emails** → 自分の Google アカウントのメールアドレスを入力
-
-これで指定したメールアドレス以外は Google ログイン後も弾かれる。
-
-### 手順 8: JWT 署名検証の有効化（推奨）
-
-Cloudflare Access が付与する JWT をサーバー側で署名検証するために、以下の環境変数を Pages に追加する:
-
-```bash
-# wrangler.toml の [vars] に追記（非シークレット）
-# CF_ACCESS_TEAM_DOMAIN = "your-team"  ← your-team.cloudflareaccess.com の前半部分
-
-# シークレットとして登録（Cloudflare Access > Applications > 該当アプリ > Overview の AUD Tag）
-wrangler secret put CF_ACCESS_AUD --env production
-```
-
-> 未設定の場合は JWT の署名検証をスキップして base64 デコードのみ行うフォールバックモードで動作します（コンソールに警告が出力されます）。
-
-```bash
-# 本番 D1 にマイグレーション適用
-npx wrangler d1 migrations apply figurine-catalog-db --remote
-```
-
 ---
 
 ## ルーティング
@@ -221,11 +181,11 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 | `/items` | コレクション一覧 | 不要（閲覧のみ） |
 | `/items/new` | 新規登録ウィザード | 必要 |
 | `/items/:id` | アイテム詳細・編集・削除 | 必要 |
-| `/p/:id` | 公開ページ | 不要 |
 | `/admin` | devモード: ログインページ / 本番: `/items` へリダイレクト | devモードのみ不要 |
 | `/api/items` POST | アイテム作成 | 必要 |
 | `/api/items/:id` PATCH・DELETE | アイテム更新・削除 | 必要 |
-| `/api/photos/*` POST | 写真登録・署名付きURL発行 | 必要 |
+| `/api/photos/presign` POST | 署名付きURL発行 | 必要 |
+| `/api/photos/:id` DELETE・PATCH | 写真削除・カバー設定 | 必要 |
 | `/api/tags` POST | タグ作成 | 必要 |
 | `/api/materials` POST | 素材作成 | 必要 |
 
