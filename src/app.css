@@ -134,18 +134,7 @@ html, body {
 .brand { display: flex; align-items: center; gap: 14px; }
 .brand-mark {
   width: 44px; height: 44px; border-radius: 14px;
-  background: var(--surface); box-shadow: var(--neu-soft);
-  display: grid; place-items: center; position: relative;
-}
-.brand-mark::before {
-  content: ''; position: absolute;
-  width: 18px; height: 18px; border-radius: 50%; background: var(--fg);
-}
-.brand-mark::after {
-  content: ''; position: absolute;
-  width: 10px; height: 10px; border-radius: 2px;
-  background: var(--accent-amber);
-  transform: translate(8px, 8px); mix-blend-mode: multiply;
+  object-fit: contain;
 }
 .brand-name { font-family: var(--f-display); font-size: 20px; letter-spacing: -0.01em; }
 .nav-actions { display: flex; gap: 10px; align-items: center; }

@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-  <link rel="icon" href="/favicon.svg" />
+  <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#f0edf8" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -23,7 +23,7 @@
 <nav class="nav" aria-label="Main">
   <div class="nav-inner">
     <a href="/items" class="brand" style="text-decoration:none; color:inherit">
-      <div class="brand-mark" aria-hidden="true"></div>
+      <img src="/brand-mark.png" alt="" class="brand-mark" width="44" height="44" aria-hidden="true" />
       <div class="brand-name">Haku's suitcase</div>
     </a>
     <div class="nav-actions">
