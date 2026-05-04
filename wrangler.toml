@@ -7,7 +7,7 @@ pages_build_output_dir = ".svelte-kit/cloudflare"
 [[d1_databases]]
 binding = "DB"
 database_name = "figurine-catalog-db"
-database_id = "REPLACE_AFTER_CREATION"
+database_id = "205bab26-5462-414a-8288-cdf5f7a01774"
 
 [[r2_buckets]]
 binding = "R2"
