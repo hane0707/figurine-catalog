@@ -109,7 +109,47 @@ npx wrangler r2 bucket create figurine-catalog-photos
 
 ---
 
-**⑦ 本番シークレットを Pages 環境変数に設定**
+**⑦ ローカル動作確認**
+
+💻 ターミナル（README の手順に従いローカルで動作確認済みであること）:
+```bash
+npx wrangler d1 migrations apply figurine-catalog-db --local
+npm run build && npx wrangler pages dev .svelte-kit/cloudflare
+```
+
+---
+
+**⑧ GitHub リポジトリを作成して push**
+
+💻 ターミナル:
+```bash
+git remote add origin https://github.com/<your-username>/figurine-catalog.git
+git push -u origin main
+```
+
+---
+
+**⑨ Cloudflare Pages プロジェクト作成**
+
+🌐 ダッシュボード: Pages → **Create a project** → **Connect to Git** → リポジトリを選択
+
+| 設定項目 | 値 |
+|----------|-----|
+| Build command | `npm run build` |
+| Build output directory | `.svelte-kit/cloudflare` |
+
+---
+
+**⑩ D1・R2 バインディングを設定**
+
+🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Functions**
+
+- **D1 database bindings**: Variable name `DB` → `figurine-catalog-db`
+- **R2 bucket bindings**: Variable name `R2` → `figurine-catalog-photos`
+
+---
+
+**⑪ 本番シークレットを Pages 環境変数に設定**
 
 🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Environment variables**
 
@@ -122,46 +162,6 @@ npx wrangler r2 bucket create figurine-catalog-photos
 | `R2_SECRET_ACCESS_KEY` | ⑥で取得した Secret Access Key |
 
 > `R2_BUCKET_NAME` と `R2_KEY_PREFIX` は `wrangler.toml` の `[vars]` に記載済みのため設定不要。
-
----
-
-**⑧ ローカル動作確認**
-
-💻 ターミナル（README の手順に従いローカルで動作確認済みであること）:
-```bash
-npx wrangler d1 migrations apply figurine-catalog-db --local
-npm run build && npx wrangler pages dev .svelte-kit/cloudflare
-```
-
----
-
-**⑨ GitHub リポジトリを作成して push**
-
-💻 ターミナル:
-```bash
-git remote add origin https://github.com/<your-username>/figurine-catalog.git
-git push -u origin main
-```
-
----
-
-**⑩ Cloudflare Pages プロジェクト作成**
-
-🌐 ダッシュボード: Pages → **Create a project** → **Connect to Git** → リポジトリを選択
-
-| 設定項目 | 値 |
-|----------|-----|
-| Build command | `npm run build` |
-| Build output directory | `.svelte-kit/cloudflare` |
-
----
-
-**⑪ D1・R2 バインディングを設定**
-
-🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Functions**
-
-- **D1 database bindings**: Variable name `DB` → `figurine-catalog-db`
-- **R2 bucket bindings**: Variable name `R2` → `figurine-catalog-photos`
 
 ---
 
