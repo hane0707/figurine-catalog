@@ -80,6 +80,7 @@
 	$effect(() => {
 		if ($hexControls.inkMode) {
 			const rainbow = $hexControls.rainbow;
+			persistBlobs = [];
 			const id = setInterval(() => {
 				if (persistBlobs.length >= 12) return;
 				persistBlobs = [...persistBlobs, makeBlob(persistBlobs.length, rainbow)];
