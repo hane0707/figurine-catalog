@@ -816,6 +816,44 @@ html, body {
   to   { filter: hue-rotate(360deg); }
 }
 
+/* --- ink drop background --- */
+.ink-intro,
+.ink-layer {
+  position: fixed;
+  inset: 0;
+  filter: url(#ink-gooey);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ink-layer { display: none; }
+.ink-layer.--active { display: block; }
+
+.ink-intro.--fading {
+  animation: ink-intro-fade 1.2s ease-out forwards;
+}
+@keyframes ink-intro-fade {
+  to { opacity: 0; }
+}
+
+.ink-blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform, opacity;
+  animation: ink-spread var(--ink-dur, 9s) ease-out forwards;
+}
+
+@keyframes ink-spread {
+  0%   { transform: scale(0.05); opacity: 0.85; }
+  50%  { opacity: 0.75; }
+  100% { transform: scale(1);    opacity: 0; }
+}
+
+.ambient.--ink .amb-ring {
+  opacity: 0;
+  pointer-events: none;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
