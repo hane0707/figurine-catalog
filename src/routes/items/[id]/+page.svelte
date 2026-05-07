@@ -252,14 +252,6 @@
   <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
     <polygon points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
       fill="none" stroke="var(--line)" stroke-width="1" transform="rotate(12)"/>
-    {#if $hexControls.speed <= 10}
-      <circle class="spark" cx="0" cy="-350" r="3" />
-      <circle class="spark" cx="303" cy="-175" r="2.5" />
-      <circle class="spark" cx="303" cy="175" r="2" />
-      <circle class="spark" cx="0" cy="350" r="2.5" />
-      <circle class="spark" cx="-303" cy="175" r="3" />
-      <circle class="spark" cx="-303" cy="-175" r="2" />
-    {/if}
   </svg>
   <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
     <polygon points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"

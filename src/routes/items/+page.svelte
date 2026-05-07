@@ -159,14 +159,6 @@
       stroke-width="1"
       transform="rotate(12)"
     />
-    {#if $hexControls.speed <= 10}
-      <circle class="spark" cx="0" cy="-350" r="3" />
-      <circle class="spark" cx="303" cy="-175" r="2.5" />
-      <circle class="spark" cx="303" cy="175" r="2" />
-      <circle class="spark" cx="0" cy="350" r="2.5" />
-      <circle class="spark" cx="-303" cy="175" r="3" />
-      <circle class="spark" cx="-303" cy="-175" r="2" />
-    {/if}
   </svg>
   <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
     <polygon
