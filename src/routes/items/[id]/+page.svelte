@@ -6,6 +6,10 @@
   import TagPicker from '$lib/components/TagPicker.svelte';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
   import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
+  import { hexControls, speedToDuration } from '$lib/stores/hexControls';
+
+  const r1Duration = $derived(speedToDuration($hexControls.speed).r1);
+  const r2Duration = $derived(speedToDuration($hexControls.speed).r2);
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
@@ -241,15 +245,15 @@
   <title>{item.name ?? '名称未設定'} — Haku's suitcase</title>
 </svelte:head>
 
-<div class="ambient" aria-hidden="true">
+<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''}" aria-hidden="true">
   <div class="blob b1"></div>
   <div class="blob b2"></div>
   <div class="blob b3"></div>
-  <svg class="amb-ring r1" viewBox="-350 -350 700 700" aria-hidden="true">
+  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
     <polygon points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
       fill="none" stroke="var(--line)" stroke-width="1" transform="rotate(12)"/>
   </svg>
-  <svg class="amb-ring r2" viewBox="-210 -210 420 420" aria-hidden="true">
+  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
     <polygon points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
       fill="none" stroke="var(--line)" stroke-width="1" transform="rotate(12)"/>
   </svg>
