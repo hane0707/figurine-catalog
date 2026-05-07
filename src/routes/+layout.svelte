@@ -56,26 +56,33 @@
 		if (sessionStorage.getItem('ink-intro-shown')) return;
 		sessionStorage.setItem('ink-intro-shown', '1');
 
+		const rainbow = $hexControls.rainbow;
+		const ids: ReturnType<typeof setTimeout>[] = [];
 		const count = 3 + Math.floor(Math.random() * 2);
+
 		for (let i = 0; i < count; i++) {
-			setTimeout(() => {
-				introBlobs = [...introBlobs, makeBlob(i, $hexControls.rainbow)];
-			}, i * 300);
+			ids.push(setTimeout(() => {
+				introBlobs = [...introBlobs, makeBlob(i, rainbow)];
+			}, i * 300));
 		}
 
-		setTimeout(() => {
+		ids.push(setTimeout(() => {
 			introFading = true;
-			setTimeout(() => {
+			ids.push(setTimeout(() => {
 				introBlobs = [];
 				introFading = false;
-			}, 1200);
-		}, (count - 1) * 300 + 3000);
+			}, 1200));
+		}, (count - 1) * 300 + 3000));
+
+		return () => ids.forEach(clearTimeout);
 	});
 
 	$effect(() => {
 		if ($hexControls.inkMode) {
+			const rainbow = $hexControls.rainbow;
 			const id = setInterval(() => {
-				persistBlobs = [...persistBlobs, makeBlob(persistBlobs.length, $hexControls.rainbow)];
+				if (persistBlobs.length >= 12) return;
+				persistBlobs = [...persistBlobs, makeBlob(persistBlobs.length, rainbow)];
 			}, 2500);
 			return () => clearInterval(id);
 		} else {
