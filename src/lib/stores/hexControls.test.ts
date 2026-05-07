@@ -49,4 +49,12 @@ describe('hexControls store', () => {
     hexControls.setRainbow(false);
     expect(get(hexControls).rainbow).toBe(false);
   });
+
+  it('setInkMode が inkMode フラグを更新する', () => {
+    hexControls.setInkMode(true);
+    expect(get(hexControls).inkMode).toBe(true);
+
+    hexControls.setInkMode(false);
+    expect(get(hexControls).inkMode).toBe(false);
+  });
 });

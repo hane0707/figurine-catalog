@@ -4,10 +4,11 @@ import { browser } from '$app/environment';
 export interface HexState {
   speed: number;    // 1–100。100 = 現在の低速、1 = 最速
   rainbow: boolean;
+  inkMode: boolean;
 }
 
 const STORAGE_KEY = 'hex-controls';
-const DEFAULTS: HexState = { speed: 100, rainbow: false };
+const DEFAULTS: HexState = { speed: 100, rainbow: false, inkMode: false };
 
 function loadState(): HexState {
   if (!browser) return DEFAULTS;
@@ -22,6 +23,8 @@ function loadState(): HexState {
           : DEFAULTS.speed,
       rainbow:
         typeof parsed.rainbow === 'boolean' ? parsed.rainbow : DEFAULTS.rainbow,
+      inkMode:
+        typeof parsed.inkMode === 'boolean' ? parsed.inkMode : DEFAULTS.inkMode,
     };
   } catch {
     return DEFAULTS;
@@ -32,7 +35,7 @@ function saveState(state: HexState): void {
   if (!browser) return;
   localStorage.setItem(
     STORAGE_KEY,
-    JSON.stringify({ speed: state.speed, rainbow: state.rainbow }),
+    JSON.stringify({ speed: state.speed, rainbow: state.rainbow, inkMode: state.inkMode }),
   );
 }
 
@@ -50,6 +53,13 @@ function createHexStore() {
     setRainbow(rainbow: boolean) {
       update(s => {
         const next = { ...s, rainbow };
+        saveState(next);
+        return next;
+      });
+    },
+    setInkMode(inkMode: boolean) {
+      update(s => {
+        const next = { ...s, inkMode };
         saveState(next);
         return next;
       });
