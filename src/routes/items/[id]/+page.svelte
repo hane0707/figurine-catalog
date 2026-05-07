@@ -245,7 +245,7 @@
   <title>{item.name ?? '名称未設定'} — Haku's suitcase</title>
 </svelte:head>
 
-<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''}" aria-hidden="true">
+<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.speed <= 10 ? '--fast' : ''}" aria-hidden="true">
   <div class="blob b1"></div>
   <div class="blob b2"></div>
   <div class="blob b3"></div>

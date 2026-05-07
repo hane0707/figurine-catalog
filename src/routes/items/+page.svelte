@@ -147,7 +147,7 @@
 </svelte:head>
 
 <!-- 背景装飾 -->
-<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''}" aria-hidden="true">
+<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.speed <= 10 ? '--fast' : ''}" aria-hidden="true">
   <div class="blob b1"></div>
   <div class="blob b2"></div>
   <div class="blob b3"></div>

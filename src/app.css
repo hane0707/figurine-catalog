@@ -816,6 +816,16 @@ html, body {
   to   { filter: hue-rotate(360deg); }
 }
 
+/* --- spark effect (fastest speed) --- */
+.ambient.--fast .amb-ring.r1 polygon {
+  animation: spark-flash 0.4s linear infinite;
+}
+
+@keyframes spark-flash {
+  0%, 85%, 100% { filter: drop-shadow(0 0 0px transparent); }
+  88%            { filter: drop-shadow(0 0 6px oklch(0.9 0.3 60 / 0.7)); }
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
