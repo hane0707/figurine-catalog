@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { page } from '$app/state';
 	import type { LayoutData } from './$types';
@@ -18,6 +19,73 @@
 			panelOpen = false;
 		}
 	}
+
+	// --- ink drop ---
+	interface InkBlob {
+		id: number;
+		x: number;
+		y: number;
+		size: number;
+		color: string;
+		dur: number;
+	}
+
+	let introBlobs = $state<InkBlob[]>([]);
+	let introFading = $state(false);
+	let persistBlobs = $state<InkBlob[]>([]);
+	let blobCounter = 0;
+
+	function blobColor(index: number, rainbow: boolean): string {
+		if (!rainbow) return 'oklch(0.25 0.01 285 / 0.55)';
+		const hues = [55, 230, 140, 285];
+		return `oklch(0.6 0.18 ${hues[index % hues.length]} / 0.55)`;
+	}
+
+	function makeBlob(index: number, rainbow: boolean): InkBlob {
+		return {
+			id: ++blobCounter,
+			x: 10 + Math.random() * 80,
+			y: 10 + Math.random() * 80,
+			size: 200 + Math.random() * 300,
+			color: blobColor(index, rainbow),
+			dur: 8 + Math.random() * 2,
+		};
+	}
+
+	onMount(() => {
+		if (sessionStorage.getItem('ink-intro-shown')) return;
+		sessionStorage.setItem('ink-intro-shown', '1');
+
+		const count = 3 + Math.floor(Math.random() * 2);
+		for (let i = 0; i < count; i++) {
+			setTimeout(() => {
+				introBlobs = [...introBlobs, makeBlob(i, $hexControls.rainbow)];
+			}, i * 300);
+		}
+
+		setTimeout(() => {
+			introFading = true;
+			setTimeout(() => {
+				introBlobs = [];
+				introFading = false;
+			}, 1200);
+		}, (count - 1) * 300 + 3000);
+	});
+
+	$effect(() => {
+		if ($hexControls.inkMode) {
+			const id = setInterval(() => {
+				persistBlobs = [...persistBlobs, makeBlob(persistBlobs.length, $hexControls.rainbow)];
+			}, 2500);
+			return () => clearInterval(id);
+		} else {
+			persistBlobs = [];
+		}
+	});
+
+	function removeBlob(id: number) {
+		persistBlobs = persistBlobs.filter(b => b.id !== id);
+	}
 </script>
 
 <svelte:head>
@@ -31,6 +99,64 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,50..100;1,9..144,300..700,50..100&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 </svelte:head>
+
+<!-- Gooey SVG filter (hidden, must be in DOM before ink layers render) -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <filter id="ink-gooey">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+      <feColorMatrix in="blur" type="matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
+    </filter>
+  </defs>
+</svg>
+
+<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.inkMode ? '--ink' : ''}" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
+    <polygon
+      points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
+      fill="none"
+      stroke="var(--line)"
+      stroke-width="1"
+      transform="rotate(12)"
+    />
+  </svg>
+  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
+    <polygon
+      points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
+      fill="none"
+      stroke="var(--line)"
+      stroke-width="1"
+      transform="rotate(12)"
+    />
+  </svg>
+</div>
+
+<!-- Intro ink layer (first page load only, z-index: 0 — after .ambient = renders on top) -->
+{#if introBlobs.length > 0}
+  <div class="ink-intro" class:--fading={introFading}>
+    {#each introBlobs as blob (blob.id)}
+      <div
+        class="ink-blob"
+        style="left:{blob.x}vw;top:{blob.y}vh;width:{blob.size}px;height:{blob.size}px;background:{blob.color};--ink-dur:{blob.dur}s;margin-left:-{blob.size / 2}px;margin-top:-{blob.size / 2}px"
+      ></div>
+    {/each}
+  </div>
+{/if}
+
+<!-- Persistent ink layer (inkMode: true), z-index: 0 — after .ambient = renders on top -->
+<div class="ink-layer" class:--active={$hexControls.inkMode}>
+  {#each persistBlobs as blob (blob.id)}
+    <div
+      class="ink-blob"
+      style="left:{blob.x}vw;top:{blob.y}vh;width:{blob.size}px;height:{blob.size}px;background:{blob.color};--ink-dur:{blob.dur}s;margin-left:-{blob.size / 2}px;margin-top:-{blob.size / 2}px"
+      onanimationend={() => removeBlob(blob.id)}
+    ></div>
+  {/each}
+</div>
 
 <nav class="nav" aria-label="Main">
   <div class="nav-inner">
@@ -103,36 +229,23 @@
                 <span class="toggle-dot"></span>
               </button>
             </div>
+            <div class="hex-panel-row --switch">
+              <span class="eyebrow">INK MODE</span>
+              <button
+                class="toggle-chip"
+                class:--on={$hexControls.inkMode}
+                onclick={() => hexControls.setInkMode(!$hexControls.inkMode)}
+                aria-pressed={$hexControls.inkMode}
+              >
+                <span class="toggle-dot"></span>
+              </button>
+            </div>
           </div>
         {/if}
       </div>
     </div>
   </div>
 </nav>
-
-<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''}" aria-hidden="true">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
-    <polygon
-      points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
-      fill="none"
-      stroke="var(--line)"
-      stroke-width="1"
-      transform="rotate(12)"
-    />
-  </svg>
-  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
-    <polygon
-      points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
-      fill="none"
-      stroke="var(--line)"
-      stroke-width="1"
-      transform="rotate(12)"
-    />
-  </svg>
-</div>
 
 {@render children()}
 
