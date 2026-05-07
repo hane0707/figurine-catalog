@@ -818,12 +818,17 @@ html, body {
 
 /* --- spark effect (fastest speed) --- */
 .ambient.--fast .amb-ring.r1 polygon {
-  animation: spark-flash 0.4s linear infinite;
+  animation: spark-flash 1.4s ease-in-out infinite;
+}
+.ambient.--rainbow.--fast .amb-ring.r1 polygon {
+  animation: hue-cycle 3s linear infinite, spark-flash 1.4s ease-in-out infinite;
 }
 
 @keyframes spark-flash {
-  0%, 85%, 100% { filter: drop-shadow(0 0 0px transparent); }
-  88%            { filter: drop-shadow(0 0 6px oklch(0.9 0.3 60 / 0.7)); }
+  0%, 55%, 100% { filter: none; }
+  65%  { filter: drop-shadow(0 0 10px oklch(0.95 0.35 55)) brightness(2); }
+  80%  { filter: drop-shadow(0 0 4px oklch(0.9 0.3 55 / 0.4)); }
+  92%  { filter: none; }
 }
 
 @layer base {
