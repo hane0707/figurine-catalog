@@ -665,7 +665,9 @@ html, body {
   .ambient .r1,
   .ambient .r2,
   .spotlight,
-  .fab-ring { animation: none; }
+  .fab-ring,
+  .ink-blob,
+  .ink-intro { animation: none; opacity: 0; }
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -817,6 +819,7 @@ html, body {
 }
 
 /* --- ink drop background --- */
+/* z-index: 0 — same as .ambient; ink layers must be placed AFTER .ambient in DOM to render on top */
 .ink-intro,
 .ink-layer {
   position: fixed;
@@ -839,7 +842,7 @@ html, body {
 .ink-blob {
   position: absolute;
   border-radius: 50%;
-  will-change: transform, opacity;
+  transform-origin: center center;
   animation: ink-spread var(--ink-dur, 9s) ease-out forwards;
 }
 
