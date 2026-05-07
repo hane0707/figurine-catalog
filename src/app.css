@@ -781,6 +781,41 @@ html, body {
 	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* --- hex control panel --- */
+.hex-panel-wrap { position: relative; }
+.hex-toggle.--active { background: var(--bg-sunk); box-shadow: var(--neu-inset); }
+.hex-panel {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 220px; padding: 16px;
+  background: var(--surface); border-radius: var(--r);
+  box-shadow: var(--neu-soft);
+  display: flex; flex-direction: column; gap: 14px;
+  z-index: 200; outline: none;
+}
+.hex-panel-row { display: flex; flex-direction: column; gap: 6px; }
+.hex-panel-row.--switch {
+  flex-direction: row; align-items: center; justify-content: space-between;
+}
+.hex-panel input[type="range"] {
+  width: 100%; accent-color: var(--accent-amber); cursor: pointer;
+}
+.hex-panel-labels {
+  display: flex; justify-content: space-between;
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.08em;
+  color: var(--fg-soft);
+}
+
+/* --- rainbow effect --- */
+.ambient.--rainbow .amb-ring polygon {
+  stroke: oklch(0.7 0.25 0);
+  animation: hue-cycle 3s linear infinite;
+}
+
+@keyframes hue-cycle {
+  from { filter: hue-rotate(0deg); }
+  to   { filter: hue-rotate(360deg); }
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
