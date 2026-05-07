@@ -3,10 +3,6 @@
   import { onMount } from "svelte";
   import ItemCard from "$lib/components/ItemCard.svelte";
   import GlitchText from "$lib/components/GlitchText.svelte";
-  import { hexControls, speedToDuration } from '$lib/stores/hexControls';
-
-  const r1Duration = $derived(speedToDuration($hexControls.speed).r1);
-  const r2Duration = $derived(speedToDuration($hexControls.speed).r2);
 
   let { data }: { data: PageData } = $props();
 
@@ -145,31 +141,6 @@
 <svelte:head>
   <title>Haku's suitcase</title>
 </svelte:head>
-
-<!-- 背景装飾 -->
-<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.speed <= 10 ? '--fast' : ''}" aria-hidden="true">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
-    <polygon
-      points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
-      fill="none"
-      stroke="var(--line)"
-      stroke-width="1"
-      transform="rotate(12)"
-    />
-  </svg>
-  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
-    <polygon
-      points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
-      fill="none"
-      stroke="var(--line)"
-      stroke-width="1"
-      transform="rotate(12)"
-    />
-  </svg>
-</div>
 
 <div class="app">
   <!-- ヒーロー -->

@@ -3,10 +3,12 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { page } from '$app/state';
 	import type { LayoutData } from './$types';
-	import { hexControls } from '$lib/stores/hexControls';
+	import { hexControls, speedToDuration } from '$lib/stores/hexControls';
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 	const isSecondary = $derived(page.url.pathname !== '/items');
+	const r1Duration = $derived(speedToDuration($hexControls.speed).r1);
+	const r2Duration = $derived(speedToDuration($hexControls.speed).r2);
 
 	let panelOpen = $state(false);
 	let panelEl: HTMLDivElement | undefined;
@@ -107,6 +109,30 @@
     </div>
   </div>
 </nav>
+
+<div class="ambient {$hexControls.rainbow ? '--rainbow' : ''}" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
+    <polygon
+      points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
+      fill="none"
+      stroke="var(--line)"
+      stroke-width="1"
+      transform="rotate(12)"
+    />
+  </svg>
+  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
+    <polygon
+      points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
+      fill="none"
+      stroke="var(--line)"
+      stroke-width="1"
+      transform="rotate(12)"
+    />
+  </svg>
+</div>
 
 {@render children()}
 
