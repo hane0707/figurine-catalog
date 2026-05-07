@@ -3,9 +3,19 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { page } from '$app/state';
 	import type { LayoutData } from './$types';
+	import { hexControls } from '$lib/stores/hexControls';
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 	const isSecondary = $derived(page.url.pathname !== '/items');
+
+	let panelOpen = $state(false);
+	let panelEl: HTMLDivElement | undefined;
+
+	function handleFocusOut(e: FocusEvent) {
+		if (!e.relatedTarget || !panelEl?.contains(e.relatedTarget as Node)) {
+			panelOpen = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -47,6 +57,53 @@
           </a>
         {/if}
       {/if}
+
+      <!-- hex control panel trigger -->
+      <div
+        class="hex-panel-wrap"
+        bind:this={panelEl}
+        onfocusout={handleFocusOut}
+      >
+        <button
+          class="btn --ghost --icon hex-toggle"
+          class:--active={panelOpen}
+          onclick={() => (panelOpen = !panelOpen)}
+          aria-label="背景エフェクトの設定"
+          aria-expanded={panelOpen}
+        >⬡</button>
+
+        {#if panelOpen}
+          <div class="hex-panel" tabindex="-1">
+            <div class="hex-panel-row">
+              <span class="eyebrow">SPEED</span>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={$hexControls.speed}
+                oninput={(e) =>
+                  hexControls.setSpeed(
+                    Number((e.target as HTMLInputElement).value),
+                  )}
+              />
+              <div class="hex-panel-labels">
+                <span>Fast</span><span>Slow</span>
+              </div>
+            </div>
+            <div class="hex-panel-row --switch">
+              <span class="eyebrow">RAINBOW</span>
+              <button
+                class="toggle-chip"
+                class:--on={$hexControls.rainbow}
+                onclick={() => hexControls.setRainbow(!$hexControls.rainbow)}
+                aria-pressed={$hexControls.rainbow}
+              >
+                <span class="toggle-dot"></span>
+              </button>
+            </div>
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
 </nav>
