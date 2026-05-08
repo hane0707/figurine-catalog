@@ -795,6 +795,7 @@ html, body {
   z-index: 200; outline: none;
 }
 .hex-panel-row { display: flex; flex-direction: column; gap: 6px; }
+.hex-panel-row.--disabled { opacity: 0.35; pointer-events: none; }
 .hex-panel-row.--switch {
   flex-direction: row; align-items: center; justify-content: space-between;
 }
@@ -841,15 +842,28 @@ html, body {
 
 .ink-blob {
   position: absolute;
-  border-radius: 50%;
-  transform-origin: center center;
-  animation: ink-spread var(--ink-dur, 9s) ease-out forwards;
+  transform-origin: 0 0;
+  animation:
+    ink-scale var(--ink-dur, 15s) ease-out forwards,
+    ink-fade  var(--ink-dur, 15s) linear  forwards;
 }
 
-@keyframes ink-spread {
-  0%   { transform: scale(0.05); opacity: 0.85; }
-  50%  { opacity: 0.75; }
-  100% { transform: scale(1);    opacity: 0; }
+.ink-circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+@keyframes ink-scale {
+  0%   { transform: scale(0.05); }
+  100% { transform: scale(1.4); }
+}
+
+@keyframes ink-fade {
+  0%   { opacity: 0.35; }
+  20%  { opacity: 0.3; }
+  65%  { opacity: 0.25; }
+  88%  { opacity: 0.1; }
+  100% { opacity: 0; }
 }
 
 .ambient.--ink .amb-ring {

@@ -21,6 +21,8 @@
 	}
 
 	// --- ink drop ---
+	interface BlobCircle { dx: number; dy: number; scale: number; }
+
 	interface InkBlob {
 		id: number;
 		x: number;
@@ -28,6 +30,21 @@
 		size: number;
 		color: string;
 		dur: number;
+		circles: BlobCircle[];
+	}
+
+	function makeCircles(size: number): BlobCircle[] {
+		const count = 2 + Math.floor(Math.random() * 2);
+		const extras: BlobCircle[] = Array.from({ length: count - 1 }, () => {
+			const angle = Math.random() * Math.PI * 2;
+			const dist = size * (0.25 + Math.random() * 0.25);
+			return {
+				dx: Math.cos(angle) * dist,
+				dy: Math.sin(angle) * dist,
+				scale: 0.55 + Math.random() * 0.35,
+			};
+		});
+		return [{ dx: 0, dy: 0, scale: 1 }, ...extras];
 	}
 
 	let introBlobs = $state<InkBlob[]>([]);
@@ -36,19 +53,21 @@
 	let blobCounter = 0;
 
 	function blobColor(index: number, rainbow: boolean): string {
-		if (!rainbow) return 'oklch(0.25 0.01 285 / 0.55)';
+		if (!rainbow) return 'oklch(0.3 0.01 285 / 0.3)';
 		const hues = [55, 230, 140, 285];
-		return `oklch(0.6 0.18 ${hues[index % hues.length]} / 0.55)`;
+		return `oklch(0.6 0.18 ${hues[index % hues.length]} / 0.45)`;
 	}
 
 	function makeBlob(index: number, rainbow: boolean): InkBlob {
+		const size = 200 + Math.random() * 300;
 		return {
 			id: ++blobCounter,
 			x: 10 + Math.random() * 80,
 			y: 10 + Math.random() * 80,
-			size: 200 + Math.random() * 300,
+			size,
 			color: blobColor(index, rainbow),
-			dur: 8 + Math.random() * 2,
+			dur: 14 + Math.random() * 4,
+			circles: makeCircles(size),
 		};
 	}
 
@@ -58,7 +77,7 @@
 
 		const rainbow = $hexControls.rainbow;
 		const ids: ReturnType<typeof setTimeout>[] = [];
-		const count = 3 + Math.floor(Math.random() * 2);
+		const count = 4 + Math.floor(Math.random() * 2);
 
 		for (let i = 0; i < count; i++) {
 			ids.push(setTimeout(() => {
@@ -84,7 +103,7 @@
 			const id = setInterval(() => {
 				if (persistBlobs.length >= 12) return;
 				persistBlobs = [...persistBlobs, makeBlob(persistBlobs.length, rainbow)];
-			}, 2500);
+			}, 1500);
 			return () => clearInterval(id);
 		} else {
 			persistBlobs = [];
@@ -114,7 +133,7 @@
     <filter id="ink-gooey">
       <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
       <feColorMatrix in="blur" type="matrix"
-        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 6 -1" />
     </filter>
   </defs>
 </svg>
@@ -147,10 +166,14 @@
 {#if introBlobs.length > 0}
   <div class="ink-intro" class:--fading={introFading}>
     {#each introBlobs as blob (blob.id)}
-      <div
-        class="ink-blob"
-        style="left:{blob.x}vw;top:{blob.y}vh;width:{blob.size}px;height:{blob.size}px;background:{blob.color};--ink-dur:{blob.dur}s;margin-left:-{blob.size / 2}px;margin-top:-{blob.size / 2}px"
-      ></div>
+      <div class="ink-blob" style="left:{blob.x}vw;top:{blob.y}vh;--ink-dur:{blob.dur}s">
+        {#each blob.circles as c}
+          <div
+            class="ink-circle"
+            style="width:{blob.size * c.scale}px;height:{blob.size * c.scale}px;background:{blob.color};left:{c.dx}px;top:{c.dy}px;margin-left:{-(blob.size * c.scale / 2)}px;margin-top:{-(blob.size * c.scale / 2)}px"
+          ></div>
+        {/each}
+      </div>
     {/each}
   </div>
 {/if}
@@ -160,9 +183,16 @@
   {#each persistBlobs as blob (blob.id)}
     <div
       class="ink-blob"
-      style="left:{blob.x}vw;top:{blob.y}vh;width:{blob.size}px;height:{blob.size}px;background:{blob.color};--ink-dur:{blob.dur}s;margin-left:-{blob.size / 2}px;margin-top:-{blob.size / 2}px"
-      onanimationend={() => removeBlob(blob.id)}
-    ></div>
+      style="left:{blob.x}vw;top:{blob.y}vh;--ink-dur:{blob.dur}s"
+      onanimationend={(e) => { if (e.animationName === 'ink-fade') removeBlob(blob.id); }}
+    >
+      {#each blob.circles as c}
+        <div
+          class="ink-circle"
+          style="width:{blob.size * c.scale}px;height:{blob.size * c.scale}px;background:{blob.color};left:{c.dx}px;top:{c.dy}px;margin-left:{-(blob.size * c.scale / 2)}px;margin-top:{-(blob.size * c.scale / 2)}px"
+        ></div>
+      {/each}
+    </div>
   {/each}
 </div>
 
@@ -210,13 +240,14 @@
 
         {#if panelOpen}
           <div class="hex-panel" tabindex="-1">
-            <div class="hex-panel-row">
+            <div class="hex-panel-row" class:--disabled={$hexControls.inkMode}>
               <span class="eyebrow">SPEED</span>
               <input
                 type="range"
                 min="1"
                 max="100"
                 value={$hexControls.speed}
+                disabled={$hexControls.inkMode}
                 oninput={(e) =>
                   hexControls.setSpeed(
                     Number((e.target as HTMLInputElement).value),
