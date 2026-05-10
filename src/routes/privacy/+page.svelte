@@ -2,14 +2,6 @@
   <title>Privacy Policy — Haku's suitcase</title>
 </svelte:head>
 
-<div class="ambient" aria-hidden="true">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <div class="amb-ring r1"></div>
-  <div class="amb-ring r2"></div>
-</div>
-
 <div class="privacy-page">
   <div class="privacy-content">
     <div class="eyebrow" style="margin-bottom: 16px">Legal</div>
