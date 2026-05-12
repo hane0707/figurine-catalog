@@ -90,22 +90,28 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   // 本番: CF Access JWT を検証
   const cfJwt = event.cookies.get('CF_Authorization');
+  let dbg = 'no-cookie';
+
   if (cfJwt) {
     const aud = event.platform?.env?.CF_ACCESS_AUD;
     const teamDomain = event.platform?.env?.CF_ACCESS_TEAM_DOMAIN;
+    dbg = `cookie=ok,aud=${aud ? 'set' : 'missing'},team=${teamDomain ? 'set' : 'missing'}`;
 
     let claims: { email?: string } | null = null;
 
     if (aud && teamDomain) {
       claims = await verifyCfJwt(cfJwt, aud, teamDomain);
+      dbg += `,verify=${claims ? 'ok' : 'fail'}`;
     }
 
     if (claims?.email) {
       event.locals.user = { email: claims.email };
+      dbg += ',user=set';
     }
   }
 
   const response = await resolve(event);
+  response.headers.set('X-CF-Debug', dbg); // TODO: デバッグ確認後に削除
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
