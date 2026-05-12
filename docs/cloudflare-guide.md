@@ -61,7 +61,7 @@ graph TB
 
 **① Cloudflare アカウント作成**
 
-🌐 ブラウザ: `https://cloudflare.com` でアカウント作成
+🌐 `https://cloudflare.com` でアカウント作成
 
 ---
 
@@ -101,7 +101,7 @@ npx wrangler r2 bucket create figurine-catalog-photos
 
 **⑥ R2 API トークン取得**
 
-🌐 ダッシュボード: `dash.cloudflare.com` → R2 → **Manage R2 API Tokens** → **Create API Token**
+🌐 `https://dash.cloudflare.com` → R2 → **Manage R2 API Tokens** → **Create API Token**
 - Permissions: **Object Read & Write**
 - Specify bucket: `figurine-catalog-photos`
 
@@ -131,27 +131,62 @@ git push -u origin main
 
 **⑨ Cloudflare Pages プロジェクト作成**
 
-🌐 ダッシュボード: Pages → **Create a project** → **Connect to Git** → リポジトリを選択
+🌐 `https://dash.cloudflare.com` → Pages → **Create a project** → **Connect to Git** → リポジトリを選択
 
 | 設定項目 | 値 |
 |----------|-----|
+| フレームワーク プリセット | SvelteKit |
 | Build command | `npm run build` |
 | Build output directory | `.svelte-kit/cloudflare` |
 
+> 「ルート ディレクトリ (アドバンスド)」「環境変数 (アドバンスド)」は設定不要。
+
 ---
 
-**⑩ D1・R2 バインディングを設定**
+**⑩ カスタムドメイン・セキュリティ設定**
 
-🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Functions**
+カスタムドメインを使用する場合はここで設定する。使用しない場合はスキップして ⑪ へ進む。
+
+**カスタムドメインの購入（未取得の場合）**
+
+🌐 `https://dash.cloudflare.com` → ドメイン登録 → 新しいドメインを検索 → 購入
+
+**ドメインのセキュリティ設定**
+
+購入後、以下を確認・設定する:
+
+| 設定 | 場所 | 内容 |
+|------|------|------|
+| WHOIS プライバシー保護 | 自動適用済み | 登録者情報が非公開になっていることを確認 |
+| ドメインロック（移管ロック） | ドメイン登録 → 該当ドメイン | デフォルトで有効のはず。有効になっているか確認 |
+| DNSSEC | ドメイン登録 → 該当ドメイン → **DNSSEC** | 有効化する（DNS改ざん防止） |
+
+**Pages へのカスタムドメイン追加**
+
+🌐 Pages → `figurine-catalog` → Settings → **Custom domains** → 「Set up a custom domain」→ 購入したドメインを入力
+
+> カスタムドメインを設定した場合、⑯ の「宛先」ドメインを `.pages.dev` ではなくカスタムドメインに変更すること。
+
+**Bot Fight Mode の有効化**
+
+🌐 `https://dash.cloudflare.com` → 該当ドメインを選択 → セキュリティ → ボット → **Bot Fight Mode をオン**
+
+> Bot Fight Mode はカスタムドメインに紐づく設定のため、`.pages.dev` のみの場合は設定不可。
+
+---
+
+**⑪ D1・R2 バインディングを設定**
+
+🌐 Pages → `figurine-catalog` → Settings → **Functions**
 
 - **D1 database bindings**: Variable name `DB` → `figurine-catalog-db`
 - **R2 bucket bindings**: Variable name `R2` → `figurine-catalog-photos`
 
 ---
 
-**⑪ 本番シークレットを Pages 環境変数に設定**
+**⑫ 本番シークレットを Pages 環境変数に設定**
 
-🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Environment variables**
+🌐 Pages → `figurine-catalog` → Settings → **Environment variables**
 
 以下をすべて **Encrypt ON** で登録する:
 
@@ -165,24 +200,168 @@ git push -u origin main
 
 ---
 
-**⑫ 本番 D1 にマイグレーション適用**
+**⑬ 本番 D1 にマイグレーション適用**
 
 💻 ターミナル:
 ```bash
 npx wrangler d1 migrations apply figurine-catalog-db --remote
 ```
 
----
-
-**⑬ Cloudflare Access 設定**
-
-🌐 ダッシュボード: `one.dash.cloudflare.com` → Access → Applications → **Add an application**（詳細は[「Cloudflare Access の設定方法」](#cloudflare-access-の設定方法)を参照）
+> ✅ **動作確認①** `https://dash.cloudflare.com` → Pages → `figurine-catalog` に表示されている `.pages.dev` の URL にアクセスし、サイトが正常に表示されることを確認する。この時点では認証なしですべてのページにアクセスできる状態が正常。
 
 ---
 
-**⑭ JWT 署名検証の設定（推奨）**
+**⑭ Zero Trust 初期設定（チーム名の設定）**
 
-🌐 ダッシュボード: Pages → `figurine-catalog` → Settings → **Environment variables**（詳細は[「JWT 署名検証の設定」](#jwt-署名検証の設定推奨)を参照）
+🌐 `https://one.dash.cloudflare.com` にアクセス → 初回のみチーム名の設定が求められる → 任意のチーム名を入力して完了
+
+> チーム名は `one.dash.cloudflare.com` → 設定 → 全般 → **チームドメイン** で確認できる（`<team-name>.cloudflareaccess.com` の `<team-name>` 部分）。
+
+---
+
+**⑮ Google IdP 設定**
+
+Google ログインを Cloudflare Access で使えるようにする。
+
+**Google Cloud Console 側:**
+
+1. 🌐 `https://console.cloud.google.com` にアクセス → 新規プロジェクトを作成
+
+2. 左サイドメニュー → **「OAuth同意画面」** → 「Google Auth Platform はまだ構成されていません」と表示される → **「開始」** をクリック
+
+   | 項目 | 値 |
+   |------|-----|
+   | アプリ情報（アプリ名） | `figurine-catalog`（任意） |
+   | アプリ情報（サポートメール） | 自分のGoogleアカウントのメールアドレス |
+   | 対象 | External（外部） |
+   | 連絡先情報 | 自分のメールアドレス |
+
+   入力後「完了」または「保存」で次へ進む。
+
+3. 「OAuth の概要」ページ → **「OAuth クライアントを作成」** をクリック
+
+   | 項目 | 値 |
+   |------|-----|
+   | アプリケーションの種類 | ウェブアプリケーション |
+   | 承認済みの JavaScript 生成元 | `https://<team-name>.cloudflareaccess.com` |
+   | 承認済みのリダイレクト URI | `https://<team-name>.cloudflareaccess.com/cdn-cgi/access/callback` |
+
+   `<team-name>` は ⑭ で設定したチーム名。
+
+   作成後に表示される **クライアントID** と **クライアントシークレット** をメモ（再表示可能だが控えておくこと）。
+
+**Zero Trust 側:**
+
+🌐 `https://one.dash.cloudflare.com` → インテグレーション → IDプロバイダー → **「IDプロバイダーを追加する」** → Google を選択
+
+| 項目 | 値 |
+|------|-----|
+| 名前 | `Google`（任意の識別名） |
+| アプリID | 上記で取得したクライアントID |
+| クライアントシークレット | 上記で取得したクライアントシークレット |
+
+保存後、一覧の「テスト」ボタンで Google 認証が正常に動作するか確認する。
+
+---
+
+**⑯ Cloudflare Access 設定**
+
+`/items/*`, `/api/*`, `/admin/*` を Google ログイン保護にする。
+
+🌐 `https://one.dash.cloudflare.com` → 左パネルの **Zero Trust** → Accessコントロール → アプリケーション → **「アプリケーションを追加する」** → **「セルフホストとプライベートで実行」** を選択
+
+「アプリケーションの詳細」タブ内で以下を設定する:
+
+**「詳細」セクション**
+
+| 項目 | 値 |
+|------|-----|
+| 名前（必須） | `figurine-catalog` |
+| セッション期間（必須） | `24時間`（お好みで） |
+
+**「宛先」セクション**（パブリックホスト名）
+
+| 項目 | 値 |
+|------|-----|
+| サブドメイン | 空欄 |
+| ドメイン（必須） | カスタムドメイン（⑩ で設定した場合）または `<your-pages-domain>.pages.dev` |
+
+「パスを追加する」で以下を1件ずつ追加:
+```
+/items/*
+/admin
+/admin/*
+/api
+/api/*
+```
+
+**「Accessポリシー」セクション**
+
+| 項目 | 値 |
+|------|-----|
+| ポリシー名 | `Owner only` |
+| アクション | 許可 |
+| 含める（ルール） | メール → 自分のGoogleアカウントのメールアドレス |
+
+**「認証」セクション**
+
+⑮ で追加した `Google` を選択する。
+
+**その他のセクション（デフォルトのままでOK）**
+
+「ブラウザベースのRDP/SSH/VNCアクセスを許可する」「ポリシーテスター」「プレビュー」は変更不要。
+
+設定完了後「保存する」をクリック。
+
+> ✅ **動作確認②** カスタムドメイン（`https://gallery.hakuworx.com`）にアクセスし、Googleログイン画面にリダイレクトされることを確認する。ログイン後に `/items` 一覧・詳細ページが正常に表示されることも確認する。
+
+---
+
+**⑰ .pages.dev URL のバルクリダイレクト設定**
+
+Cloudflare Access はカスタムドメインのみを保護するため、`figurine-catalog.pages.dev` には認証なしでアクセスできてしまう。一括リダイレクトでカスタムドメインへ転送することで迂回を防ぐ。
+
+🌐 `https://dash.cloudflare.com` → 配信とパフォーマンス → **一括リダイレクト**
+
+**1. リダイレクトリストの作成**
+
+「一括リダイレクトリストの作成」をクリックし、以下を入力:
+
+| 項目 | 値 | 備考 |
+|------|-----|------|
+| リスト名 | `pages-dev-redirect`（任意） | |
+| リダイレクト元（Source URL） | `figurine-catalog.pages.dev` | `https://` は不要。UI が自動で末尾スラッシュを補完するが問題なし |
+| リダイレクト先（Target URL） | `https://gallery.hakuworx.com` | |
+| **Subpath Matching** | **有効（ON）** | **これを有効にしないと `/items` などサブパスがリダイレクトされない** |
+
+> **注意:** エントリは1件だけ登録すること。`https://` あり・なしで2件登録すると競合する場合がある。
+
+**2. リダイレクトルールの作成**
+
+リスト作成後、「一括リダイレクトルールの作成」から上記リストを選択して**「保存してデプロイ」**をクリックする。
+
+> **注意:** リストの内容を後から変更した場合も、ルール側で「保存してデプロイ」を再実行しないと変更が反映されない。
+
+> 設定後、`https://figurine-catalog.pages.dev` および `https://figurine-catalog.pages.dev/items` にアクセスすると `https://gallery.hakuworx.com` にリダイレクトされることを確認する。
+
+---
+
+**⑱ JWT 署名検証の設定（推奨）**
+
+Cloudflare Access が付与する JWT をサーバー側で検証するための設定。未設定の場合、Cloudflare Access は通過できてもアプリ内で「未ログイン」扱いになり管理機能が使えない。**本番運用には必ず設定すること。**
+
+**AUD Tag の確認:**
+
+🌐 `https://one.dash.cloudflare.com` → Accessコントロール → アプリケーション → `figurine-catalog` → **AUD Tag** をメモ
+
+**Pages 環境変数に登録:**
+
+🌐 Pages → `figurine-catalog` → Settings → **Environment variables**
+
+| 変数名 | 値 | Encrypt |
+|--------|-----|---------|
+| `CF_ACCESS_TEAM_DOMAIN` | ⑭ のチーム名（`<team-name>.cloudflareaccess.com` の `<team-name>` 部分） | OFF |
+| `CF_ACCESS_AUD` | 上記で確認した AUD Tag | **ON** |
 
 ---
 
@@ -223,16 +402,6 @@ R2_SECRET_ACCESS_KEY      # R2 API シークレットキー
 - Cloudflare ダッシュボード上で設定 → 暗号化されてCloudflareのシステム内に保存
 - コードにも `.env` ファイルにも存在しない
 - Claude Code を含むどのツールからも読み取り不可
-
-**設定場所:**
-```
-Cloudflare ダッシュボード
-  → Pages
-  → figurine-catalog
-  → Settings
-  → Environment variables
-  → Add variable（Encrypt をオン）
-```
 
 **メリット:** シンプル、追加ツール不要、暗号化済み
 **デメリット:** CI/CD（GitHub Actions）では直接使えない（GitHub→CF間のデプロイは Pages が自動でやるのでそもそも不要）
@@ -278,24 +447,7 @@ jobs:
 
 ---
 
-#### 選択肢 C: wrangler secret put（Workersのみ）
-
-**仕組み:**
-- `wrangler secret put` コマンドで値を入力 → Cloudflare のシステムに暗号化保存
-- Workers/Pages のランタイムでのみ `platform.env.KEY` でアクセス可能
-
-```bash
-npx wrangler secret put CLOUDFLARE_ACCOUNT_ID
-# → プロンプトが出るので値を入力（エコーなし）
-npx wrangler secret put R2_ACCESS_KEY_ID
-npx wrangler secret put R2_SECRET_ACCESS_KEY
-```
-
-**注意:** Pages の場合は `wrangler secret put` ではなく **ダッシュボードの環境変数**（選択肢A）を推奨。`wrangler secret` は主に Workers 向け。
-
----
-
-#### 選択肢 D: .dev.vars（ローカル開発専用）
+#### 選択肢 C: .dev.vars（ローカル開発専用）
 
 `wrangler dev` 実行時のみ有効なローカル専用ファイル。本番環境には影響しない。
 
@@ -305,11 +457,6 @@ CLOUDFLARE_ACCOUNT_ID=your_account_id
 R2_ACCESS_KEY_ID=your_access_key
 R2_SECRET_ACCESS_KEY=your_secret_key
 R2_BUCKET_NAME=figurine-catalog-photos
-```
-
-```bash
-# .gitignore に追加済みか確認
-echo ".dev.vars" >> .gitignore
 ```
 
 > ⚠️ **Claude Code への注意:** `.dev.vars` はローカルファイルなので Claude Code が読める可能性があります。Claude Code を使った開発中はターミナルで環境変数として export する方法（下記）の方が安全です。
@@ -326,24 +473,6 @@ npx wrangler dev
 
 ### 推奨構成まとめ
 
-```mermaid
-graph LR
-    subgraph Local["💻 ローカル開発"]
-        DevVars["シェルの export 変数\n（ファイルに書かない）\nor .dev.vars\n（.gitignore済み）"]
-    end
-
-    subgraph CICD["🔄 CI/CD（GitHub Actions）"]
-        GHSecrets["GitHub Secrets\nCLOUDFLARE_API_TOKEN"]
-    end
-
-    subgraph Prod["☁️ 本番（Cloudflare Pages）"]
-        CFEnv["Cloudflare 環境変数\n（Encrypt ON）\nR2_ACCESS_KEY_ID\nR2_SECRET_ACCESS_KEY\nCLOUDFLARE_ACCOUNT_ID"]
-    end
-
-    Local -->|"wrangler dev"| Local
-    CICD -->|"wrangler deploy"| Prod
-```
-
 | 用途 | 保存場所 | Claude Code から読める? |
 |------|---------|----------------------|
 | ローカル開発 | シェルの `export` 変数 | ❌ 読めない（ファイルなし） |
@@ -355,7 +484,7 @@ graph LR
 
 ## Cloudflare API トークンの作成方法
 
-GitHub Actions から `wrangler deploy` するには専用の API トークンが必要。
+GitHub Actions から `wrangler deploy` するには専用の API トークンが必要（選択肢Bを採用する場合）。
 
 ```
 Cloudflare ダッシュボード
@@ -368,68 +497,3 @@ Cloudflare ダッシュボード
 ```
 
 作成されたトークンを **GitHub Secrets の `CLOUDFLARE_API_TOKEN`** に保存する。
-
----
-
-## Cloudflare Access の設定方法
-
-`/items/*`, `/api/*`, `/admin/*` をパスワードなしで Google ログイン保護にする。
-
-```
-Cloudflare Zero Trust（one.dash.cloudflare.com）
-  → Access
-  → Applications
-  → Add an application
-  → Self-hosted
-
-設定項目:
-  Application name: figurine-catalog
-  Session Duration: 24 hours（お好みで）
-  Application domain: <your-pages-domain>.pages.dev
-
-  Path を追加:
-    /items/*
-    /admin
-    /admin/*
-    /api
-    /api/*
-
-Policies:
-  Policy name: Owner only
-  Action: Allow
-  Include: Emails → あなたのGoogleアカウントのメールアドレス
-```
-
-> `<your-pages-domain>` は Pages プロジェクト作成時に決まります（例: `figurine-catalog-abc.pages.dev`）。カスタムドメインを使う場合はそちらを設定。
-
----
-
-## JWT 署名検証の設定（推奨）
-
-Cloudflare Access が付与する JWT をサーバー側で署名検証するために、以下の環境変数を Pages に追加する。
-
-### 設定する値
-
-| 変数名 | 値 | 設定場所 |
-|--------|-----|---------|
-| `CF_ACCESS_TEAM_DOMAIN` | `your-team`（`your-team.cloudflareaccess.com` の前半部分） | Pages 環境変数（非シークレット） |
-| `CF_ACCESS_AUD` | AUD Tag（下記参照） | Pages 環境変数（**Encrypt ON**） |
-
-**AUD Tag の確認場所:**
-```
-Cloudflare Zero Trust
-  → Access → Applications → 該当アプリ → Overview
-  → AUD Tag
-```
-
-### 設定手順
-
-```bash
-# CF_ACCESS_TEAM_DOMAIN は wrangler.toml の [vars] に追記しても可（非シークレット）
-# CF_ACCESS_AUD はシークレットとして登録
-wrangler secret put CF_ACCESS_AUD --env production
-```
-
-または Cloudflare ダッシュボード → Pages → Settings → Environment variables から直接入力（Encrypt ON）。
-
-> **未設定の場合:** JWT を信頼せず `locals.user` が設定されません。Cloudflare Access は通過できても、アプリ内で「未ログイン」扱いになり管理機能が使えない状態になります。**本番運用には必ず設定してください。**
