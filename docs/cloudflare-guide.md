@@ -215,7 +215,7 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 
 🌐 `https://one.dash.cloudflare.com` にアクセス → 初回のみチーム名の設定が求められる → 任意のチーム名を入力して完了
 
-> チーム名は `one.dash.cloudflare.com` → 設定 → 全般 → **チームドメイン** で確認できる（`<team-name>.cloudflareaccess.com` の `<team-name>` 部分）。
+> チーム名は `one.dash.cloudflare.com` → **設定** → **チーム名とドメイン** → **チームドメイン** で確認できる（`<team-name>.cloudflareaccess.com` の `<team-name>` 部分）。
 
 ---
 
@@ -346,13 +346,13 @@ Cloudflare Access はカスタムドメインのみを保護するため、`figu
 
 ---
 
-**⑱ JWT 署名検証の設定（推奨）**
+**⑱ JWT 署名検証の設定**
 
 Cloudflare Access が付与する JWT をサーバー側で検証するための設定。未設定の場合、Cloudflare Access は通過できてもアプリ内で「未ログイン」扱いになり管理機能が使えない。**本番運用には必ず設定すること。**
 
 **AUD Tag の確認:**
 
-🌐 `https://one.dash.cloudflare.com` → Accessコントロール → アプリケーション → `figurine-catalog` → **AUD Tag** をメモ
+🌐 `https://one.dash.cloudflare.com` → **Zero Trust** → **Access コントロール** → **アプリケーション** → `figurine-catalog` を選択 → **設定** → **追加設定** タブ → 「アプリケーション オーディエンス (AUD) タグ」のトークン値をメモ
 
 **Pages 環境変数に登録:**
 
