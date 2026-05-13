@@ -1,0 +1,1 @@
+ALTER TABLE `handmade_info` ADD `quote` text;
