@@ -99,6 +99,39 @@ npx wrangler r2 bucket create figurine-catalog-photos
 
 ---
 
+**⑤-b R2 バケットの CORS 設定**
+
+ブラウザから直接 R2 へ写真をアップロード（presigned URL 経由）するために CORS を許可する。
+
+🌐 `https://dash.cloudflare.com` → R2 → `figurine-catalog-photos` → **Settings** → **CORS Policy** → 以下を追加:
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "http://localhost:8788",
+      "http://localhost:5173",
+      "https://gallery.hakuworx.com"
+    ],
+    "AllowedMethods": [
+      "PUT",
+      "GET"
+    ],
+    "AllowedHeaders": [
+      "Content-Type",
+      "x-amz-*",
+      "x-id"
+    ],
+    "ExposeHeaders": [],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+> カスタムドメインを変更した場合は `AllowedOrigins` も合わせて更新すること。
+
+---
+
 **⑥ R2 API トークン取得**
 
 🌐 `https://dash.cloudflare.com` → R2 → **Manage R2 API Tokens** → **Create API Token**

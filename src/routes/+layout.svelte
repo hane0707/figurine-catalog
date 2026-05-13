@@ -218,7 +218,7 @@
             </button>
           </form>
         {:else}
-          <a href="/cdn-cgi/access/logout" class="btn --ghost" style="font-size:12px; letter-spacing:0.04em">
+          <a href="/cdn-cgi/access/logout?redirect_url={page.url.origin}/items" class="btn --ghost" style="font-size:12px; letter-spacing:0.04em">
             ログアウト
           </a>
         {/if}
