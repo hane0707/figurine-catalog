@@ -36,8 +36,15 @@ export const load: PageServerLoad = async ({ params, locals, platform }) => {
 
   const frequent = allMaterials.filter((m) => m.isPreset).slice(0, 6);
 
+  const isOwner = !!locals.user;
+
   return {
-    item: { ...item, photos: photosWithUrls },
+    item: {
+      ...item,
+      photos: photosWithUrls,
+      purchaseInfo: (isOwner || item.purchaseInfoPublic === 1) ? item.purchaseInfo : null,
+      handmadeInfo: (isOwner || item.handmadeInfoPublic === 1) ? item.handmadeInfo : null,
+    },
     allTags,
     materials: { all: allMaterials, frequent },
   };

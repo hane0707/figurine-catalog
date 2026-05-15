@@ -320,9 +320,8 @@
           </div>
         {/if}
 
-        <!-- 台詞ブロック（自作品かつ quote あり、公開設定に連動） -->
-        {#if item.isHandmade === 1 && item.handmadeInfo?.quote &&
-             (data.user || (item.isPublic === 1 && item.handmadeInfoPublic === 1))}
+        <!-- 台詞ブロック（自作品かつ quote あり） -->
+        {#if item.isHandmade === 1 && item.handmadeInfo?.quote}
           <div class="quote-block">
             &ldquo;{item.handmadeInfo.quote}&rdquo;
           </div>
