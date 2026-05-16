@@ -5,10 +5,12 @@
   import { invalidateAll } from '$app/navigation';
   import TagPicker from '$lib/components/TagPicker.svelte';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
+  import GlitchText from '$lib/components/GlitchText.svelte';
   import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
+  let displayName = $derived(item.name ?? '名称未設定');
 
   let editing = $state(false);
   let saving = $state(false);
@@ -293,7 +295,10 @@
         <!-- 表示モード -->
         <div>
           <h1 style="display:flex; align-items:center; gap:8px">
-            {item.name ?? '名称未設定'}
+            <GlitchText segments={[
+              { text: displayName[0], stain: true, large: true },
+              { text: displayName.slice(1) }
+            ]} />
             {#if data.user && !item.isPublic}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
