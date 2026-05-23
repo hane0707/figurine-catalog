@@ -18,7 +18,7 @@
   const kindLabel = item.isHandmade === 1 ? 'Handmade' : 'Collected';
 </script>
 
-<a href="/items/{item.id}" class="card">
+<a href="/items/{item.id}" class="card textured">
   <div class="card-img">
     {#if item.thumbUrl}
       <img src={item.thumbUrl} alt={item.name ?? '名称未設定'} loading="lazy" />

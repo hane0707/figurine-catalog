@@ -167,7 +167,7 @@
       </div>
     </div>
 
-    <div class="spotlight">
+    <div class="spotlight textured">
       {#if data.spotlight}
         <div class="spotlight-tag">
           Spotlight · {data.spotlight.isHandmade === 1
@@ -201,25 +201,25 @@
 
   <!-- 統計 -->
   <section class="stats rise rise-d1">
-    <div class="stat">
+    <div class="stat textured">
       <span class="eyebrow">Total Items</span>
       <div class="stat-value">{displayTotal}</div>
       <div class="stat-delta"><span class="dot"></span>owned now</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
-    <div class="stat --haze">
+    <div class="stat --haze textured">
       <span class="eyebrow">Handmade</span>
       <div class="stat-value">{displayHandmade}</div>
       <div class="stat-delta"><span class="dot"></span>自作品</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
-    <div class="stat --line">
+    <div class="stat --line textured">
       <span class="eyebrow">COLLECTED</span>
       <div class="stat-value">{displayBought}</div>
       <div class="stat-delta"><span class="dot"></span>購入品</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
-    <div class="stat --diamond">
+    <div class="stat --diamond textured">
       <span class="eyebrow">Series</span>
       <div class="stat-value">{displaySeries}</div>
       <div class="stat-delta"><span class="dot"></span>unique</div>
@@ -274,7 +274,7 @@
   </div>
 
   <!-- フィルターバー -->
-  <div class="filterbar rise rise-d2">
+  <div class="filterbar textured rise rise-d2">
     <div class="search">
       <svg
         width="14"
@@ -358,7 +358,7 @@
       {#each items as item (item.id)}
         <a
           href="/items/{item.id}"
-          class="card"
+          class="card textured"
           style="display:grid; grid-template-columns:72px 1fr auto; gap:18px; align-items:center; padding:12px"
         >
           <div
