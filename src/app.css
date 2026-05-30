@@ -43,6 +43,14 @@
     inset 8px 8px 16px oklch(0.80 0.016 285 / 0.6),
     inset -8px -8px 16px oklch(1 0 0 / 0.92);
 
+  --surface-raised: linear-gradient(
+      135deg,
+      oklch(1 0 0 / 0.6) 0%,
+      transparent 50%,
+      oklch(0.9 0.01 285 / 0.15) 100%
+    ),
+    var(--surface);
+
   --f-display: "Fraunces", "Hiragino Mincho ProN", "Yu Mincho", serif;
   --f-sans:
     "Inter", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
@@ -290,7 +298,7 @@ body {
   position: relative;
   aspect-ratio: 4/5;
   border-radius: var(--r-lg);
-  background: var(--surface);
+  background: var(--surface-raised);
   box-shadow: var(--neu-deep);
   overflow: hidden;
   animation: float 6s ease-in-out infinite;
@@ -358,8 +366,9 @@ body {
   }
 }
 .stat {
-  background: var(--surface);
+  background: var(--surface-raised);
   border-radius: var(--r);
+  border-top: 1px solid oklch(1 0 0 / 0.7);
   padding: 22px 24px;
   box-shadow: var(--neu-soft);
   position: relative;
@@ -428,7 +437,7 @@ body {
 
 /* --- filter bar --- */
 .filterbar {
-  background: var(--surface);
+  background: var(--surface-raised);
   border-radius: var(--r-lg);
   padding: 14px;
   box-shadow: var(--neu-soft);
@@ -562,8 +571,9 @@ body {
 
 /* --- card --- */
 .card {
-  background: var(--surface);
+  background: var(--surface-raised);
   border-radius: var(--r);
+  border-top: 1px solid oklch(1 0 0 / 0.7);
   padding: 14px;
   box-shadow: var(--neu-soft);
   transition: all var(--dur) var(--ease);
@@ -579,6 +589,13 @@ body {
 .card:hover {
   transform: translateY(-3px);
   box-shadow: var(--neu-mid);
+  background: linear-gradient(
+      135deg,
+      oklch(1 0 0 / 0.75) 0%,
+      transparent 45%,
+      oklch(0.9 0.01 285 / 0.1) 100%
+    ),
+    var(--surface);
 }
 .card-img {
   border-radius: calc(var(--r) - 6px);
