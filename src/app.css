@@ -11,7 +11,7 @@
   --bg: oklch(0.96 0.012 285);
   --bg-soft: oklch(0.963 0.009 285);
   --bg-sunk: oklch(0.942 0.012 285);
-  --surface: oklch(1 0 0);
+  --surface: oklch(0.978 0.009 285);
   --surface-2: oklch(0.978 0.006 285);
 
   --fg: oklch(0.22 0.014 285);
@@ -45,7 +45,7 @@
 
   --surface-raised: linear-gradient(
       135deg,
-      oklch(1 0 0 / 0.6) 0%,
+      oklch(1 0 0 / 0.3) 0%,
       transparent 50%,
       oklch(0.9 0.01 285 / 0.15) 100%
     ),
@@ -368,7 +368,6 @@ body {
 .stat {
   background: var(--surface-raised);
   border-radius: var(--r);
-  border-top: 1px solid oklch(1 0 0 / 0.7);
   padding: 22px 24px;
   box-shadow: var(--neu-soft);
   position: relative;
@@ -573,7 +572,6 @@ body {
 .card {
   background: var(--surface-raised);
   border-radius: var(--r);
-  border-top: 1px solid oklch(1 0 0 / 0.7);
   padding: 14px;
   box-shadow: var(--neu-soft);
   transition: all var(--dur) var(--ease);
@@ -591,7 +589,7 @@ body {
   box-shadow: var(--neu-mid);
   background: linear-gradient(
       135deg,
-      oklch(1 0 0 / 0.75) 0%,
+      oklch(1 0 0 / 0.45) 0%,
       transparent 45%,
       oklch(0.9 0.01 285 / 0.1) 100%
     ),
