@@ -424,43 +424,6 @@ body {
   height: 8px;
 }
 
-/* --- texture overlay --- */
-.textured::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("/texture.png?v=1");
-  background-size: var(--tx-size, 200px);
-  background-repeat: repeat;
-  background-position: var(--tx-pos, 0 0);
-  opacity: 0.17;
-  pointer-events: none;
-}
-.stat.--haze::before {
-  --tx-pos: -300px -200px;
-}
-.stat.--line::before {
-  --tx-pos: -500px -100px;
-}
-.stat.--diamond::before {
-  --tx-pos: -150px -400px;
-}
-.card:nth-child(6n + 2)::before {
-  --tx-pos: -150px -200px;
-}
-.card:nth-child(6n + 3)::before {
-  --tx-pos: -300px -80px;
-}
-.card:nth-child(6n + 4)::before {
-  --tx-pos: -100px -350px;
-}
-.card:nth-child(6n + 5)::before {
-  --tx-pos: -250px -150px;
-}
-.card:nth-child(6n)::before {
-  --tx-pos: -350px -300px;
-}
-
 /* --- filter bar --- */
 .filterbar {
   background: var(--surface);
