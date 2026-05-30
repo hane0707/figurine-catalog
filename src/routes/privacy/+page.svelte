@@ -13,12 +13,11 @@
       <section>
         <h2>アクセス解析ツールについて</h2>
         <p>
-          当サイトでは、利用状況の分析にGoogle社が提供するGoogleアナリティクスを使用しています。Googleアナリティクスではトラフィックデータの収集のためにクッキー（Cookie）を使用しております。トラフィックデータは匿名で収集されており、個人を特定するものではありません。
+          当サイトでは、利用状況の分析にCloudflare社が提供するCloudflare Web Analyticsを使用しています。Cloudflare Web Analyticsはクッキー（Cookie）を使用せず、IPアドレスや個人を識別できる情報を収集・保存しません。
         </p>
-        <p>Googleアナリティクスによるデータ収集の仕組みや利用規約については以下をご覧ください。</p>
+        <p>Cloudflare Web Analyticsのプライバシーポリシーについては以下をご覧ください。</p>
         <ul>
-          <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleポリシーと規約</a></li>
-          <li><a href="https://marketingplatform.google.com/about/analytics/terms/jp/" target="_blank" rel="noopener">Googleアナリティクス利用規約</a></li>
+          <li><a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare Privacy Policy</a></li>
         </ul>
       </section>
 
