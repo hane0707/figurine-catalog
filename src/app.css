@@ -854,10 +854,11 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("/texture.png?v=1");
-  background-size: 300px;
-  background-repeat: repeat;
-  opacity: 0.2;
+  background: linear-gradient(
+    135deg,
+    oklch(1 0 0 / 0.25) 0%,
+    transparent 60%
+  );
   pointer-events: none;
 }
 .detail-img-panel img {
