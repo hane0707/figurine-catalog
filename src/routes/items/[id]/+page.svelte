@@ -558,5 +558,9 @@
     color: var(--fg-mute);
     overflow-wrap: break-word;
     word-break: break-word;
+    padding: 16px 20px;
+    border-radius: var(--r);
+    background: var(--bg-sunk);
+    box-shadow: var(--neu-inset);
   }
 </style>
