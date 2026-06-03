@@ -904,10 +904,6 @@ body {
   flex-direction: column;
   gap: 20px;
   overflow-y: auto;
-  background: var(--surface-raised);
-  border-radius: var(--r-lg);
-  box-shadow: var(--neu-soft);
-  padding: 28px;
 }
 .detail-info-panel h1 {
   font-family: var(--f-display);
