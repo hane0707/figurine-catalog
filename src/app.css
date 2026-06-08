@@ -1543,6 +1543,67 @@ body {
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
+/* ======================================================
+   dark mode — カスタムデザインシステム変数オーバーライド
+   ====================================================== */
+.dark {
+  --bg: oklch(0.22 0.012 285);
+  --bg-soft: oklch(0.223 0.009 285);
+  --bg-sunk: oklch(0.18 0.012 285);
+  --surface: oklch(0.22 0.012 285);
+  --surface-2: oklch(0.238 0.006 285);
+
+  --fg: oklch(0.92 0.006 285);
+  --fg-mute: oklch(0.65 0.010 285);
+  --fg-soft: oklch(0.52 0.010 285);
+
+  --line: oklch(0.30 0.010 285);
+  --line-strong: oklch(0.38 0.012 285);
+
+  --accent-amber-soft: oklch(0.30 0.06 70);
+  --accent-haze-soft: oklch(0.28 0.05 230);
+
+  --neu-deep:
+    14px 14px 40px oklch(0.12 0.010 285 / 0.80),
+    -14px -14px 40px oklch(0.33 0.010 285 / 0.55);
+  --neu-mid:
+    10px 10px 26px oklch(0.12 0.010 285 / 0.70),
+    -10px -10px 26px oklch(0.33 0.010 285 / 0.45),
+    0 -7px 16px oklch(0.12 0.010 285 / 0.22);
+  --neu-soft:
+    7px 7px 18px oklch(0.12 0.010 285 / 0.65),
+    -7px -7px 18px oklch(0.33 0.010 285 / 0.40),
+    0 -5px 10px oklch(0.12 0.010 285 / 0.20);
+  --neu-inset:
+    inset 4px 4px 8px oklch(0.12 0.010 285 / 0.70),
+    inset -4px -4px 8px oklch(0.33 0.010 285 / 0.40);
+  --neu-inset-deep:
+    inset 8px 8px 16px oklch(0.10 0.010 285 / 0.75),
+    inset -8px -8px 16px oklch(0.33 0.010 285 / 0.45);
+
+  --surface-raised: linear-gradient(
+      135deg,
+      oklch(0.33 0.010 285 / 0.25) 0%,
+      transparent 50%
+    ),
+    var(--surface);
+}
+
+.dark .btn.--primary:hover {
+  background: oklch(0.78 0.010 285);
+}
+.dark .btn.--danger:hover {
+  background: oklch(0.28 0.05 30);
+}
+.dark .ambient .b3 {
+  background: oklch(0.28 0.03 140);
+}
+.dark .detail-img-panel .overlay-tag,
+.dark .spotlight-tag {
+  background: oklch(0.18 0.012 285 / 0.92);
+  color: var(--fg);
+}
+
 @theme inline {
   --font-sans: "Inter Variable", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
