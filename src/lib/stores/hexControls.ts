@@ -5,10 +5,11 @@ export interface HexState {
   speed: number;    // 1–100。100 = 現在の低速、1 = 最速
   rainbow: boolean;
   inkMode: boolean;
+  darkMode: boolean;
 }
 
 const STORAGE_KEY = 'hex-controls';
-const DEFAULTS: HexState = { speed: 100, rainbow: false, inkMode: false };
+const DEFAULTS: HexState = { speed: 100, rainbow: false, inkMode: false, darkMode: false };
 
 function loadState(): HexState {
   if (!browser) return DEFAULTS;
@@ -25,6 +26,8 @@ function loadState(): HexState {
         typeof parsed.rainbow === 'boolean' ? parsed.rainbow : DEFAULTS.rainbow,
       inkMode:
         typeof parsed.inkMode === 'boolean' ? parsed.inkMode : DEFAULTS.inkMode,
+      darkMode:
+        typeof parsed.darkMode === 'boolean' ? parsed.darkMode : DEFAULTS.darkMode,
     };
   } catch {
     return DEFAULTS;
@@ -35,7 +38,12 @@ function saveState(state: HexState): void {
   if (!browser) return;
   localStorage.setItem(
     STORAGE_KEY,
-    JSON.stringify({ speed: state.speed, rainbow: state.rainbow, inkMode: state.inkMode }),
+    JSON.stringify({
+      speed: state.speed,
+      rainbow: state.rainbow,
+      inkMode: state.inkMode,
+      darkMode: state.darkMode,
+    }),
   );
 }
 
@@ -60,6 +68,13 @@ function createHexStore() {
     setInkMode(inkMode: boolean) {
       update(s => {
         const next = { ...s, inkMode };
+        saveState(next);
+        return next;
+      });
+    },
+    setDarkMode(darkMode: boolean) {
+      update(s => {
+        const next = { ...s, darkMode };
         saveState(next);
         return next;
       });

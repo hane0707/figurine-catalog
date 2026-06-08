@@ -113,6 +113,10 @@
 	function removeBlob(id: number) {
 		persistBlobs = persistBlobs.filter(b => b.id !== id);
 	}
+
+	$effect(() => {
+		document.documentElement.classList.toggle('dark', $hexControls.darkMode);
+	});
 </script>
 
 <svelte:head>
@@ -275,6 +279,17 @@
                 class:--on={$hexControls.inkMode}
                 onclick={() => hexControls.setInkMode(!$hexControls.inkMode)}
                 aria-pressed={$hexControls.inkMode}
+              >
+                <span class="toggle-dot"></span>
+              </button>
+            </div>
+            <div class="hex-panel-row --switch">
+              <span class="eyebrow">DARK MODE</span>
+              <button
+                class="toggle-chip"
+                class:--on={$hexControls.darkMode}
+                onclick={() => hexControls.setDarkMode(!$hexControls.darkMode)}
+                aria-pressed={$hexControls.darkMode}
               >
                 <span class="toggle-dot"></span>
               </button>
