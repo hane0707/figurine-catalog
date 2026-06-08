@@ -1,10 +1,11 @@
 <script lang="ts">
 	import '../app.css';
-	import { onMount } from 'svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { page } from '$app/state';
 	import type { LayoutData } from './$types';
 	import { hexControls, speedToDuration } from '$lib/stores/hexControls';
+	import HexToggleRow from '$lib/components/HexToggleRow.svelte';
+	import InkLayer from '$lib/components/InkLayer.svelte';
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 	const isSecondary = $derived(page.url.pathname !== '/items');
@@ -18,100 +19,6 @@
 		if (!e.relatedTarget || !panelEl?.contains(e.relatedTarget as Node)) {
 			panelOpen = false;
 		}
-	}
-
-	// --- ink drop ---
-	interface BlobCircle { dx: number; dy: number; scale: number; }
-
-	interface InkBlob {
-		id: number;
-		x: number;
-		y: number;
-		size: number;
-		color: string;
-		dur: number;
-		circles: BlobCircle[];
-	}
-
-	function makeCircles(size: number): BlobCircle[] {
-		const count = 2 + Math.floor(Math.random() * 2);
-		const extras: BlobCircle[] = Array.from({ length: count - 1 }, () => {
-			const angle = Math.random() * Math.PI * 2;
-			const dist = size * (0.25 + Math.random() * 0.25);
-			return {
-				dx: Math.cos(angle) * dist,
-				dy: Math.sin(angle) * dist,
-				scale: 0.55 + Math.random() * 0.35,
-			};
-		});
-		return [{ dx: 0, dy: 0, scale: 1 }, ...extras];
-	}
-
-	let introBlobs = $state<InkBlob[]>([]);
-	let introFading = $state(false);
-	let persistBlobs = $state<InkBlob[]>([]);
-	let blobCounter = 0;
-
-	function blobColor(index: number, rainbow: boolean): string {
-		if (!rainbow) return 'oklch(0.3 0.01 285 / 0.3)';
-		const hues = [55, 230, 140, 285];
-		return `oklch(0.6 0.18 ${hues[index % hues.length]} / 0.45)`;
-	}
-
-	function makeBlob(index: number, rainbow: boolean): InkBlob {
-		const size = 200 + Math.random() * 300;
-		return {
-			id: ++blobCounter,
-			x: 10 + Math.random() * 80,
-			y: 10 + Math.random() * 80,
-			size,
-			color: blobColor(index, rainbow),
-			dur: 14 + Math.random() * 4,
-			circles: makeCircles(size),
-		};
-	}
-
-	onMount(() => {
-		if (sessionStorage.getItem('ink-intro-shown')) return;
-		sessionStorage.setItem('ink-intro-shown', '1');
-
-		const rainbow = $hexControls.rainbow;
-		const ids: ReturnType<typeof setTimeout>[] = [];
-		const count = 4 + Math.floor(Math.random() * 2);
-
-		for (let i = 0; i < count; i++) {
-			ids.push(setTimeout(() => {
-				introBlobs = [...introBlobs, makeBlob(i, rainbow)];
-			}, i * 300));
-		}
-
-		ids.push(setTimeout(() => {
-			introFading = true;
-			ids.push(setTimeout(() => {
-				introBlobs = [];
-				introFading = false;
-			}, 1200));
-		}, (count - 1) * 300 + 3000));
-
-		return () => ids.forEach(clearTimeout);
-	});
-
-	$effect(() => {
-		if ($hexControls.inkMode) {
-			const rainbow = $hexControls.rainbow;
-			persistBlobs = [];
-			const id = setInterval(() => {
-				if (persistBlobs.length >= 12) return;
-				persistBlobs = [...persistBlobs, makeBlob(persistBlobs.length, rainbow)];
-			}, 1500);
-			return () => clearInterval(id);
-		} else {
-			persistBlobs = [];
-		}
-	});
-
-	function removeBlob(id: number) {
-		persistBlobs = persistBlobs.filter(b => b.id !== id);
 	}
 
 	$effect(() => {
@@ -131,16 +38,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,50..100;1,9..144,300..700,50..100&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 </svelte:head>
 
-<!-- Gooey SVG filter (hidden, must be in DOM before ink layers render) -->
-<svg style="display:none" aria-hidden="true">
-  <defs>
-    <filter id="ink-gooey">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-      <feColorMatrix in="blur" type="matrix"
-        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 6 -1" />
-    </filter>
-  </defs>
-</svg>
+<InkLayer />
 
 <div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.inkMode ? '--ink' : ''}" aria-hidden="true">
   <div class="blob b1"></div>
@@ -164,40 +62,6 @@
       transform="rotate(12)"
     />
   </svg>
-</div>
-
-<!-- Intro ink layer (first page load only, z-index: 0 — after .ambient = renders on top) -->
-{#if introBlobs.length > 0}
-  <div class="ink-intro" class:--fading={introFading}>
-    {#each introBlobs as blob (blob.id)}
-      <div class="ink-blob" style="left:{blob.x}vw;top:{blob.y}vh;--ink-dur:{blob.dur}s">
-        {#each blob.circles as c}
-          <div
-            class="ink-circle"
-            style="width:{blob.size * c.scale}px;height:{blob.size * c.scale}px;background:{blob.color};left:{c.dx}px;top:{c.dy}px;margin-left:{-(blob.size * c.scale / 2)}px;margin-top:{-(blob.size * c.scale / 2)}px"
-          ></div>
-        {/each}
-      </div>
-    {/each}
-  </div>
-{/if}
-
-<!-- Persistent ink layer (inkMode: true), z-index: 0 — after .ambient = renders on top -->
-<div class="ink-layer" class:--active={$hexControls.inkMode}>
-  {#each persistBlobs as blob (blob.id)}
-    <div
-      class="ink-blob"
-      style="left:{blob.x}vw;top:{blob.y}vh;--ink-dur:{blob.dur}s"
-      onanimationend={(e) => { if (e.animationName === 'ink-fade') removeBlob(blob.id); }}
-    >
-      {#each blob.circles as c}
-        <div
-          class="ink-circle"
-          style="width:{blob.size * c.scale}px;height:{blob.size * c.scale}px;background:{blob.color};left:{c.dx}px;top:{c.dy}px;margin-left:{-(blob.size * c.scale / 2)}px;margin-top:{-(blob.size * c.scale / 2)}px"
-        ></div>
-      {/each}
-    </div>
-  {/each}
 </div>
 
 <nav class="nav" aria-label="Main">
@@ -261,39 +125,21 @@
                 <span>Fast</span><span>Slow</span>
               </div>
             </div>
-            <div class="hex-panel-row --switch">
-              <span class="eyebrow">RAINBOW</span>
-              <button
-                class="toggle-chip"
-                class:--on={$hexControls.rainbow}
-                onclick={() => hexControls.setRainbow(!$hexControls.rainbow)}
-                aria-pressed={$hexControls.rainbow}
-              >
-                <span class="toggle-dot"></span>
-              </button>
-            </div>
-            <div class="hex-panel-row --switch">
-              <span class="eyebrow">INK MODE</span>
-              <button
-                class="toggle-chip"
-                class:--on={$hexControls.inkMode}
-                onclick={() => hexControls.setInkMode(!$hexControls.inkMode)}
-                aria-pressed={$hexControls.inkMode}
-              >
-                <span class="toggle-dot"></span>
-              </button>
-            </div>
-            <div class="hex-panel-row --switch">
-              <span class="eyebrow">DARK MODE</span>
-              <button
-                class="toggle-chip"
-                class:--on={$hexControls.darkMode}
-                onclick={() => hexControls.setDarkMode(!$hexControls.darkMode)}
-                aria-pressed={$hexControls.darkMode}
-              >
-                <span class="toggle-dot"></span>
-              </button>
-            </div>
+            <HexToggleRow
+              label="RAINBOW"
+              value={$hexControls.rainbow}
+              onchange={(v) => hexControls.setRainbow(v)}
+            />
+            <HexToggleRow
+              label="INK MODE"
+              value={$hexControls.inkMode}
+              onchange={(v) => hexControls.setInkMode(v)}
+            />
+            <HexToggleRow
+              label="DARK MODE"
+              value={$hexControls.darkMode}
+              onchange={(v) => hexControls.setDarkMode(v)}
+            />
           </div>
         {/if}
       </div>
