@@ -210,13 +210,13 @@
     <div class="stat --haze">
       <span class="eyebrow">Handmade</span>
       <div class="stat-value">{displayHandmade}</div>
-      <div class="stat-delta"><span class="dot"></span>自作品</div>
+      <div class="stat-delta"><span class="dot"></span>made by hand</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
     <div class="stat --line">
-      <span class="eyebrow">COLLECTED</span>
+      <span class="eyebrow">Collected</span>
       <div class="stat-value">{displayBought}</div>
-      <div class="stat-delta"><span class="dot"></span>購入品</div>
+      <div class="stat-delta"><span class="dot"></span>found &amp; bought</div>
       <div class="stat-chip"><div class="stat-chip-dot"></div></div>
     </div>
     <div class="stat --diamond">
