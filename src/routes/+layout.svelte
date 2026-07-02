@@ -23,13 +23,16 @@
 
 	$effect(() => {
 		document.documentElement.classList.toggle('dark', $hexControls.darkMode);
+		document
+			.querySelector('meta[name="theme-color"]')
+			?.setAttribute('content', $hexControls.darkMode ? '#2a292e' : '#e4e1e9');
 	});
 </script>
 
 <svelte:head>
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="theme-color" content="#f0edf8" />
+  <meta name="theme-color" content="#e4e1e9" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
