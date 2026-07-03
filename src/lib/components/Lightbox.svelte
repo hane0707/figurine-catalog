@@ -102,6 +102,7 @@
     opacity: 0.4;
     transition: opacity 320ms ease;
     box-shadow: 0 32px 80px oklch(0 0 0 / 0.5);
+    pointer-events: auto;
   }
   .lb-img.--loaded {
     opacity: 1;
