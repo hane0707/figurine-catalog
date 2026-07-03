@@ -15,11 +15,11 @@
   const PUNCT = new Set(['、', '。']);
 
   const MASK_COLORS = [
-    'oklch(0.62 0.20 285 / 0.80)',
-    'oklch(0.52 0.22 285 / 0.82)',
-    'oklch(0.72 0.16 285 / 0.75)',
-    'oklch(0.45 0.20 285 / 0.85)',
+    'oklch(0.62 0.14 70 / 0.80)',
+    'oklch(0.52 0.15 65 / 0.82)',
+    'oklch(0.72 0.12 78 / 0.75)',
     'oklch(0.58 0.10 230 / 0.78)',
+    'oklch(0.50 0.12 285 / 0.80)',
   ];
 
   const rand = (a: number, b: number) => Math.random() * (b - a) + a;
