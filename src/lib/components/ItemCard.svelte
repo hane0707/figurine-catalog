@@ -66,7 +66,7 @@
   }
   .card-tag {
     font-family: var(--f-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.06em;
     padding: 2px 8px;
     border-radius: var(--r-pill);
