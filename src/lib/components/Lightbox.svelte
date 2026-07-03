@@ -31,6 +31,7 @@
   }
   function onKeydown(e: KeyboardEvent) {
     if (!open) return;
+    if (e.altKey || e.metaKey || e.ctrlKey) return;
     if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
     if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
   }

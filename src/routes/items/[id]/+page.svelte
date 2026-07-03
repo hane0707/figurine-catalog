@@ -249,6 +249,7 @@
   }
 
   function onNavKeydown(e: KeyboardEvent) {
+    if (e.altKey || e.metaKey || e.ctrlKey || e.repeat) return;
     if (editing || lightboxOpen) return;
     const t = e.target as HTMLElement;
     if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return;
@@ -302,7 +303,7 @@
           <img
             src={selectedPhoto.origUrl}
             alt={item.name ?? ''}
-            style="background-image: url({selectedPhoto.thumbUrl}); background-size: cover; background-position: center"
+            style="background-image: url({selectedPhoto.thumbUrl}); background-size: contain; background-repeat: no-repeat; background-position: center"
           />
         </button>
         <div class="overlay-tag">
