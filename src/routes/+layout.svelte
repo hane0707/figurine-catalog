@@ -7,6 +7,7 @@
 	import HexToggleRow from '$lib/components/HexToggleRow.svelte';
 	import InkLayer from '$lib/components/InkLayer.svelte';
 	import { onNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
@@ -23,6 +24,12 @@
 	const isSecondary = $derived(page.url.pathname !== '/items');
 	const r1Duration = $derived(speedToDuration($hexControls.speed).r1);
 	const r2Duration = $derived(speedToDuration($hexControls.speed).r2);
+
+	let scrollY = $state(0);
+	let reducedMotion = $state(false);
+	onMount(() => {
+		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	});
 
 	let panelOpen = $state(false);
 	let panelEl: HTMLDivElement | undefined;
@@ -58,14 +65,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,50..100;1,9..144,300..700,50..100&family=JetBrains+Mono:wght@300;400;500&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet" />
 </svelte:head>
 
+<svelte:window bind:scrollY />
+
 <InkLayer />
 <div class="grain" aria-hidden="true"></div>
 
 <div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.inkMode ? '--ink' : ''}" aria-hidden="true">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
+  <div class="blob b1" style="translate: 0 {reducedMotion ? 0 : scrollY * -0.06}px"></div>
+  <div class="blob b2" style="translate: 0 {reducedMotion ? 0 : scrollY * 0.04}px"></div>
+  <div class="blob b3" style="translate: 0 {reducedMotion ? 0 : scrollY * -0.03}px"></div>
+  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s; translate: 0 {reducedMotion ? 0 : scrollY * 0.05}px" viewBox="-350 -350 700 700" aria-hidden="true">
     <polygon
       points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
       fill="none"
@@ -74,7 +83,7 @@
       transform="rotate(12)"
     />
   </svg>
-  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
+  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s; translate: 0 {reducedMotion ? 0 : scrollY * -0.04}px" viewBox="-210 -210 420 420" aria-hidden="true">
     <polygon
       points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
       fill="none"

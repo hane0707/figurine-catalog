@@ -112,7 +112,6 @@ body {
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.55;
-  transition: transform 2s var(--ease);
 }
 .ambient .b1 {
   width: 520px;
