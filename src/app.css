@@ -511,6 +511,11 @@ body {
 .search input::placeholder {
   color: var(--fg-soft);
 }
+.search:focus-within {
+  box-shadow:
+    var(--neu-inset),
+    0 0 0 2px var(--accent-amber);
+}
 .seg {
   display: inline-flex;
   background: var(--bg-sunk);
