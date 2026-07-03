@@ -124,6 +124,8 @@
 
   let tiltX = $state(0);
   let tiltY = $state(0);
+  let glareX = $state(50);
+  let glareY = $state(50);
   let canHover = $state(false);
   onMount(() => {
     canHover = window.matchMedia('(hover: hover)').matches &&
@@ -134,12 +136,16 @@
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
-    tiltX = py * -7;
-    tiltY = px * 9;
+    tiltX = py * -10;
+    tiltY = px * 12;
+    glareX = px * 100 + 50;
+    glareY = py * 100 + 50;
   }
   function resetTilt() {
     tiltX = 0;
     tiltY = 0;
+    glareX = 50;
+    glareY = 50;
   }
 
   function syncUrl() {
@@ -222,7 +228,7 @@
     >
       <div
         class="spotlight"
-        style="transform: perspective(900px) rotateX({tiltX}deg) rotateY({tiltY}deg)"
+        style="transform: perspective(900px) rotateX({tiltX}deg) rotateY({tiltY}deg) scale({tiltX !== 0 || tiltY !== 0 ? 1.015 : 1})"
       >
         {#if data.spotlight}
           <div class="spotlight-tag">
@@ -237,6 +243,13 @@
               style="background-image: url({data.spotlight.thumbUrl}); background-size: cover"
             />
           </div>
+          {#if canHover}
+            <div
+              class="spotlight-glare"
+              aria-hidden="true"
+              style="background: radial-gradient(circle at {glareX}% {glareY}%, oklch(1 0 0 / 0.16), transparent 55%)"
+            ></div>
+          {/if}
           <div class="spotlight-caption">
             <h3>{data.spotlight.name ?? "名称未設定"}</h3>
             {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
