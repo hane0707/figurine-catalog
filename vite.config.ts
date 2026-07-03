@@ -10,6 +10,10 @@ export default defineConfig({
 	test: {
 		environment: 'jsdom',
 		globals: true,
-		setupFiles: ['@testing-library/svelte/vitest', '@testing-library/jest-dom/vitest'],
+		setupFiles: [
+			'@testing-library/svelte/vitest',
+			'@testing-library/jest-dom/vitest',
+			'./vitest-setup.ts',
+		],
 	},
 });
