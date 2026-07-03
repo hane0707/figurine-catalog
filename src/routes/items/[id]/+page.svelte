@@ -6,6 +6,7 @@
   import TagPicker from '$lib/components/TagPicker.svelte';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
   import GlitchText from '$lib/components/GlitchText.svelte';
+  import Lightbox from '$lib/components/Lightbox.svelte';
   import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
 
   let { data }: { data: PageData } = $props();
@@ -237,6 +238,14 @@
   $effect(() => { selectedPhoto = coverPhoto; });
   let otherPhotos = $derived(item.photos.filter((p: any) => p !== selectedPhoto).slice(0, 3));
   const kindLabel = $derived(item.isHandmade === 1 ? 'Handmade' : item.isHandmade === 0 ? 'Collected' : 'Item');
+
+  let lightboxOpen = $state(false);
+  let lightboxIndex = $state(0);
+  function openLightbox(photo: any) {
+    const i = item.photos.indexOf(photo);
+    lightboxIndex = i >= 0 ? i : 0;
+    lightboxOpen = true;
+  }
 </script>
 
 <svelte:head>
@@ -264,7 +273,13 @@
     <!-- 左：画像パネル -->
     <div class="detail-img-panel">
       {#if selectedPhoto}
-        <img src={selectedPhoto.thumbUrl} alt={item.name ?? ''} />
+        <button class="detail-img-btn" onclick={() => openLightbox(selectedPhoto)} aria-label="写真を拡大表示">
+          <img
+            src={selectedPhoto.origUrl}
+            alt={item.name ?? ''}
+            style="background-image: url({selectedPhoto.thumbUrl}); background-size: cover; background-position: center"
+          />
+        </button>
         <div class="overlay-tag">
           {kindLabel} · {item.createdAt?.slice(0, 10) ?? ''}
         </div>
@@ -532,7 +547,7 @@
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:12px">
         {#each item.photos as photo}
           <button
-            onclick={() => (selectedPhoto = photo)}
+            onclick={() => openLightbox(photo)}
             style="aspect-ratio:1; border-radius:var(--r-sm); overflow:hidden; box-shadow:var(--neu-soft); background:none; border:none; padding:0; cursor:pointer; display:block; width:100%"
           >
             <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
@@ -541,6 +556,8 @@
       </div>
     </div>
   {/if}
+
+  <Lightbox photos={item.photos} bind:index={lightboxIndex} bind:open={lightboxOpen} />
 </div>
 
 <style>
@@ -549,6 +566,22 @@
     gap: 10px;
     justify-content: flex-end;
     margin-bottom: 24px;
+  }
+
+  .detail-img-btn {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: zoom-in;
+  }
+  .detail-img-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: relative;
   }
 
   .quote-block {

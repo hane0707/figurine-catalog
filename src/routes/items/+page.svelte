@@ -176,8 +176,9 @@
         </div>
         <div class="spotlight-inner">
           <img
-            src={data.spotlight.thumbUrl}
+            src={data.spotlight.origUrl}
             alt={data.spotlight.name ?? "Spotlight"}
+            style="background-image: url({data.spotlight.thumbUrl}); background-size: cover"
           />
         </div>
         <div class="spotlight-caption">
