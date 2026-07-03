@@ -313,6 +313,11 @@ body {
   font-size: clamp(40px, 6.2vw, 88px);
   line-break: strict;
 }
+@media (max-width: 720px) {
+  .hero-title {
+    font-size: clamp(24px, 10vw, 40px);
+  }
+}
 .hero-lede {
   margin: 24px 0 0;
   max-width: 44ch;

@@ -12,14 +12,29 @@
 
   let { segments }: { segments: Segment[] } = $props();
 
+  // breakAfter 区切りで行にグループ化し、行内の途中改行を防ぐ
+  const lines: Segment[][] = (() => {
+    const out: Segment[][] = [];
+    let cur: Segment[] = [];
+    for (const s of segments) {
+      cur.push(s);
+      if (s.breakAfter) {
+        out.push(cur);
+        cur = [];
+      }
+    }
+    if (cur.length) out.push(cur);
+    return out;
+  })();
+
   const PUNCT = new Set(['、', '。']);
 
   const MASK_COLORS = [
-    'oklch(0.62 0.14 70 / 0.80)',
-    'oklch(0.52 0.15 65 / 0.82)',
-    'oklch(0.72 0.12 78 / 0.75)',
+    'oklch(0.62 0.20 285 / 0.80)',
+    'oklch(0.52 0.22 285 / 0.82)',
+    'oklch(0.72 0.16 285 / 0.75)',
+    'oklch(0.45 0.20 285 / 0.85)',
     'oklch(0.58 0.10 230 / 0.78)',
-    'oklch(0.50 0.12 285 / 0.80)',
   ];
 
   const rand = (a: number, b: number) => Math.random() * (b - a) + a;
@@ -96,17 +111,6 @@
       return;
     }
 
-    // 再訪(同一セッション2回目以降)は短縮版:ステインとマスクを省き素早く出す
-    const seen = sessionStorage.getItem('glitch-seen');
-    if (seen) {
-      chars.forEach((el, i) => {
-        el.style.transition = 'opacity 260ms ease';
-        setTimeout(() => { el.style.opacity = '1'; }, i * 22);
-      });
-      return;
-    }
-    sessionStorage.setItem('glitch-seen', '1');
-
     const BASE = 120;
     const JITTER = 180;
     Promise.all(
@@ -119,13 +123,13 @@
 </script>
 
 <!-- WARNING: ブロック間に改行・スペースを入れないこと。インライン要素間の空白テキストノードになりセグメント間に不要スペースが生じる -->
-<span bind:this={container}>{#each segments as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
+<span bind:this={container}>{#each lines as line}<span class="glitch-line">{#each line as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
         class="glitch-ch"
         class:punct={PUNCT.has(char)}
         class:small-ch={seg.small}
         class:large-ch={seg.large}
         data-stain={seg.stain ? 'true' : undefined}
-      >{char}</span>{/if}{/each}{/if}{#if seg.breakAfter}<br />{/if}{/each}</span>
+      >{char}</span>{/if}{/each}{/if}{/each}</span>{/each}</span>
 
 <style>
   .glitch-ch {
@@ -141,5 +145,9 @@
   }
   .large-ch {
     font-size: 1.3em;
+  }
+  .glitch-line {
+    display: block;
+    white-space: nowrap;
   }
 </style>
