@@ -433,10 +433,14 @@
   {/if}
 
   {#if loading}
-    <div
-      style="text-align:center; padding:48px 20px; color:var(--fg-soft); font-family:var(--f-mono); font-size:11px; letter-spacing:0.16em"
-    >
-      LOADING...
+    <div class="skel-grid" aria-hidden="true">
+      {#each Array(columnCount * 2) as _, i (i)}
+        <div class="skel-card" style="animation-delay: {i * 90}ms">
+          <div class="skel-img"></div>
+          <div class="skel-line"></div>
+          <div class="skel-line --short"></div>
+        </div>
+      {/each}
     </div>
   {/if}
 

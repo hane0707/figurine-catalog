@@ -140,6 +140,22 @@ body {
   animation: spin-ccw 120s linear infinite;
 }
 
+/* --- grain overlay --- */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .grain {
+  mix-blend-mode: screen;
+  opacity: 0.25;
+  filter: invert(1);
+}
+
 /* --- typography --- */
 .display {
   font-family: var(--f-display);
@@ -704,6 +720,46 @@ body {
   margin-bottom: 14px;
   font-size: 20px;
   font-family: var(--f-display);
+}
+
+/* --- skeleton --- */
+.skel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+.skel-card {
+  background: var(--surface-raised);
+  border-radius: var(--r);
+  padding: 14px;
+  box-shadow: var(--neu-soft);
+  animation: skel-pulse 1.6s ease-in-out infinite;
+}
+.skel-img {
+  aspect-ratio: 4/5;
+  border-radius: calc(var(--r) - 6px);
+  background: var(--bg-sunk);
+  box-shadow: var(--neu-inset);
+  margin-bottom: 14px;
+}
+.skel-line {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--bg-sunk);
+  box-shadow: var(--neu-inset);
+  margin-bottom: 8px;
+}
+.skel-line.--short {
+  width: 55%;
+  margin-bottom: 0;
+}
+@keyframes skel-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel-card { animation: none; }
 }
 
 /* --- buttons --- */

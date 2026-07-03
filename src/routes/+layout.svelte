@@ -54,6 +54,7 @@
 </svelte:head>
 
 <InkLayer />
+<div class="grain" aria-hidden="true"></div>
 
 <div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.inkMode ? '--ink' : ''}" aria-hidden="true">
   <div class="blob b1"></div>
