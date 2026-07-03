@@ -82,6 +82,22 @@ body {
   background: var(--accent-amber-soft);
   color: var(--fg);
 }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.btn:focus-visible,
+.chip:focus-visible,
+.seg button:focus-visible,
+.fab:focus-visible,
+.toggle-chip:focus-visible {
+  border-radius: var(--r-pill);
+  outline-offset: 1px;
+}
+.card:focus-visible {
+  border-radius: var(--r);
+}
 
 /* --- ambient background --- */
 .ambient {
@@ -654,6 +670,19 @@ body {
 .card-badge.--bought {
   background: var(--accent-haze);
   color: oklch(1 0 0);
+}
+.badge-mark {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 5px;
+  vertical-align: 1px;
+}
+.badge-mark.--diamond {
+  border-radius: 1px;
+  transform: rotate(45deg);
 }
 .card h3 {
   margin: 0 0 4px;

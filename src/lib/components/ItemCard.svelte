@@ -29,7 +29,7 @@
     {/if}
     {#if item.isHandmade !== undefined && item.isHandmade !== null}
       <div class={'card-badge ' + (item.isHandmade === 1 ? '--handmade' : '--bought')}>
-        {kindLabel}
+        <span class="badge-mark" class:--diamond={item.isHandmade === 1}></span>{kindLabel}
       </div>
     {/if}
     {#if isOwner && item.isPublic === 0}

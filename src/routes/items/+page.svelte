@@ -288,6 +288,7 @@
         class={layout === "grid" ? "--active" : ""}
         onclick={() => (layout = "grid")}
         aria-label="グリッド表示"
+        aria-pressed={layout === "grid"}
       >
         <svg
           width="14"
@@ -313,6 +314,7 @@
         class={layout === "list" ? "--active" : ""}
         onclick={() => (layout = "list")}
         aria-label="リスト表示"
+        aria-pressed={layout === "list"}
       >
         <svg
           width="14"
@@ -350,6 +352,7 @@
         <button
           class={kindFilter === opt.key ? "--active" : ""}
           onclick={() => setKind(opt.key)}
+          aria-pressed={kindFilter === opt.key}
         >
           {opt.label}
         </button>
@@ -360,6 +363,7 @@
         <button
           class={sort === opt.key ? "--active" : ""}
           onclick={() => setSort(opt.key)}
+          aria-pressed={sort === opt.key}
         >
           {opt.label}
         </button>
@@ -374,6 +378,7 @@
         <button
           class={"chip " + (activeTags.includes(tag.id) ? "--active" : "")}
           onclick={() => toggleTag(tag.id)}
+          aria-pressed={activeTags.includes(tag.id)}
         >
           {tag.name}{#if tag.count > 0}&nbsp;<span class="count"
               >{tag.count}</span
