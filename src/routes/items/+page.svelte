@@ -182,6 +182,11 @@
 
 <svelte:head>
   <title>Haku's suitcase</title>
+  <meta property="og:title" content="Haku's suitcase" />
+  <meta property="og:description" content="ここは雨のあたらない、スーツケースの中。作ったものと、出会ったもの。" />
+  {#if data.spotlight}
+    <meta property="og:image" content={data.spotlight.thumbUrl} />
+  {/if}
 </svelte:head>
 
 <div class="app">

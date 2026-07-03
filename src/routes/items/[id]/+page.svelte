@@ -261,6 +261,11 @@
 
 <svelte:head>
   <title>{item.name ?? '名称未設定'} — Haku's suitcase</title>
+  <meta property="og:title" content="{displayName} — Haku's suitcase" />
+  <meta property="og:description" content={item.series ? `${item.series} · ${kindLabel}` : kindLabel} />
+  {#if coverPhoto}
+    <meta property="og:image" content={coverPhoto.thumbUrl} />
+  {/if}
 </svelte:head>
 
 <div class="detail-page">
