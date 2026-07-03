@@ -2,7 +2,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getDb, items, tags, materials } from '$lib/server/db';
-import { eq } from 'drizzle-orm';
+import { eq, and, gt, lt, asc, desc } from 'drizzle-orm';
 import { getPresignedGetUrl } from '$lib/server/r2';
 
 export const load: PageServerLoad = async ({ params, locals, platform }) => {
@@ -38,6 +38,17 @@ export const load: PageServerLoad = async ({ params, locals, platform }) => {
 
   const isOwner = !!locals.user;
 
+  const publicFilter = locals.user ? undefined : eq(items.isPublic, 1);
+  const created = item.createdAt;
+  const [prevRows, nextRows] = await Promise.all([
+    db.select({ id: items.id }).from(items)
+      .where(publicFilter ? and(publicFilter, gt(items.createdAt, created)) : gt(items.createdAt, created))
+      .orderBy(asc(items.createdAt)).limit(1),
+    db.select({ id: items.id }).from(items)
+      .where(publicFilter ? and(publicFilter, lt(items.createdAt, created)) : lt(items.createdAt, created))
+      .orderBy(desc(items.createdAt)).limit(1),
+  ]);
+
   return {
     item: {
       ...item,
@@ -47,5 +58,7 @@ export const load: PageServerLoad = async ({ params, locals, platform }) => {
     },
     allTags,
     materials: { all: allMaterials, frequent },
+    prevId: prevRows[0]?.id ?? null,
+    nextId: nextRows[0]?.id ?? null,
   };
 };

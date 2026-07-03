@@ -6,6 +6,7 @@
   import { formatDate } from "$lib/utils/date";
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
+  import { reveal } from "$lib/actions/reveal";
 
   let { data }: { data: PageData } = $props();
 
@@ -404,51 +405,27 @@
       {/each}
     </div>
   {:else}
-    <div style="display:flex; flex-direction:column; gap:10px">
+    <div class="row-list">
       {#each items as item (item.id)}
-        <a
-          href="/items/{item.id}"
-          class="card"
-          style="display:grid; grid-template-columns:72px 1fr auto; gap:18px; align-items:center; padding:12px"
-        >
-          <div
-            style="width:72px; height:72px; border-radius:14px; overflow:hidden; box-shadow:var(--neu-inset); flex-shrink:0"
-          >
+        <a href="/items/{item.id}" class="card row-card reveal" use:reveal>
+          <div class="row-thumb" style="view-transition-name: item-img-{item.id}">
             {#if item.thumbUrl}
-              <img
-                src={item.thumbUrl}
-                alt=""
-                style="width:100%; height:100%; object-fit:cover"
-              />
+              <img src={item.thumbUrl} alt="" />
             {:else}
-              <div
-                style="width:100%; height:100%; background:var(--bg-sunk); display:grid; place-items:center; font-family:var(--f-display); font-size:24px; opacity:0.25; color:var(--fg)"
-              >
-                ✦
-              </div>
+              <div class="row-thumb-empty">✦</div>
             {/if}
           </div>
-          <div style="text-align:left; overflow:hidden">
-            <h3
-              style="margin:0; font-family:var(--f-display); font-size:17px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis"
-            >
-              {item.name ?? "名称未設定"}
-            </h3>
-            <div
-              style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); letter-spacing:0.05em; margin-top:3px"
-            >
-              {item.series ?? "—"} · {item.isHandmade === 1
-                ? "HANDMADE"
+          <div class="row-body">
+            <h3>{item.name ?? '名称未設定'}</h3>
+            <div class="row-sub mono">
+              {item.series ?? '—'} · {item.isHandmade === 1
+                ? 'HANDMADE'
                 : item.isHandmade === 0
-                  ? "COLLECTED"
-                  : "—"}
+                  ? 'COLLECTED'
+                  : '—'}
             </div>
           </div>
-          <div
-            style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); white-space:nowrap"
-          >
-            {formatDate(item.createdAt)}
-          </div>
+          <div class="row-date mono">{formatDate(item.createdAt)}</div>
         </a>
       {/each}
     </div>
@@ -515,5 +492,66 @@
   @media (max-width: 720px) {
     .hero-meta { flex-wrap: wrap; }
     .hero-about-link { flex-basis: 100%; margin-top: 2px; }
+  }
+
+  .row-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row-card {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 12px;
+  }
+  .row-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--neu-inset);
+    flex-shrink: 0;
+  }
+  .row-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .row-thumb-empty {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-sunk);
+    display: grid;
+    place-items: center;
+    font-family: var(--f-display);
+    font-size: 24px;
+    opacity: 0.25;
+    color: var(--fg);
+  }
+  .row-body {
+    text-align: left;
+    overflow: hidden;
+  }
+  .row-body h3 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 17px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-sub {
+    font-size: 11px;
+    color: var(--fg-soft);
+    letter-spacing: 0.05em;
+    margin-top: 3px;
+  }
+  .row-date {
+    font-size: 11px;
+    color: var(--fg-soft);
+    white-space: nowrap;
   }
 </style>

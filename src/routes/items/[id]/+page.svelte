@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { toast } from 'svelte-sonner';
-  import { invalidateAll } from '$app/navigation';
+  import { invalidateAll, goto } from '$app/navigation';
   import TagPicker from '$lib/components/TagPicker.svelte';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
   import GlitchText from '$lib/components/GlitchText.svelte';
@@ -247,13 +247,32 @@
     lightboxIndex = i >= 0 ? i : 0;
     lightboxOpen = true;
   }
+
+  function onNavKeydown(e: KeyboardEvent) {
+    if (editing || lightboxOpen) return;
+    const t = e.target as HTMLElement;
+    if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft' && data.prevId) goto(`/items/${data.prevId}`);
+    if (e.key === 'ArrowRight' && data.nextId) goto(`/items/${data.nextId}`);
+  }
 </script>
+
+<svelte:window onkeydown={onNavKeydown} />
 
 <svelte:head>
   <title>{item.name ?? '名称未設定'} — Haku's suitcase</title>
 </svelte:head>
 
 <div class="detail-page">
+  <!-- 前後ナビ -->
+  <div class="detail-nav">
+    <a href="/items" class="btn --ghost --sm">← Collection</a>
+    <div class="detail-nav-arrows">
+      {#if data.prevId}<a href="/items/{data.prevId}" class="btn --ghost --sm" aria-label="前のアイテム">←</a>{/if}
+      {#if data.nextId}<a href="/items/{data.nextId}" class="btn --ghost --sm" aria-label="次のアイテム">→</a>{/if}
+    </div>
+  </div>
+
   <!-- ページアクション（編集・削除） -->
   {#if data.user}
     <div class="page-actions">
@@ -562,6 +581,17 @@
 </div>
 
 <style>
+  .detail-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .detail-nav-arrows {
+    display: flex;
+    gap: 6px;
+  }
+
   .page-actions {
     display: flex;
     gap: 10px;

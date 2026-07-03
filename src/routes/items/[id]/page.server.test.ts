@@ -5,7 +5,9 @@ const mockFindFirst = vi.fn();
 vi.mock('$lib/server/db', () => {
   const chain: any = {
     from: () => chain,
-    orderBy: () => Promise.resolve([]),
+    where: () => chain,
+    orderBy: () => chain,
+    limit: () => Promise.resolve([]),
     then: (resolve: (v: any[]) => any) => resolve([]),
   };
   return {
