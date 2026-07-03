@@ -271,7 +271,7 @@
   <!-- 2カラムレイアウト -->
   <div class="detail-layout">
     <!-- 左：画像パネル -->
-    <div class="detail-img-panel">
+    <div class="detail-img-panel" style="view-transition-name: item-img-{item.id}">
       {#if selectedPhoto}
         <button class="detail-img-btn" onclick={() => openLightbox(selectedPhoto)} aria-label="写真を拡大表示">
           <img

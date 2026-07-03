@@ -6,6 +6,18 @@
 	import { hexControls, speedToDuration } from '$lib/stores/hexControls';
 	import HexToggleRow from '$lib/components/HexToggleRow.svelte';
 	import InkLayer from '$lib/components/InkLayer.svelte';
+	import { onNavigate } from '$app/navigation';
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 	const isSecondary = $derived(page.url.pathname !== '/items');

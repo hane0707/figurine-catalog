@@ -1398,6 +1398,20 @@ body {
   cursor: pointer;
 }
 
+/* --- view transitions --- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* --- animations --- */
 @keyframes rise {
   from {

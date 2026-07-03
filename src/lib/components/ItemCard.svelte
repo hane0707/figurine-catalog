@@ -19,7 +19,7 @@
 </script>
 
 <a href="/items/{item.id}" class="card">
-  <div class="card-img">
+  <div class="card-img" style="view-transition-name: item-img-{item.id}">
     {#if item.thumbUrl}
       <img src={item.thumbUrl} alt={item.name ?? '名称未設定'} loading="lazy" />
     {:else}
