@@ -295,6 +295,9 @@ body {
   align-items: center;
   margin-top: 28px;
 }
+.spotlight-frame {
+  animation: float 6s ease-in-out infinite;
+}
 .spotlight {
   position: relative;
   aspect-ratio: 4/5;
@@ -302,7 +305,9 @@ body {
   background: var(--surface-raised);
   box-shadow: var(--neu-deep);
   overflow: hidden;
-  animation: float 6s ease-in-out infinite;
+  transition: transform 300ms var(--ease-out);
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 .spotlight-inner {
   position: absolute;
@@ -1459,6 +1464,25 @@ body {
   }
 }
 
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 640ms var(--ease-out),
+    transform 640ms var(--ease-out);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .rise {
   animation: rise 720ms var(--ease-out) both;
 }
@@ -1478,7 +1502,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .ambient .r1,
   .ambient .r2,
-  .spotlight,
+  .spotlight-frame,
   .fab-ring,
   .ink-blob,
   .ink-intro {

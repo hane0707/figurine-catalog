@@ -96,6 +96,17 @@
       return;
     }
 
+    // 再訪(同一セッション2回目以降)は短縮版:ステインとマスクを省き素早く出す
+    const seen = sessionStorage.getItem('glitch-seen');
+    if (seen) {
+      chars.forEach((el, i) => {
+        el.style.transition = 'opacity 260ms ease';
+        setTimeout(() => { el.style.opacity = '1'; }, i * 22);
+      });
+      return;
+    }
+    sessionStorage.setItem('glitch-seen', '1');
+
     const BASE = 120;
     const JITTER = 180;
     Promise.all(

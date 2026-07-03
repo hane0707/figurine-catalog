@@ -1,5 +1,6 @@
 <!-- src/lib/components/ItemCard.svelte -->
 <script lang="ts">
+  import { reveal } from '$lib/actions/reveal';
   let { item, isOwner = false }: {
     item: {
       id: string;
@@ -18,7 +19,7 @@
   const kindLabel = item.isHandmade === 1 ? 'Handmade' : 'Collected';
 </script>
 
-<a href="/items/{item.id}" class="card">
+<a href="/items/{item.id}" class="card reveal" use:reveal>
   <div class="card-img" style="view-transition-name: item-img-{item.id}">
     {#if item.thumbUrl}
       <img src={item.thumbUrl} alt={item.name ?? '名称未設定'} loading="lazy" />

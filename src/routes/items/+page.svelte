@@ -116,6 +116,26 @@
     };
   });
 
+  let tiltX = $state(0);
+  let tiltY = $state(0);
+  let canHover = $state(false);
+  onMount(() => {
+    canHover = window.matchMedia('(hover: hover)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+  function handleTilt(e: MouseEvent) {
+    if (!canHover) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    tiltX = py * -7;
+    tiltY = px * 9;
+  }
+  function resetTilt() {
+    tiltX = 0;
+    tiltY = 0;
+  }
+
   let searchTimer: ReturnType<typeof setTimeout>;
   function handleSearch() {
     clearTimeout(searchTimer);
@@ -167,36 +187,46 @@
       </div>
     </div>
 
-    <div class="spotlight">
-      {#if data.spotlight}
-        <div class="spotlight-tag">
-          Spotlight · {data.spotlight.isHandmade === 1
-            ? "Handmade"
-            : "Collected"}
-        </div>
-        <div class="spotlight-inner">
-          <img
-            src={data.spotlight.origUrl}
-            alt={data.spotlight.name ?? "Spotlight"}
-            style="background-image: url({data.spotlight.thumbUrl}); background-size: cover"
-          />
-        </div>
-        <div class="spotlight-caption">
-          <h3>{data.spotlight.name ?? "名称未設定"}</h3>
-          {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
-        </div>
-      {:else}
-        <div class="spotlight-tag">Spotlight</div>
-        <div
-          class="spotlight-inner"
-          style="display:grid; place-items:center; background:var(--bg-sunk)"
-        >
-          <span
-            style="font-family:var(--f-display); font-size:56px; opacity:0.2; color:var(--fg)"
-            >✦</span
+    <div
+      class="spotlight-frame"
+      onmousemove={handleTilt}
+      onmouseleave={resetTilt}
+      role="presentation"
+    >
+      <div
+        class="spotlight"
+        style="transform: perspective(900px) rotateX({tiltX}deg) rotateY({tiltY}deg)"
+      >
+        {#if data.spotlight}
+          <div class="spotlight-tag">
+            Spotlight · {data.spotlight.isHandmade === 1
+              ? "Handmade"
+              : "Collected"}
+          </div>
+          <div class="spotlight-inner">
+            <img
+              src={data.spotlight.origUrl}
+              alt={data.spotlight.name ?? "Spotlight"}
+              style="background-image: url({data.spotlight.thumbUrl}); background-size: cover"
+            />
+          </div>
+          <div class="spotlight-caption">
+            <h3>{data.spotlight.name ?? "名称未設定"}</h3>
+            {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
+          </div>
+        {:else}
+          <div class="spotlight-tag">Spotlight</div>
+          <div
+            class="spotlight-inner"
+            style="display:grid; place-items:center; background:var(--bg-sunk)"
           >
-        </div>
-      {/if}
+            <span
+              style="font-family:var(--f-display); font-size:56px; opacity:0.2; color:var(--fg)"
+              >✦</span
+            >
+          </div>
+        {/if}
+      </div>
     </div>
   </section>
 
@@ -342,7 +372,7 @@
 
   <!-- アイテム一覧 -->
   {#if layout === "grid"}
-    <div class="items-grid rise rise-d4">
+    <div class="items-grid">
       {#each columns as column, colIdx (colIdx)}
         <div class="items-column">
           {#each column as item (item.id)}
@@ -352,10 +382,7 @@
       {/each}
     </div>
   {:else}
-    <div
-      class="rise rise-d4"
-      style="display:flex; flex-direction:column; gap:10px"
-    >
+    <div style="display:flex; flex-direction:column; gap:10px">
       {#each items as item (item.id)}
         <a
           href="/items/{item.id}"
