@@ -1,6 +1,7 @@
 <!-- src/lib/components/ItemCard.svelte -->
 <script lang="ts">
   import { reveal } from '$lib/actions/reveal';
+  import { formatDate } from '$lib/utils/date';
   let { item, isOwner = false }: {
     item: {
       id: string;
@@ -54,7 +55,7 @@
       <span class="dot"></span>
       {item.isHandmade === 1 ? 'HANDMADE' : item.isHandmade === 0 ? 'COLLECTED' : 'ITEM'}
     </span>
-    <span class="mono" style="font-size:10px">{item.createdAt?.slice(0, 10) ?? ''}</span>
+    <span class="mono" style="font-size:10px">{formatDate(item.createdAt)}</span>
   </div>
 </a>
 

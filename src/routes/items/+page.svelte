@@ -3,6 +3,9 @@
   import { onMount } from "svelte";
   import ItemCard from "$lib/components/ItemCard.svelte";
   import GlitchText from "$lib/components/GlitchText.svelte";
+  import { formatDate } from "$lib/utils/date";
+  import { replaceState } from "$app/navigation";
+  import { page } from "$app/state";
 
   let { data }: { data: PageData } = $props();
 
@@ -11,10 +14,12 @@
   const limit = 30;
   let loading = $state(false);
   let hasMore = $state(true);
-  let query = $state("");
-  let kindFilter = $state("all");
-  let sort = $state("recent");
-  let activeTags = $state<string[]>([]);
+  let query = $state(page.url.searchParams.get("q") ?? "");
+  let kindFilter = $state(page.url.searchParams.get("kind") ?? "all");
+  let sort = $state(page.url.searchParams.get("sort") ?? "recent");
+  let activeTags = $state<string[]>(
+    page.url.searchParams.get("tags")?.split(",").filter(Boolean) ?? [],
+  );
   let layout = $state("grid");
   let columnCount = $state(4);
   let columns = $derived(
@@ -136,24 +141,40 @@
     tiltY = 0;
   }
 
+  function syncUrl() {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (kindFilter !== "all") params.set("kind", kindFilter);
+    if (sort !== "recent") params.set("sort", sort);
+    if (activeTags.length > 0) params.set("tags", activeTags.join(","));
+    const qs = params.toString();
+    replaceState(qs ? `?${qs}` : page.url.pathname, {});
+  }
+
   let searchTimer: ReturnType<typeof setTimeout>;
   function handleSearch() {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => fetchItems(true), 300);
+    searchTimer = setTimeout(() => {
+      syncUrl();
+      fetchItems(true);
+    }, 300);
   }
 
   function setKind(k: string) {
     kindFilter = k;
+    syncUrl();
     fetchItems(true);
   }
   function setSort(s: string) {
     sort = s;
+    syncUrl();
     fetchItems(true);
   }
   function toggleTag(tagId: string) {
     activeTags = activeTags.includes(tagId)
       ? activeTags.filter((id) => id !== tagId)
       : [...activeTags, tagId];
+    syncUrl();
     fetchItems(true);
   }
 </script>
@@ -363,6 +384,7 @@
           class="chip"
           onclick={() => {
             activeTags = [];
+            syncUrl();
             fetchItems(true);
           }}>クリア ×</button
         >
@@ -425,7 +447,7 @@
           <div
             style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); white-space:nowrap"
           >
-            {item.createdAt?.slice(0, 10) ?? ""}
+            {formatDate(item.createdAt)}
           </div>
         </a>
       {/each}

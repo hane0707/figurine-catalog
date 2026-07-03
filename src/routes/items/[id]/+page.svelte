@@ -8,6 +8,7 @@
   import GlitchText from '$lib/components/GlitchText.svelte';
   import Lightbox from '$lib/components/Lightbox.svelte';
   import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
+  import { formatDate } from '$lib/utils/date';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
@@ -281,7 +282,7 @@
           />
         </button>
         <div class="overlay-tag">
-          {kindLabel} · {item.createdAt?.slice(0, 10) ?? ''}
+          {kindLabel} · {formatDate(item.createdAt)}
         </div>
         {#if otherPhotos.length > 0}
           <div class="thumbs">
