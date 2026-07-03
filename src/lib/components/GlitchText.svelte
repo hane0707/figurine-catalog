@@ -123,7 +123,7 @@
 </script>
 
 <!-- WARNING: ブロック間に改行・スペースを入れないこと。インライン要素間の空白テキストノードになりセグメント間に不要スペースが生じる -->
-<span bind:this={container}>{#each lines as line}<span class="glitch-line">{#each line as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
+<span bind:this={container}>{#each lines as line}<span class="glitch-line" class:--nowrap={lines.length > 1}>{#each line as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
         class="glitch-ch"
         class:punct={PUNCT.has(char)}
         class:small-ch={seg.small}
@@ -148,6 +148,8 @@
   }
   .glitch-line {
     display: block;
+  }
+  .glitch-line.--nowrap {
     white-space: nowrap;
   }
 </style>
