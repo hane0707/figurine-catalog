@@ -272,7 +272,6 @@
 <div class="detail-page">
   <!-- 前後ナビ -->
   <div class="detail-nav">
-    <a href="/items" class="btn --ghost --sm">← Collection</a>
     <div class="detail-nav-arrows">
       {#if data.prevId}<a href="/items/{data.prevId}" class="btn --ghost --sm" aria-label="前のアイテム">←</a>{/if}
       {#if data.nextId}<a href="/items/{data.nextId}" class="btn --ghost --sm" aria-label="次のアイテム">→</a>{/if}
@@ -589,7 +588,7 @@
 <style>
   .detail-nav {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 16px;
   }
