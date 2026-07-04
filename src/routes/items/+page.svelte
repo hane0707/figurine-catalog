@@ -128,7 +128,10 @@
   let glareY = $state(50);
   let tilting = $state(false);
   function handleTilt(e: MouseEvent) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (
+      !window.matchMedia('(pointer: fine)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return;
     tilting = true;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width - 0.5;
