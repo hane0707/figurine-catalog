@@ -136,8 +136,8 @@
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
-    tiltX = py * -10;
-    tiltY = px * 12;
+    tiltX = py * -16;
+    tiltY = px * 18;
     glareX = px * 100 + 50;
     glareY = py * 100 + 50;
   }
@@ -247,7 +247,7 @@
             <div
               class="spotlight-glare"
               aria-hidden="true"
-              style="background: radial-gradient(circle at {glareX}% {glareY}%, oklch(1 0 0 / 0.16), transparent 55%)"
+              style="background: radial-gradient(circle at {glareX}% {glareY}%, oklch(1 0 0 / 0.3), transparent 60%)"
             ></div>
           {/if}
           <div class="spotlight-caption">
