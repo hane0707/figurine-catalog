@@ -364,6 +364,8 @@ body {
   pointer-events: none;
   z-index: 1;
   mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 240ms var(--ease-out);
 }
 .spotlight-tag {
   position: absolute;
@@ -403,85 +405,45 @@ body {
   letter-spacing: 0.05em;
 }
 
-/* --- stats row --- */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 56px;
-}
-@media (max-width: 720px) {
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-.stat {
-  background: var(--surface-raised);
-  border-radius: var(--r);
-  padding: 22px 24px;
-  box-shadow: var(--neu-soft);
-  position: relative;
-  overflow: hidden;
-}
-.stat .eyebrow {
-  margin-bottom: 12px;
-  display: block;
-}
-.stat-value {
-  font-family: var(--f-display);
-  font-size: 40px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.stat-delta {
+/* --- stat line --- */
+.statline {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  padding: 4px 2px;
+  margin-bottom: 48px;
+}
+.statline-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.statline-num {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.statline-label {
   font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.05em;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--fg-soft);
 }
-.stat-delta .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-amber);
+.statline-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--line-strong);
 }
-.stat.--haze .stat-delta .dot {
-  background: var(--accent-haze);
-}
-.stat-chip {
-  position: absolute;
-  top: 22px;
-  right: 22px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--bg-sunk);
-  box-shadow: var(--neu-inset);
-  display: grid;
-  place-items: center;
-}
-.stat-chip-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent-amber);
-}
-.stat.--haze .stat-chip-dot {
-  background: var(--accent-haze);
-}
-.stat.--line .stat-chip-dot {
-  background: var(--fg);
-}
-.stat.--diamond .stat-chip-dot {
-  border-radius: 2px;
-  background: var(--fg);
-  transform: rotate(45deg);
-  width: 8px;
-  height: 8px;
+@media (max-width: 720px) {
+  .statline {
+    gap: 10px 18px;
+  }
+  .statline-sep {
+    display: none;
+  }
 }
 
 /* --- filter bar --- */

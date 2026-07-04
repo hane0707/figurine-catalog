@@ -126,13 +126,10 @@
   let tiltY = $state(0);
   let glareX = $state(50);
   let glareY = $state(50);
-  let canHover = $state(false);
-  onMount(() => {
-    canHover = window.matchMedia('(hover: hover)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  });
+  let tilting = $state(false);
   function handleTilt(e: MouseEvent) {
-    if (!canHover) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    tilting = true;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
@@ -142,6 +139,7 @@
     glareY = py * 100 + 50;
   }
   function resetTilt() {
+    tilting = false;
     tiltX = 0;
     tiltY = 0;
     glareX = 50;
@@ -243,13 +241,11 @@
               style="background-image: url({data.spotlight.thumbUrl}); background-size: cover"
             />
           </div>
-          {#if canHover}
-            <div
-              class="spotlight-glare"
-              aria-hidden="true"
-              style="background: radial-gradient(circle at {glareX}% {glareY}%, oklch(1 0 0 / 0.3), transparent 60%)"
-            ></div>
-          {/if}
+          <div
+            class="spotlight-glare"
+            aria-hidden="true"
+            style="background: radial-gradient(circle at {glareX}% {glareY}%, oklch(1 0 0 / 0.3), transparent 60%); opacity: {tilting ? 1 : 0}"
+          ></div>
           <div class="spotlight-caption">
             <h3>{data.spotlight.name ?? "名称未設定"}</h3>
             {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
@@ -271,30 +267,25 @@
   </section>
 
   <!-- 統計 -->
-  <section class="stats rise rise-d1">
-    <div class="stat">
-      <span class="eyebrow">Total Items</span>
-      <div class="stat-value">{displayTotal}</div>
-      <div class="stat-delta"><span class="dot"></span>owned now</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+  <section class="statline rise rise-d1" aria-label="コレクション統計">
+    <div class="statline-item">
+      <span class="statline-num display">{displayTotal}</span>
+      <span class="statline-label">Items</span>
     </div>
-    <div class="stat --haze">
-      <span class="eyebrow">Handmade</span>
-      <div class="stat-value">{displayHandmade}</div>
-      <div class="stat-delta"><span class="dot"></span>made by hand</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+    <span class="statline-sep" aria-hidden="true"></span>
+    <div class="statline-item">
+      <span class="statline-num display">{displayHandmade}</span>
+      <span class="statline-label">Handmade</span>
     </div>
-    <div class="stat --line">
-      <span class="eyebrow">Collected</span>
-      <div class="stat-value">{displayBought}</div>
-      <div class="stat-delta"><span class="dot"></span>found &amp; bought</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+    <span class="statline-sep" aria-hidden="true"></span>
+    <div class="statline-item">
+      <span class="statline-num display">{displayBought}</span>
+      <span class="statline-label">Collected</span>
     </div>
-    <div class="stat --diamond">
-      <span class="eyebrow">Series</span>
-      <div class="stat-value">{displaySeries}</div>
-      <div class="stat-delta"><span class="dot"></span>unique</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+    <span class="statline-sep" aria-hidden="true"></span>
+    <div class="statline-item">
+      <span class="statline-num display">{displaySeries}</span>
+      <span class="statline-label">Series</span>
     </div>
   </section>
 
