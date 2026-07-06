@@ -196,6 +196,21 @@ npx wrangler d1 migrations apply figurine-catalog-db --remote
 
 ---
 
+## AI 開発環境（Claude Code）
+
+AI アシスタントがモデルの種類によらず安定して開発できるよう、知識とルールをリポジトリ側に集約している。
+
+- **`CLAUDE.md`** — スタック・コマンド・検証ベースライン・デザイン原則・過去のハマりどころを1ページに集約。セッション開始時に自動読み込みされる
+- **`docs/follow-ups.md`** — 未着手の既知課題の集約場所。着手前にここを確認する運用
+- **`docs/superpowers/plans/`・`specs/`** — 機能ごとの実装計画と設計書（履歴として保持）。完了済みタスクの作業成果物は `docs/superpowers/archive/` へ退避
+- **`scripts/repo-tidy.sh`** — リポジトリ清掃スクリプト。`.claude/settings.json` の SessionStart フックで毎セッション自動実行され、WSL 由来の `Zone.Identifier` ゴミを削除し、コミット禁止ディレクトリ（`.omc/`・`.superpowers/`）の再出現を警告する
+- **`.claude/settings.json`** — シークレット（`.dev.vars`）の読み取り拒否ルールと上記フック。コミット対象。個人用の許可ルールは `.claude/settings.local.json`（gitignore 済み）に分離
+- **`.claudeignore`** — Claude Code に読ませないファイルの指定（`.dev.vars`）
+
+検証の合格基準（svelte-check のベースライン等）は `CLAUDE.md` を参照。
+
+---
+
 ## 注意事項
 
 - `git add -A` は `.claude/` のシンボリックリンクでエラーになるため使用不可。`git add src/` などディレクトリ・ファイル指定で代替
