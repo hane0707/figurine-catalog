@@ -1,5 +1,7 @@
 <!-- src/lib/components/ItemCard.svelte -->
 <script lang="ts">
+  import { reveal } from '$lib/actions/reveal';
+  import { formatDate } from '$lib/utils/date';
   let { item, isOwner = false }: {
     item: {
       id: string;
@@ -18,8 +20,8 @@
   const kindLabel = item.isHandmade === 1 ? 'Handmade' : 'Collected';
 </script>
 
-<a href="/items/{item.id}" class="card">
-  <div class="card-img">
+<a href="/items/{item.id}" class="card reveal" use:reveal>
+  <div class="card-img" style="view-transition-name: item-img-{item.id}">
     {#if item.thumbUrl}
       <img src={item.thumbUrl} alt={item.name ?? '名称未設定'} loading="lazy" />
     {:else}
@@ -27,7 +29,7 @@
     {/if}
     {#if item.isHandmade !== undefined && item.isHandmade !== null}
       <div class={'card-badge ' + (item.isHandmade === 1 ? '--handmade' : '--bought')}>
-        {kindLabel}
+        <span class="badge-mark" class:--diamond={item.isHandmade === 1}></span>{kindLabel}
       </div>
     {/if}
     {#if isOwner && item.isPublic === 0}
@@ -53,7 +55,7 @@
       <span class="dot"></span>
       {item.isHandmade === 1 ? 'HANDMADE' : item.isHandmade === 0 ? 'COLLECTED' : 'ITEM'}
     </span>
-    <span class="mono" style="font-size:10px">{item.createdAt?.slice(0, 10) ?? ''}</span>
+    <span class="mono" style="font-size:10px">{formatDate(item.createdAt)}</span>
   </div>
 </a>
 
@@ -66,7 +68,7 @@
   }
   .card-tag {
     font-family: var(--f-mono);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.06em;
     padding: 2px 8px;
     border-radius: var(--r-pill);

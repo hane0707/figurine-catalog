@@ -6,11 +6,30 @@
 	import { hexControls, speedToDuration } from '$lib/stores/hexControls';
 	import HexToggleRow from '$lib/components/HexToggleRow.svelte';
 	import InkLayer from '$lib/components/InkLayer.svelte';
+	import { onNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 	const isSecondary = $derived(page.url.pathname !== '/items');
 	const r1Duration = $derived(speedToDuration($hexControls.speed).r1);
 	const r2Duration = $derived(speedToDuration($hexControls.speed).r2);
+
+	let scrollY = $state(0);
+	let reducedMotion = $state(false);
+	onMount(() => {
+		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	});
 
 	let panelOpen = $state(false);
 	let panelEl: HTMLDivElement | undefined;
@@ -23,28 +42,39 @@
 
 	$effect(() => {
 		document.documentElement.classList.toggle('dark', $hexControls.darkMode);
+		document
+			.querySelector('meta[name="theme-color"]')
+			?.setAttribute('content', $hexControls.darkMode ? '#2a292e' : '#e4e1e9');
 	});
 </script>
 
 <svelte:head>
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="theme-color" content="#f0edf8" />
+  <meta name="theme-color" content="#e4e1e9" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="description" content="作ったものと、出会ったもの。ハンドメイドフィギュアとコレクションのカタログ — Haku's suitcase" />
+  <meta property="og:site_name" content="Haku's suitcase" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,50..100;1,9..144,300..700,50..100&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,50..100;1,9..144,300..700,50..100&family=JetBrains+Mono:wght@300;400;500&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet" />
 </svelte:head>
 
+<svelte:window bind:scrollY />
+
 <InkLayer />
+<div class="grain" aria-hidden="true"></div>
 
 <div class="ambient {$hexControls.rainbow ? '--rainbow' : ''} {$hexControls.inkMode ? '--ink' : ''}" aria-hidden="true">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s" viewBox="-350 -350 700 700" aria-hidden="true">
+  <div class="blob b1" style="translate: 0 {reducedMotion ? 0 : scrollY * -0.06}px"></div>
+  <div class="blob b2" style="translate: 0 {reducedMotion ? 0 : scrollY * 0.04}px"></div>
+  <div class="blob b3" style="translate: 0 {reducedMotion ? 0 : scrollY * -0.03}px"></div>
+  <svg class="amb-ring r1" style="animation-duration: {r1Duration}s; translate: 0 {reducedMotion ? 0 : scrollY * 0.05}px" viewBox="-350 -350 700 700" aria-hidden="true">
     <polygon
       points="0,-350 303,-175 303,175 0,350 -303,175 -303,-175"
       fill="none"
@@ -53,7 +83,7 @@
       transform="rotate(12)"
     />
   </svg>
-  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s" viewBox="-210 -210 420 420" aria-hidden="true">
+  <svg class="amb-ring r2" style="animation-duration: {r2Duration}s; translate: 0 {reducedMotion ? 0 : scrollY * -0.04}px" viewBox="-210 -210 420 420" aria-hidden="true">
     <polygon
       points="0,-210 182,-105 182,105 0,210 -182,105 -182,-105"
       fill="none"

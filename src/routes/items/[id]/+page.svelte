@@ -2,11 +2,13 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { toast } from 'svelte-sonner';
-  import { invalidateAll } from '$app/navigation';
+  import { invalidateAll, goto } from '$app/navigation';
   import TagPicker from '$lib/components/TagPicker.svelte';
   import PhotoUploader from '$lib/components/PhotoUploader.svelte';
   import GlitchText from '$lib/components/GlitchText.svelte';
+  import Lightbox from '$lib/components/Lightbox.svelte';
   import { itemWriteSchema, purchaseInfoSchema, handmadeInfoBaseSchema, handmadeInfoSchema } from '$lib/validation/schemas';
+  import { formatDate } from '$lib/utils/date';
 
   let { data }: { data: PageData } = $props();
   let item = $derived(data.item);
@@ -237,13 +239,45 @@
   $effect(() => { selectedPhoto = coverPhoto; });
   let otherPhotos = $derived(item.photos.filter((p: any) => p !== selectedPhoto).slice(0, 3));
   const kindLabel = $derived(item.isHandmade === 1 ? 'Handmade' : item.isHandmade === 0 ? 'Collected' : 'Item');
+
+  let lightboxOpen = $state(false);
+  let lightboxIndex = $state(0);
+  function openLightbox(photo: any) {
+    const i = item.photos.indexOf(photo);
+    lightboxIndex = i >= 0 ? i : 0;
+    lightboxOpen = true;
+  }
+
+  function onNavKeydown(e: KeyboardEvent) {
+    if (e.altKey || e.metaKey || e.ctrlKey || e.repeat) return;
+    if (editing || lightboxOpen) return;
+    const t = e.target as HTMLElement;
+    if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft' && data.prevId) goto(`/items/${data.prevId}`);
+    if (e.key === 'ArrowRight' && data.nextId) goto(`/items/${data.nextId}`);
+  }
 </script>
+
+<svelte:window onkeydown={onNavKeydown} />
 
 <svelte:head>
   <title>{item.name ?? '名称未設定'} — Haku's suitcase</title>
+  <meta property="og:title" content="{displayName} — Haku's suitcase" />
+  <meta property="og:description" content={item.series ? `${item.series} · ${kindLabel}` : kindLabel} />
+  {#if coverPhoto}
+    <meta property="og:image" content={coverPhoto.thumbUrl} />
+  {/if}
 </svelte:head>
 
 <div class="detail-page">
+  <!-- 前後ナビ -->
+  <div class="detail-nav">
+    <div class="detail-nav-arrows">
+      {#if data.prevId}<a href="/items/{data.prevId}" class="btn --ghost --sm" aria-label="前のアイテム">←</a>{/if}
+      {#if data.nextId}<a href="/items/{data.nextId}" class="btn --ghost --sm" aria-label="次のアイテム">→</a>{/if}
+    </div>
+  </div>
+
   <!-- ページアクション（編集・削除） -->
   {#if data.user}
     <div class="page-actions">
@@ -262,11 +296,17 @@
   <!-- 2カラムレイアウト -->
   <div class="detail-layout">
     <!-- 左：画像パネル -->
-    <div class="detail-img-panel">
+    <div class="detail-img-panel" style="view-transition-name: item-img-{item.id}">
       {#if selectedPhoto}
-        <img src={selectedPhoto.thumbUrl} alt={item.name ?? ''} />
+        <button class="detail-img-btn" onclick={() => openLightbox(selectedPhoto)} aria-label="写真を拡大表示">
+          <img
+            src={selectedPhoto.origUrl}
+            alt={item.name ?? ''}
+            style="background-image: url({selectedPhoto.thumbUrl}); background-size: contain; background-repeat: no-repeat; background-position: center"
+          />
+        </button>
         <div class="overlay-tag">
-          {kindLabel} · {item.createdAt?.slice(0, 10) ?? ''}
+          {kindLabel} · {formatDate(item.createdAt)}
         </div>
         {#if otherPhotos.length > 0}
           <div class="thumbs">
@@ -532,7 +572,7 @@
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:12px">
         {#each item.photos as photo}
           <button
-            onclick={() => (selectedPhoto = photo)}
+            onclick={() => openLightbox(photo)}
             style="aspect-ratio:1; border-radius:var(--r-sm); overflow:hidden; box-shadow:var(--neu-soft); background:none; border:none; padding:0; cursor:pointer; display:block; width:100%"
           >
             <img src={photo.thumbUrl} alt="" style="width:100%; height:100%; object-fit:cover; display:block" />
@@ -541,14 +581,43 @@
       </div>
     </div>
   {/if}
+
+  <Lightbox photos={item.photos} bind:index={lightboxIndex} bind:open={lightboxOpen} />
 </div>
 
 <style>
+  .detail-nav {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .detail-nav-arrows {
+    display: flex;
+    gap: 6px;
+  }
+
   .page-actions {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
     margin-bottom: 24px;
+  }
+
+  .detail-img-btn {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: zoom-in;
+  }
+  .detail-img-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: relative;
   }
 
   .quote-block {

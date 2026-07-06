@@ -3,6 +3,10 @@
   import { onMount } from "svelte";
   import ItemCard from "$lib/components/ItemCard.svelte";
   import GlitchText from "$lib/components/GlitchText.svelte";
+  import { formatDate } from "$lib/utils/date";
+  import { replaceState } from "$app/navigation";
+  import { page } from "$app/state";
+  import { reveal } from "$lib/actions/reveal";
 
   let { data }: { data: PageData } = $props();
 
@@ -11,10 +15,12 @@
   const limit = 30;
   let loading = $state(false);
   let hasMore = $state(true);
-  let query = $state("");
-  let kindFilter = $state("all");
-  let sort = $state("recent");
-  let activeTags = $state<string[]>([]);
+  let query = $state(page.url.searchParams.get("q") ?? "");
+  let kindFilter = $state(page.url.searchParams.get("kind") ?? "all");
+  let sort = $state(page.url.searchParams.get("sort") ?? "recent");
+  let activeTags = $state<string[]>(
+    page.url.searchParams.get("tags")?.split(",").filter(Boolean) ?? [],
+  );
   let layout = $state("grid");
   let columnCount = $state(4);
   let columns = $derived(
@@ -116,30 +122,78 @@
     };
   });
 
+  let tiltX = $state(0);
+  let tiltY = $state(0);
+  let glareX = $state(50);
+  let glareY = $state(50);
+  let tilting = $state(false);
+  function handleTilt(e: MouseEvent) {
+    if (
+      !window.matchMedia('(pointer: fine)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return;
+    tilting = true;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    tiltX = py * -16;
+    tiltY = px * 18;
+    glareX = px * 100 + 50;
+    glareY = py * 100 + 50;
+  }
+  function resetTilt() {
+    tilting = false;
+    tiltX = 0;
+    tiltY = 0;
+    glareX = 50;
+    glareY = 50;
+  }
+
+  function syncUrl() {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (kindFilter !== "all") params.set("kind", kindFilter);
+    if (sort !== "recent") params.set("sort", sort);
+    if (activeTags.length > 0) params.set("tags", activeTags.join(","));
+    const qs = params.toString();
+    replaceState(qs ? `?${qs}` : page.url.pathname, {});
+  }
+
   let searchTimer: ReturnType<typeof setTimeout>;
   function handleSearch() {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => fetchItems(true), 300);
+    searchTimer = setTimeout(() => {
+      syncUrl();
+      fetchItems(true);
+    }, 300);
   }
 
   function setKind(k: string) {
     kindFilter = k;
+    syncUrl();
     fetchItems(true);
   }
   function setSort(s: string) {
     sort = s;
+    syncUrl();
     fetchItems(true);
   }
   function toggleTag(tagId: string) {
     activeTags = activeTags.includes(tagId)
       ? activeTags.filter((id) => id !== tagId)
       : [...activeTags, tagId];
+    syncUrl();
     fetchItems(true);
   }
 </script>
 
 <svelte:head>
   <title>Haku's suitcase</title>
+  <meta property="og:title" content="Haku's suitcase" />
+  <meta property="og:description" content="ここは雨のあたらない、スーツケースの中。作ったものと、出会ったもの。" />
+  {#if data.spotlight}
+    <meta property="og:image" content={data.spotlight.thumbUrl} />
+  {/if}
 </svelte:head>
 
 <div class="app">
@@ -167,63 +221,74 @@
       </div>
     </div>
 
-    <div class="spotlight">
-      {#if data.spotlight}
-        <div class="spotlight-tag">
-          Spotlight · {data.spotlight.isHandmade === 1
-            ? "Handmade"
-            : "Collected"}
-        </div>
-        <div class="spotlight-inner">
-          <img
-            src={data.spotlight.thumbUrl}
-            alt={data.spotlight.name ?? "Spotlight"}
-          />
-        </div>
-        <div class="spotlight-caption">
-          <h3>{data.spotlight.name ?? "名称未設定"}</h3>
-          {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
-        </div>
-      {:else}
-        <div class="spotlight-tag">Spotlight</div>
-        <div
-          class="spotlight-inner"
-          style="display:grid; place-items:center; background:var(--bg-sunk)"
-        >
-          <span
-            style="font-family:var(--f-display); font-size:56px; opacity:0.2; color:var(--fg)"
-            >✦</span
+    <div
+      class="spotlight-frame"
+      onmousemove={handleTilt}
+      onmouseleave={resetTilt}
+      role="presentation"
+    >
+      <div
+        class="spotlight"
+        style="transform: perspective(900px) rotateX({tiltX}deg) rotateY({tiltY}deg) scale({tiltX !== 0 || tiltY !== 0 ? 1.015 : 1})"
+      >
+        {#if data.spotlight}
+          <div class="spotlight-tag">
+            Spotlight · {data.spotlight.isHandmade === 1
+              ? "Handmade"
+              : "Collected"}
+          </div>
+          <div class="spotlight-inner">
+            <img
+              src={data.spotlight.origUrl}
+              alt={data.spotlight.name ?? "Spotlight"}
+              style="background-image: url({data.spotlight.thumbUrl}); background-size: cover"
+            />
+          </div>
+          <div
+            class="spotlight-glare"
+            aria-hidden="true"
+            style="background: radial-gradient(circle at {glareX}% {glareY}%, oklch(1 0 0 / 0.3), transparent 60%); opacity: {tilting ? 1 : 0}"
+          ></div>
+          <div class="spotlight-caption">
+            <h3>{data.spotlight.name ?? "名称未設定"}</h3>
+            {#if data.spotlight.series}<p>{data.spotlight.series}</p>{/if}
+          </div>
+        {:else}
+          <div class="spotlight-tag">Spotlight</div>
+          <div
+            class="spotlight-inner"
+            style="display:grid; place-items:center; background:var(--bg-sunk)"
           >
-        </div>
-      {/if}
+            <span
+              style="font-family:var(--f-display); font-size:56px; opacity:0.2; color:var(--fg)"
+              >✦</span
+            >
+          </div>
+        {/if}
+      </div>
     </div>
   </section>
 
   <!-- 統計 -->
-  <section class="stats rise rise-d1">
-    <div class="stat">
-      <span class="eyebrow">Total Items</span>
-      <div class="stat-value">{displayTotal}</div>
-      <div class="stat-delta"><span class="dot"></span>owned now</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+  <section class="statline rise rise-d1" aria-label="コレクション統計">
+    <div class="statline-item">
+      <span class="statline-num display">{displayTotal}</span>
+      <span class="statline-label">Items</span>
     </div>
-    <div class="stat --haze">
-      <span class="eyebrow">Handmade</span>
-      <div class="stat-value">{displayHandmade}</div>
-      <div class="stat-delta"><span class="dot"></span>自作品</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+    <span class="statline-sep" aria-hidden="true"></span>
+    <div class="statline-item">
+      <span class="statline-num display">{displayHandmade}</span>
+      <span class="statline-label">Handmade</span>
     </div>
-    <div class="stat --line">
-      <span class="eyebrow">COLLECTED</span>
-      <div class="stat-value">{displayBought}</div>
-      <div class="stat-delta"><span class="dot"></span>購入品</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+    <span class="statline-sep" aria-hidden="true"></span>
+    <div class="statline-item">
+      <span class="statline-num display">{displayBought}</span>
+      <span class="statline-label">Collected</span>
     </div>
-    <div class="stat --diamond">
-      <span class="eyebrow">Series</span>
-      <div class="stat-value">{displaySeries}</div>
-      <div class="stat-delta"><span class="dot"></span>unique</div>
-      <div class="stat-chip"><div class="stat-chip-dot"></div></div>
+    <span class="statline-sep" aria-hidden="true"></span>
+    <div class="statline-item">
+      <span class="statline-num display">{displaySeries}</span>
+      <span class="statline-label">Series</span>
     </div>
   </section>
 
@@ -235,6 +300,7 @@
         class={layout === "grid" ? "--active" : ""}
         onclick={() => (layout = "grid")}
         aria-label="グリッド表示"
+        aria-pressed={layout === "grid"}
       >
         <svg
           width="14"
@@ -260,6 +326,7 @@
         class={layout === "list" ? "--active" : ""}
         onclick={() => (layout = "list")}
         aria-label="リスト表示"
+        aria-pressed={layout === "list"}
       >
         <svg
           width="14"
@@ -297,6 +364,7 @@
         <button
           class={kindFilter === opt.key ? "--active" : ""}
           onclick={() => setKind(opt.key)}
+          aria-pressed={kindFilter === opt.key}
         >
           {opt.label}
         </button>
@@ -307,6 +375,7 @@
         <button
           class={sort === opt.key ? "--active" : ""}
           onclick={() => setSort(opt.key)}
+          aria-pressed={sort === opt.key}
         >
           {opt.label}
         </button>
@@ -321,6 +390,7 @@
         <button
           class={"chip " + (activeTags.includes(tag.id) ? "--active" : "")}
           onclick={() => toggleTag(tag.id)}
+          aria-pressed={activeTags.includes(tag.id)}
         >
           {tag.name}{#if tag.count > 0}&nbsp;<span class="count"
               >{tag.count}</span
@@ -332,6 +402,7 @@
           class="chip"
           onclick={() => {
             activeTags = [];
+            syncUrl();
             fetchItems(true);
           }}>クリア ×</button
         >
@@ -341,7 +412,7 @@
 
   <!-- アイテム一覧 -->
   {#if layout === "grid"}
-    <div class="items-grid rise rise-d4">
+    <div class="items-grid">
       {#each columns as column, colIdx (colIdx)}
         <div class="items-column">
           {#each column as item (item.id)}
@@ -351,64 +422,41 @@
       {/each}
     </div>
   {:else}
-    <div
-      class="rise rise-d4"
-      style="display:flex; flex-direction:column; gap:10px"
-    >
+    <div class="row-list">
       {#each items as item (item.id)}
-        <a
-          href="/items/{item.id}"
-          class="card"
-          style="display:grid; grid-template-columns:72px 1fr auto; gap:18px; align-items:center; padding:12px"
-        >
-          <div
-            style="width:72px; height:72px; border-radius:14px; overflow:hidden; box-shadow:var(--neu-inset); flex-shrink:0"
-          >
+        <a href="/items/{item.id}" class="card row-card reveal" use:reveal>
+          <div class="row-thumb" style="view-transition-name: item-img-{item.id}">
             {#if item.thumbUrl}
-              <img
-                src={item.thumbUrl}
-                alt=""
-                style="width:100%; height:100%; object-fit:cover"
-              />
+              <img src={item.thumbUrl} alt="" />
             {:else}
-              <div
-                style="width:100%; height:100%; background:var(--bg-sunk); display:grid; place-items:center; font-family:var(--f-display); font-size:24px; opacity:0.25; color:var(--fg)"
-              >
-                ✦
-              </div>
+              <div class="row-thumb-empty">✦</div>
             {/if}
           </div>
-          <div style="text-align:left; overflow:hidden">
-            <h3
-              style="margin:0; font-family:var(--f-display); font-size:17px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis"
-            >
-              {item.name ?? "名称未設定"}
-            </h3>
-            <div
-              style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); letter-spacing:0.05em; margin-top:3px"
-            >
-              {item.series ?? "—"} · {item.isHandmade === 1
-                ? "HANDMADE"
+          <div class="row-body">
+            <h3>{item.name ?? '名称未設定'}</h3>
+            <div class="row-sub mono">
+              {item.series ?? '—'} · {item.isHandmade === 1
+                ? 'HANDMADE'
                 : item.isHandmade === 0
-                  ? "COLLECTED"
-                  : "—"}
+                  ? 'COLLECTED'
+                  : '—'}
             </div>
           </div>
-          <div
-            style="font-family:var(--f-mono); font-size:10px; color:var(--fg-soft); white-space:nowrap"
-          >
-            {item.createdAt?.slice(0, 10) ?? ""}
-          </div>
+          <div class="row-date mono">{formatDate(item.createdAt)}</div>
         </a>
       {/each}
     </div>
   {/if}
 
   {#if loading}
-    <div
-      style="text-align:center; padding:48px 20px; color:var(--fg-soft); font-family:var(--f-mono); font-size:11px; letter-spacing:0.16em"
-    >
-      LOADING...
+    <div class="skel-grid" aria-hidden="true">
+      {#each Array(columnCount * 2) as _, i (i)}
+        <div class="skel-card" style="animation-delay: {i * 90}ms">
+          <div class="skel-img"></div>
+          <div class="skel-line"></div>
+          <div class="skel-line --short"></div>
+        </div>
+      {/each}
     </div>
   {/if}
 
@@ -461,5 +509,66 @@
   @media (max-width: 720px) {
     .hero-meta { flex-wrap: wrap; }
     .hero-about-link { flex-basis: 100%; margin-top: 2px; }
+  }
+
+  .row-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row-card {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 12px;
+  }
+  .row-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--neu-inset);
+    flex-shrink: 0;
+  }
+  .row-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .row-thumb-empty {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-sunk);
+    display: grid;
+    place-items: center;
+    font-family: var(--f-display);
+    font-size: 24px;
+    opacity: 0.25;
+    color: var(--fg);
+  }
+  .row-body {
+    text-align: left;
+    overflow: hidden;
+  }
+  .row-body h3 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 17px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-sub {
+    font-size: 11px;
+    color: var(--fg-soft);
+    letter-spacing: 0.05em;
+    margin-top: 3px;
+  }
+  .row-date {
+    font-size: 11px;
+    color: var(--fg-soft);
+    white-space: nowrap;
   }
 </style>

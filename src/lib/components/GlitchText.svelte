@@ -12,6 +12,21 @@
 
   let { segments }: { segments: Segment[] } = $props();
 
+  // breakAfter 区切りで行にグループ化し、行内の途中改行を防ぐ
+  const lines: Segment[][] = (() => {
+    const out: Segment[][] = [];
+    let cur: Segment[] = [];
+    for (const s of segments) {
+      cur.push(s);
+      if (s.breakAfter) {
+        out.push(cur);
+        cur = [];
+      }
+    }
+    if (cur.length) out.push(cur);
+    return out;
+  })();
+
   const PUNCT = new Set(['、', '。']);
 
   const MASK_COLORS = [
@@ -108,13 +123,13 @@
 </script>
 
 <!-- WARNING: ブロック間に改行・スペースを入れないこと。インライン要素間の空白テキストノードになりセグメント間に不要スペースが生じる -->
-<span bind:this={container}>{#each segments as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
+<span bind:this={container}>{#each lines as line}<span class="glitch-line" class:--nowrap={lines.length > 1}>{#each line as seg}{#if seg.em}<em>{#each [...seg.text] as char}<span class="glitch-ch" class:punct={PUNCT.has(char)}>{char}</span>{/each}</em>{:else}{#each [...seg.text] as char}{#if char === ' '}{' '}{:else}<span
         class="glitch-ch"
         class:punct={PUNCT.has(char)}
         class:small-ch={seg.small}
         class:large-ch={seg.large}
         data-stain={seg.stain ? 'true' : undefined}
-      >{char}</span>{/if}{/each}{/if}{#if seg.breakAfter}<br />{/if}{/each}</span>
+      >{char}</span>{/if}{/each}{/if}{/each}</span>{/each}</span>
 
 <style>
   .glitch-ch {
@@ -130,5 +145,11 @@
   }
   .large-ch {
     font-size: 1.3em;
+  }
+  .glitch-line {
+    display: block;
+  }
+  .glitch-line.--nowrap {
+    white-space: nowrap;
   }
 </style>

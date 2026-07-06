@@ -21,6 +21,7 @@ export const load: PageServerLoad = async ({ platform, locals }) => {
       series: items.series,
       isHandmade: items.isHandmade,
       r2KeyThumb: photos.r2KeyThumb,
+      r2KeyOrig: photos.r2KeyOrig,
     }).from(items)
       .innerJoin(photos, and(eq(photos.itemId, items.id), eq(photos.isCover, 1)))
       .where(publicFilter)
@@ -33,8 +34,11 @@ export const load: PageServerLoad = async ({ platform, locals }) => {
   let spotlight = null;
   if (spotlightRows[0]) {
     const row = spotlightRows[0];
-    const thumbUrl = await getPresignedGetUrl(platform!.env, row.r2KeyThumb);
-    spotlight = { ...row, thumbUrl };
+    const [thumbUrl, origUrl] = await Promise.all([
+      getPresignedGetUrl(platform!.env, row.r2KeyThumb),
+      getPresignedGetUrl(platform!.env, row.r2KeyOrig),
+    ]);
+    spotlight = { ...row, thumbUrl, origUrl };
   }
 
   return { tags: allTags, stats, spotlight };
