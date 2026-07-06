@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(.dev.vars)",
+      "Edit(.dev.vars)",
+      "Write(.dev.vars)",
+      "Glob(.dev.vars)",
+      "Bash(cat .dev.vars)",
+      "Bash(grep * .dev.vars)",
+      "Bash(less .dev.vars)",
+      "Bash(more .dev.vars)",
+      "Bash(head .dev.vars)",
+      "Bash(tail .dev.vars)"
+    ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        ".dev.vars"
+      ]
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/repo-tidy.sh",
+            "timeout": 30,
+            "statusMessage": "リポジトリを清掃中"
+          }
+        ]
+      }
+    ]
+  }
+}

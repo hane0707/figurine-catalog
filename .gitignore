@@ -11,6 +11,13 @@ node_modules
 # OS
 .DS_Store
 Thumbs.db
+*:Zone.Identifier
+
+# AI 作業ディレクトリ（ランタイムデータ・セッション成果物はコミットしない）
+.omc/
+.superpowers/
+.claude/*
+!.claude/settings.json
 
 # Env
 .env
