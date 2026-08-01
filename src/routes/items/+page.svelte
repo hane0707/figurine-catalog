@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import { onMount } from "svelte";
-  import ItemCard from "$lib/components/ItemCard.svelte";
+  import ShardCard from "$lib/components/ShardCard.svelte";
+  import ShardDefs from "$lib/components/ShardDefs.svelte";
+  import DustField from "$lib/components/DustField.svelte";
   import GlitchText from "$lib/components/GlitchText.svelte";
   import { formatDate } from "$lib/utils/date";
   import { replaceState } from "$app/navigation";
@@ -22,12 +24,9 @@
     page.url.searchParams.get("tags")?.split(",").filter(Boolean) ?? [],
   );
   let layout = $state("grid");
-  let columnCount = $state(4);
-  let columns = $derived(
-    Array.from({ length: columnCount }, (_, col) =>
-      items.filter((_, i) => i % columnCount === col),
-    ),
-  );
+  // シャードは固定 5:6 比のため、ビューポート幅に応じた列分割は不要
+  // （CSS の repeat(auto-fill, minmax(240px, 1fr)) に一本化する）。
+  const SKELETON_COUNT = 8;
 
   let displayTotal = $state(0);
   let displayHandmade = $state(0);
@@ -104,12 +103,6 @@
       };
       rafId = requestAnimationFrame(tick);
     }
-    const updateColumns = () => {
-      columnCount =
-        window.innerWidth <= 720 ? 2 : window.innerWidth <= 1100 ? 3 : 4;
-    };
-    updateColumns();
-    window.addEventListener("resize", updateColumns);
     fetchItems();
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) fetchItems();
@@ -118,7 +111,6 @@
     return () => {
       cancelAnimationFrame(rafId);
       observer.disconnect();
-      window.removeEventListener("resize", updateColumns);
     };
   });
 
@@ -197,6 +189,8 @@
 </svelte:head>
 
 <div class="app">
+  <ShardDefs />
+  <DustField />
   <!-- ヒーロー -->
   <section class="hero rise">
     <div>
@@ -413,12 +407,8 @@
   <!-- アイテム一覧 -->
   {#if layout === "grid"}
     <div class="items-grid">
-      {#each columns as column, colIdx (colIdx)}
-        <div class="items-column">
-          {#each column as item (item.id)}
-            <ItemCard {item} isOwner={!!data.user} />
-          {/each}
-        </div>
+      {#each items as item, i (item.id)}
+        <ShardCard {item} isOwner={!!data.user} index={i % limit} />
       {/each}
     </div>
   {:else}
@@ -450,27 +440,17 @@
 
   {#if loading}
     <div class="skel-grid" aria-hidden="true">
-      {#each Array(columnCount * 2) as _, i (i)}
-        <div class="skel-card" style="animation-delay: {i * 90}ms">
-          <div class="skel-img"></div>
-          <div class="skel-line"></div>
-          <div class="skel-line --short"></div>
-        </div>
+      {#each Array(SKELETON_COUNT) as _, i (i)}
+        <div
+          class="skel-shard"
+          style="animation-delay: {i * 90}ms; clip-path: url(#shard-clip-{i % 6})"
+        ></div>
       {/each}
     </div>
   {/if}
 
   {#if !loading && items.length === 0}
-    <div style="text-align:center; padding:80px 20px; color:var(--fg-soft)">
-      <div
-        style="font-family:var(--f-display); font-size:36px; margin-bottom:12px"
-      >
-        該当なし
-      </div>
-      <div style="font-size:13px; color:var(--fg-mute)">
-        フィルタを変えるか、新しいアイテムを登録してください。
-      </div>
-    </div>
+    <div class="shard-empty">この分類の欠片はまだ拾われていません。</div>
   {/if}
 
   <div bind:this={sentinel} style="height:4px"></div>
@@ -570,5 +550,13 @@
     font-size: 11px;
     color: var(--fg-soft);
     white-space: nowrap;
+  }
+
+  .shard-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--fg-soft);
+    font-size: 13px;
+    letter-spacing: 0.05em;
   }
 </style>

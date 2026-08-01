@@ -580,36 +580,21 @@ body {
   color: var(--fg);
 }
 
-/* --- items grid --- */
+/* --- items grid（シャードは固定 5:6 比のため CSS grid の auto-fill に統一。
+   ビューポート幅に応じた JS 列分割は不要） --- */
 .items-grid {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 28px 3vw;
 }
 @media (max-width: 1100px) {
   .items-grid {
-    gap: 16px;
+    gap: 20px 3vw;
   }
 }
 @media (max-width: 720px) {
   .items-grid {
-    gap: 12px;
-  }
-}
-.items-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-@media (max-width: 1100px) {
-  .items-column {
-    gap: 16px;
-  }
-}
-@media (max-width: 720px) {
-  .items-column {
-    gap: 12px;
+    gap: 12px 4vw;
   }
 }
 
@@ -770,44 +755,25 @@ body {
   font-family: var(--f-display);
 }
 
-/* --- skeleton --- */
+/* --- skeleton（シャード枠。列数に依存しない auto-fill グリッド） --- */
 .skel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 28px 3vw;
   margin-top: 24px;
 }
-.skel-card {
-  background: var(--surface-raised);
-  border-radius: var(--r);
-  padding: 14px;
-  box-shadow: var(--neu-soft);
+.skel-shard {
+  aspect-ratio: 5/6;
+  background: var(--bg-sunk);
+  box-shadow: var(--neu-inset);
   animation: skel-pulse 1.6s ease-in-out infinite;
-}
-.skel-img {
-  aspect-ratio: 4/5;
-  border-radius: calc(var(--r) - 6px);
-  background: var(--bg-sunk);
-  box-shadow: var(--neu-inset);
-  margin-bottom: 14px;
-}
-.skel-line {
-  height: 12px;
-  border-radius: 6px;
-  background: var(--bg-sunk);
-  box-shadow: var(--neu-inset);
-  margin-bottom: 8px;
-}
-.skel-line.--short {
-  width: 55%;
-  margin-bottom: 0;
 }
 @keyframes skel-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .skel-card { animation: none; }
+  .skel-shard { animation: none; }
 }
 
 /* --- buttons --- */
