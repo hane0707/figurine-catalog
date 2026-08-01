@@ -173,21 +173,32 @@
             </svg>
             <div class="glint" style="--gx:{glint.xPct}%; --gy:{glint.yPct}%"></div>
             <div class="sheen"></div>
-            {#if isOwner && item.isPublic === 0}
-              <div class="lock-badge" aria-hidden="true">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-            {/if}
           </div>
         </div>
       </div>
     </div>
   </div>
   <div class="meta">
-    <span class="cat">{kindLabel}</span>
+    <div class="cat-row">
+      <span class="cat">{kindLabel}</span>
+      {#if isOwner && item.isPublic === 0}
+        <svg
+          class="lock-icon"
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      {/if}
+    </div>
     <h2>{item.name ?? '名称未設定'}</h2>
     <p>{item.series ?? '—'}</p>
     {#if item.tags && item.tags.length > 0}
@@ -398,20 +409,6 @@
     }
   }
 
-  .lock-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 6;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: oklch(0 0 0 / 0.45);
-    display: grid;
-    place-items: center;
-    color: oklch(1 0 0);
-  }
-
   .meta {
     position: relative;
     z-index: 1;
@@ -419,12 +416,21 @@
     border-left: 1px solid var(--line);
     padding-left: 14px;
   }
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
   .meta .cat {
     font-family: var(--f-mono);
     font-size: 10.5px;
     letter-spacing: 0.3em;
     color: var(--accent-amber);
     text-transform: uppercase;
+  }
+  .lock-icon {
+    flex-shrink: 0;
+    color: var(--fg-soft);
   }
   .meta h2 {
     font-family: var(--f-display);
