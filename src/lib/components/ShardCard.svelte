@@ -199,7 +199,7 @@
         </svg>
       {/if}
     </div>
-    <h2>{item.name ?? '名称未設定'}</h2>
+    <h3>{item.name ?? '名称未設定'}</h3>
     <p>{item.series ?? '—'}</p>
     {#if item.tags && item.tags.length > 0}
       <div class="tags">
@@ -432,7 +432,7 @@
     flex-shrink: 0;
     color: var(--fg-soft);
   }
-  .meta h2 {
+  .meta h3 {
     font-family: var(--f-display);
     font-weight: 400;
     font-size: 17px;
