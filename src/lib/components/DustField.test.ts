@@ -13,7 +13,7 @@ describe('DustField', () => {
   it('aria-hidden を設定し操作を妨げない', () => {
     const { container } = render(DustField);
     const root = container.querySelector('.dust-field');
-    expect(root).toHaveAttribute('aria-hidden', 'true');
+    expect(root?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('決定論的な座標をインラインスタイルに反映する', () => {
