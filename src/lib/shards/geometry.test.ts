@@ -56,10 +56,12 @@ describe('CLIP_SHAPES / SHARD_POLYS', () => {
     expect(SHARD_POLYS).toHaveLength(6);
   });
 
-  it('分数座標の頂点数と100x120頂点配列の頂点数が一致する', () => {
-    CLIP_SHAPES.forEach((shape, i) => {
-      const fractionCount = shape.trim().split(' ').length;
-      expect(SHARD_POLYS[i]).toHaveLength(fractionCount);
+  it('各形状が7頂点を持つ（分数座標・100x120頂点配列とも、リテラル期待値で検証）', () => {
+    CLIP_SHAPES.forEach((shape) => {
+      expect(shape.trim().split(' ')).toHaveLength(7);
+    });
+    SHARD_POLYS.forEach((poly) => {
+      expect(poly).toHaveLength(7);
     });
   });
 });
@@ -113,6 +115,57 @@ describe('buildEdges', () => {
       expect(edge.opacity).toBeGreaterThan(0);
       expect(edge.width).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('hue 値域の回帰防止', () => {
+  // buildSlab/buildEdges は hueAt(t) = HUE_MIN + t * HUE_SPAN（230–320°、紫アクセント中心）
+  // を主要な色相として使う。モックは 198–348°（cyan→magenta）だったため、実装の定数が
+  // 誤って戻された場合に検出できるよう、生成された hsl(...) 文字列から hue を実際に
+  // パースして境界値を検証する。
+  //
+  // buildSlab の stops[1].color だけは意図的に hue2（hue から HUE2_OFFSET=14 を引いた値）
+  // を使っており、hue が下限 230 に近いときは 230 を下回り得る（例: hue=230 → hue2=216）。
+  // これは設計上の意図（中間色をわずかに寒色側にずらす）であり回帰ではないため、
+  // このテストでは hue を直接使う値（strokeColor / stops先頭・末尾 / buildEdges の color）
+  // のみを対象にする。
+  function extractHue(color: string): number {
+    const match = color.match(/^hsl\((-?\d+(?:\.\d+)?)/);
+    if (!match) {
+      throw new Error(`hsl(...) 形式ではない色文字列です: ${color}`);
+    }
+    return Number(match[1]);
+  }
+
+  it('buildEdges の hue が全形状で 230–320 に収まる', () => {
+    for (let polyIdx = 0; polyIdx < SHARD_POLYS.length; polyIdx++) {
+      buildEdges(polyIdx).forEach((edge) => {
+        const hue = extractHue(edge.color);
+        expect(hue).toBeGreaterThanOrEqual(230);
+        expect(hue).toBeLessThanOrEqual(320);
+      });
+    }
+  });
+
+  it('buildSlab の主要 hue（strokeColor・stops先頭/末尾）が全形状・複数 seed で 230–320 に収まる', () => {
+    for (let polyIdx = 0; polyIdx < SHARD_POLYS.length; polyIdx++) {
+      for (let seed = 0; seed < 20; seed++) {
+        const panels = buildSlab(polyIdx, seed * 131 + polyIdx);
+        panels.forEach((panel) => {
+          const strokeHue = extractHue(panel.strokeColor);
+          expect(strokeHue).toBeGreaterThanOrEqual(230);
+          expect(strokeHue).toBeLessThanOrEqual(320);
+
+          const firstStopHue = extractHue(panel.stops[0].color);
+          expect(firstStopHue).toBeGreaterThanOrEqual(230);
+          expect(firstStopHue).toBeLessThanOrEqual(320);
+
+          const lastStopHue = extractHue(panel.stops[panel.stops.length - 1].color);
+          expect(lastStopHue).toBeGreaterThanOrEqual(230);
+          expect(lastStopHue).toBeLessThanOrEqual(320);
+        });
+      }
+    }
   });
 });
 
