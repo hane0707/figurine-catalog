@@ -303,6 +303,11 @@
   .piece:focus-visible .shard-stack {
     transform: scale(1.03);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .shard-stack {
+      transition: none;
+    }
+  }
 
   .slab {
     position: absolute;
