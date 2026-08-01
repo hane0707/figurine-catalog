@@ -13,3 +13,4 @@
 ## 技術的負債
 
 - [ ] `npm run check`（svelte-check）の既存 75 エラー / 28 警告を段階的に解消する（基準値は CLAUDE.md 参照。解消したらベースラインを更新すること）
+- [ ] `tsconfig.json` の `compilerOptions.types` に `@testing-library/jest-dom` が含まれておらず、`toBeInTheDocument`/`toHaveAttribute` 等の jest-dom マッチャーが型エラーになる（vitest 実行時は `vite.config.ts` の `setupFiles` で有効化されているため実害なし）。`types` に追加するだけで既存の同種エラーが 21 件解消することを Task 4 実装時に確認済み（75→55 件）。プロジェクト全体の tsconfig 変更のため単独タスクとして着手すること
