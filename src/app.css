@@ -27,6 +27,33 @@
   --accent-haze-soft: oklch(0.92 0.04 230);
   --danger: oklch(0.56 0.14 28);
 
+  /* --- shard (鏡片カード) --- */
+  --shard-glow-bg: radial-gradient(
+    closest-side,
+    oklch(0.72 0.09 285 / 0.3),
+    oklch(0.32 0.03 285 / 0.35) 70%,
+    transparent 100%
+  );
+  --shard-tint-gradient: linear-gradient(
+    160deg,
+    oklch(1 0 0 / 0.35),
+    transparent 40%,
+    oklch(0.4 0.06 285 / 0.14) 100%
+  );
+  --shard-tint-opacity: 0.55;
+  --shard-grain-opacity: 0.1;
+  --shard-glint-opacity: 0.5;
+  --shard-sheen-gradient: linear-gradient(
+    115deg,
+    transparent 30%,
+    oklch(1 0 0 / 0.2) 42%,
+    oklch(1 0 0 / 0.5) 50%,
+    oklch(0.75 0.08 285 / 0.18) 58%,
+    transparent 70%
+  );
+  --shard-dust-color: oklch(0.55 0.1 285);
+  --shard-dust-opacity: 0.5;
+
   --neu-deep:
     14px 14px 40px oklch(0.80 0.016 285 / 0.72),
     -14px -14px 40px oklch(1 0 0 / 0.98);
@@ -1658,6 +1685,33 @@ body {
   --accent-amber-soft: oklch(0.30 0.06 70);
   --accent-haze-soft: oklch(0.28 0.05 230);
   --danger: oklch(0.68 0.16 25);
+
+  /* --- shard (鏡片カード) --- */
+  --shard-glow-bg: radial-gradient(
+    closest-side,
+    oklch(0.46 0.15 285 / 0.35),
+    oklch(0 0 0 / 0.55) 70%,
+    transparent 100%
+  );
+  --shard-tint-gradient: linear-gradient(
+    160deg,
+    oklch(0.76 0.09 285 / 0.18),
+    transparent 40%,
+    oklch(0.2 0.04 285 / 0.3) 100%
+  );
+  --shard-tint-opacity: 1;
+  --shard-grain-opacity: 0.16;
+  --shard-glint-opacity: 0.8;
+  --shard-sheen-gradient: linear-gradient(
+    115deg,
+    transparent 30%,
+    oklch(1 0 0 / 0.16) 42%,
+    oklch(1 0 0 / 0.42) 50%,
+    oklch(0.75 0.12 285 / 0.16) 58%,
+    transparent 70%
+  );
+  --shard-dust-color: oklch(1 0 0);
+  --shard-dust-opacity: 0.9;
 
   --neu-deep:
     14px 14px 40px oklch(0.12 0.010 285 / 0.80),
