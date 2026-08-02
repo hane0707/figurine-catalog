@@ -26,6 +26,7 @@
   --accent-haze: oklch(0.58 0.1 230);
   --accent-haze-soft: oklch(0.92 0.04 230);
   --danger: oklch(0.56 0.14 28);
+  --rim-glow: 0 0 0 1.5px oklch(0.62 0.19 285 / 0.55);
 
   /* --- shard (鏡片カード) --- */
   --shard-glow-bg: radial-gradient(
@@ -364,18 +365,23 @@ body {
 .spotlight {
   position: relative;
   aspect-ratio: 4/5;
-  border-radius: var(--r-lg);
+  border-radius: var(--r);
   background: var(--surface-raised);
   box-shadow: var(--neu-deep);
   overflow: hidden;
-  transition: transform 160ms var(--ease-out);
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow var(--dur) var(--ease);
   transform-style: preserve-3d;
   will-change: transform;
+}
+.spotlight-frame:hover .spotlight {
+  box-shadow: var(--neu-deep), var(--rim-glow);
 }
 .spotlight-inner {
   position: absolute;
   inset: 14px;
-  border-radius: calc(var(--r-lg) - 8px);
+  border-radius: calc(var(--r) - 6px);
   overflow: hidden;
   box-shadow: var(--neu-inset);
 }
@@ -387,7 +393,7 @@ body {
 .spotlight-glare {
   position: absolute;
   inset: 14px;
-  border-radius: calc(var(--r-lg) - 8px);
+  border-radius: calc(var(--r) - 6px);
   pointer-events: none;
   z-index: 1;
   mix-blend-mode: screen;
@@ -402,7 +408,7 @@ body {
   background: oklch(1 0 0 / 0.85);
   backdrop-filter: blur(8px);
   padding: 6px 12px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   font-family: var(--f-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -476,7 +482,7 @@ body {
 /* --- filter bar --- */
 .filterbar {
   background: var(--surface-raised);
-  border-radius: var(--r-lg);
+  border-radius: var(--r);
   padding: 14px;
   box-shadow: var(--neu-soft);
   position: relative;
@@ -491,12 +497,13 @@ body {
   flex: 1;
   min-width: 260px;
   background: var(--bg-sunk);
-  border-radius: var(--r-pill);
+  border-radius: var(--r);
   padding: 10px 18px;
   box-shadow: var(--neu-inset);
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: box-shadow var(--dur) var(--ease);
 }
 .search svg {
   flex-shrink: 0;
@@ -517,17 +524,20 @@ body {
     var(--neu-inset),
     0 0 0 2px var(--accent-amber);
 }
+.search:hover {
+  box-shadow: var(--neu-inset), var(--rim-glow);
+}
 .seg {
   display: inline-flex;
   background: var(--bg-sunk);
   box-shadow: var(--neu-inset);
-  border-radius: var(--r-pill);
+  border-radius: var(--r);
   padding: 4px;
   gap: 2px;
 }
 .seg button {
   padding: 8px 14px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   font-size: 12px;
   font-family: var(--f-sans);
   font-weight: 500;
@@ -544,6 +554,9 @@ body {
   box-shadow: var(--neu-soft);
   transform: scale(1.06);
 }
+.seg button:hover:not(.--active) {
+  box-shadow: var(--rim-glow);
+}
 
 /* --- chips --- */
 .chiprow {
@@ -554,7 +567,7 @@ body {
 }
 .chip {
   background: var(--surface);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   padding: 8px 16px;
   box-shadow: var(--neu-soft);
   font-size: 12px;
@@ -573,6 +586,7 @@ body {
 }
 .chip:hover {
   transform: translateY(-1px);
+  box-shadow: var(--neu-soft), var(--rim-glow);
 }
 .chip.--active {
   box-shadow: var(--neu-inset);
@@ -1651,6 +1665,7 @@ body {
   --accent-amber-soft: oklch(0.30 0.06 70);
   --accent-haze-soft: oklch(0.28 0.05 230);
   --danger: oklch(0.68 0.16 25);
+  --rim-glow: 0 0 0 1.5px oklch(0.72 0.17 285 / 0.6); /* 暗背景用に明度・不透明度を上げる */
 
   /* --- shard (鏡片カード) --- */
   --shard-glow-bg: radial-gradient(

@@ -457,7 +457,7 @@
     font-size: 10px;
     letter-spacing: 0.04em;
     padding: 2px 8px;
-    border-radius: var(--r-pill);
+    border-radius: var(--r-sm);
     background: var(--bg-sunk);
     color: var(--fg-soft);
     box-shadow: var(--neu-inset);
