@@ -26,7 +26,8 @@
   --accent-haze: oklch(0.58 0.1 230);
   --accent-haze-soft: oklch(0.92 0.04 230);
   --danger: oklch(0.56 0.14 28);
-  --rim-glow: 0 0 0 1.5px oklch(0.62 0.19 285 / 0.55);
+  --rim-glow-rest: 0 0 0 1px oklch(0.62 0.19 285 / 0);
+  --rim-glow: 0 0 0 1px oklch(0.62 0.19 285 / 0.35);
 
   /* --- shard (鏡片カード) --- */
   --shard-glow-bg: radial-gradient(
@@ -365,9 +366,9 @@ body {
 .spotlight {
   position: relative;
   aspect-ratio: 4/5;
-  border-radius: var(--r);
+  border-radius: var(--r-sm);
   background: var(--surface-raised);
-  box-shadow: var(--neu-deep);
+  box-shadow: var(--neu-deep), var(--rim-glow-rest);
   overflow: hidden;
   transition:
     transform 160ms var(--ease-out),
@@ -381,7 +382,7 @@ body {
 .spotlight-inner {
   position: absolute;
   inset: 14px;
-  border-radius: calc(var(--r) - 6px);
+  border-radius: calc(var(--r-sm) - 4px);
   overflow: hidden;
   box-shadow: var(--neu-inset);
 }
@@ -393,7 +394,7 @@ body {
 .spotlight-glare {
   position: absolute;
   inset: 14px;
-  border-radius: calc(var(--r) - 6px);
+  border-radius: calc(var(--r-sm) - 4px);
   pointer-events: none;
   z-index: 1;
   mix-blend-mode: screen;
@@ -499,7 +500,7 @@ body {
   background: var(--bg-sunk);
   border-radius: var(--r);
   padding: 10px 18px;
-  box-shadow: var(--neu-inset);
+  box-shadow: var(--neu-inset), var(--rim-glow-rest);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -547,6 +548,7 @@ body {
   cursor: pointer;
   background: none;
   border: none;
+  box-shadow: var(--rim-glow-rest);
 }
 .seg button.--active {
   background: var(--surface);
@@ -569,7 +571,7 @@ body {
   background: var(--surface);
   border-radius: var(--r-sm);
   padding: 8px 16px;
-  box-shadow: var(--neu-soft);
+  box-shadow: var(--neu-soft), var(--rim-glow-rest);
   font-size: 12px;
   color: var(--fg-mute);
   transition: all var(--dur) var(--ease);
@@ -1665,7 +1667,8 @@ body {
   --accent-amber-soft: oklch(0.30 0.06 70);
   --accent-haze-soft: oklch(0.28 0.05 230);
   --danger: oklch(0.68 0.16 25);
-  --rim-glow: 0 0 0 1.5px oklch(0.72 0.17 285 / 0.6); /* 暗背景用に明度・不透明度を上げる */
+  --rim-glow-rest: 0 0 0 1px oklch(0.72 0.17 285 / 0);
+  --rim-glow: 0 0 0 1px oklch(0.72 0.17 285 / 0.38); /* 暗背景用に明度・不透明度を上げる */
 
   /* --- shard (鏡片カード) --- */
   --shard-glow-bg: radial-gradient(
